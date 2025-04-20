@@ -2118,7 +2118,8 @@ moonImage.Size = UDim2.new(0, 90, 0, 90)
 moonImage.Position = UDim2.new(0, 240, 0, 10)
 moonImage.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 moonImage.BorderSizePixel = 0
-moonImage.ScaleType = Enum.ScaleType.Fit
+moonImage.ScaleType = Enum.ScaleType.Stretch -- Đổi từ Fit sang Stretch để xoay ảnh
+moonImage.Rotation = 180 -- Xoay ảnh đúng chiều
 
 -- Hàm lấy ID từ đường dẫn MoonTextureId
 local function extractIdFromUrl(url)
