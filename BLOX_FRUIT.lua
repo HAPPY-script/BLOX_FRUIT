@@ -112,18 +112,19 @@ end)
 -- Danh sách tab (Dễ dàng thêm tab mới)
 local tabs = {
     {name = "Page change", icon = "rbxthumb://type=Asset&id=1587302690&w=150&h=150"},
+    {name = "Status", icon = "rbxthumb://type=Asset&id=93942197037043&w=150&h=150"},
     {name = "Home", icon = "rbxthumb://type=Asset&id=13060262582&w=150&h=150"},
     {name = "Raid", icon = "rbxthumb://type=Asset&id=17600288795&w=150&h=150"},
     {name = "Fruit", icon = "rbxthumb://type=Asset&id=130882648&w=150&h=150"},
     {name = "Visual", icon = "rbxthumb://type=Asset&id=17688532644&w=150&h=150"},
-    {name = "Player", icon = "rbxthumb://type=Asset&id=124871982298256&w=150&h=150"},
+    {name = "Player", icon = "rbxthumb://type=Asset&id=11656483343&w=150&h=150"},
     {name = "Tracker", icon = "rbxthumb://type=Asset&id=136258799911155&w=150&h=150"},
     {name = "Info", icon = "rbxthumb://type=Asset&id=11780939142&w=150&h=150"}
 }
 
 -- Tạo phần tab (bên trái)
 local TabFrame = Instance.new("ScrollingFrame")
-TabFrame.Size = UDim2.new(0, 50, 1, 0)
+TabFrame.Size = UDim2.new(0, 50, 0.98, 0)
 TabFrame.Position = UDim2.new(0, 0, 0, 5) -- Hạ thấp tab xuống để Home không bị che
 TabFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 TabFrame.ScrollBarThickness = 5
@@ -2099,6 +2100,77 @@ Title.Position = UDim2.new(0, 10, 0, 10)
 Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 Title.TextColor3 = Color3.new(1, 1, 1)
 Title.Text = "SPEED"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+---------------------------------------------------------------------------------
+--MOON
+local MoonFrame = sections["Status"]
+local Lighting = game:GetService("Lighting")
+
+-- Frame chứa ảnh mặt trăng
+local moonImage = Instance.new("ImageLabel")
+moonImage.Name = "MoonImage"
+moonImage.Parent = MoonFrame
+moonImage.Size = UDim2.new(0, 90, 0, 90)
+moonImage.Position = UDim2.new(0, 240, 0, 10)
+moonImage.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+moonImage.BorderSizePixel = 0
+moonImage.ScaleType = Enum.ScaleType.Fit
+
+-- Hàm lấy ID từ đường dẫn MoonTextureId
+local function extractIdFromUrl(url)
+	local id = string.match(url, "%d+")
+	return id
+end
+
+-- Cập nhật hình ảnh theo MoonTextureId
+local function updateMoonImage()
+	local moonTexture = Lighting:FindFirstChildOfClass("Sky") and Lighting:FindFirstChildOfClass("Sky").MoonTextureId
+	if moonTexture then
+		local id = extractIdFromUrl(moonTexture)
+		if id then
+			moonImage.Image = "rbxthumb://type=Asset&id=" .. id .. "&w=150&h=150"
+		end
+	end
+end
+
+-- Theo dõi thay đổi MoonTextureId
+local currentSky = Lighting:FindFirstChildOfClass("Sky")
+if currentSky then
+	currentSky:GetPropertyChangedSignal("MoonTextureId"):Connect(updateMoonImage)
+end
+
+-- Nếu Sky bị thay đổi
+Lighting.ChildAdded:Connect(function(child)
+	if child:IsA("Sky") then
+		currentSky = child
+		child:GetPropertyChangedSignal("MoonTextureId"):Connect(updateMoonImage)
+		updateMoonImage()
+	end
+end)
+
+Lighting.ChildRemoved:Connect(function(child)
+	if child == currentSky then
+		currentSky = nil
+		moonImage.Image = "" -- Xóa ảnh nếu Sky bị xoá
+	end
+end)
+
+-- Cập nhật lần đầu
+updateMoonImage()
+
+--title
+local HomeFrame = sections["Status"]
+
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 80)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "MOON"
 Title.TextScaled = true
 Title.Font = Enum.Font.SourceSansBold
 Title.BorderSizePixel = 2
