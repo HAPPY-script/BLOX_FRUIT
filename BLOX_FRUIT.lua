@@ -2170,7 +2170,69 @@ Title.Size = UDim2.new(0, 220, 0, 80)
 Title.Position = UDim2.new(0, 10, 0, 10)
 Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "MOON"
+Title.Text = "Moon"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+-------------------------------------------------------------------------------
+--COUNT PLAYER
+local HomeFrame = sections["Status"]
+local Players = game:GetService("Players")
+
+-- Frame chứa icon và văn bản
+local playerCountFrame = Instance.new("Frame")
+playerCountFrame.Name = "PlayerCountFrame"
+playerCountFrame.Parent = HomeFrame
+playerCountFrame.Size = UDim2.new(0, 130, 0, 30)
+playerCountFrame.Position = UDim2.new(0, 240, 0, 50)
+playerCountFrame.BackgroundTransparency = 1
+
+-- Icon hình cộng đồng
+local icon = Instance.new("ImageLabel")
+icon.Name = "CommunityIcon"
+icon.Parent = playerCountFrame
+icon.Size = UDim2.new(0, 30, 0, 30)
+icon.Position = UDim2.new(0, 10, 0, 60)
+icon.BackgroundTransparency = 1
+icon.Image = "rbxthumb://type=Asset&id=136258799911155&w=150&h=150"
+
+-- Label hiển thị số lượng người
+local playerLabel = Instance.new("TextLabel")
+playerLabel.Name = "PlayerLabel"
+playerLabel.Parent = playerCountFrame
+playerLabel.Size = UDim2.new(0, 90, 0, 30)
+playerLabel.Position = UDim2.new(0, 35, 0, 60)
+playerLabel.BackgroundTransparency = 1
+playerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+playerLabel.TextXAlignment = Enum.TextXAlignment.Left
+playerLabel.Font = Enum.Font.SourceSans
+playerLabel.TextSize = 20
+
+-- Hàm cập nhật số lượng người chơi
+local function updatePlayerCount()
+	local currentPlayers = #Players:GetPlayers()
+	local maxPlayers = game:GetService("Players").MaxPlayers or 12 -- thường mặc định 12
+	playerLabel.Text = tostring(currentPlayers) .. "/" .. tostring(maxPlayers)
+end
+
+-- Kết nối cập nhật khi người vào/ra
+Players.PlayerAdded:Connect(updatePlayerCount)
+Players.PlayerRemoving:Connect(updatePlayerCount)
+
+-- Cập nhật ban đầu
+updatePlayerCount()
+
+--title
+local HomeFrame = sections["Status"]
+
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 110)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "Player"
 Title.TextScaled = true
 Title.Font = Enum.Font.SourceSansBold
 Title.BorderSizePixel = 2
