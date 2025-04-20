@@ -117,6 +117,7 @@ local tabs = {
     {name = "Fruit", icon = "rbxthumb://type=Asset&id=130882648&w=150&h=150"},
     {name = "Visual", icon = "rbxthumb://type=Asset&id=17688532644&w=150&h=150"},
     {name = "Player", icon = "rbxthumb://type=Asset&id=124871982298256&w=150&h=150"},
+    {name = "Tracker", icon = "rbxthumb://type=Asset&id=136258799911155&w=150&h=150"},
     {name = "Info", icon = "rbxthumb://type=Asset&id=11780939142&w=150&h=150"}
 }
 
@@ -1935,7 +1936,7 @@ Title.BorderColor3 = Color3.new(255, 255, 255)
 
 -----------------------------------------------------------------------------------------------
 --Player view
-local PlayerFrame = sections["Player"]
+local PlayerFrame = sections["Tracker"]
 local players = game:GetService("Players")
 local localPlayer = players.LocalPlayer
 local camera = game.Workspace.CurrentCamera
@@ -2009,3 +2010,96 @@ end
 CreateButton(InfoFrame, "👾 Discord", 10, function()
     copyToClipboard("https://discord.gg/HSEfQPzdpH") -- Thay link này bằng link Discord của bạn
 end)
+
+-----------------------------------------------------------------------------
+--SPEED
+local SpeedFrame = sections["Player"]
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local runService = game:GetService("RunService")
+
+local isActive = false
+local speedValue = 3 -- Tốc độ mặc định
+local distancePerTeleport = 1.5
+
+-- Nút bật/tắt
+local toggleButton = Instance.new("TextButton")
+toggleButton.Name = "ToggleSpeed"
+toggleButton.Parent = SpeedFrame
+toggleButton.Size = UDim2.new(0, 90, 0, 30)
+toggleButton.Position = UDim2.new(0, 240, 0, 10)
+toggleButton.Text = "OFF"
+toggleButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+toggleButton.TextColor3 = Color3.new(1, 1, 1)
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextScaled = true
+
+-- Ô nhập tốc độ
+local speedBox = Instance.new("TextBox")
+speedBox.Name = "SpeedInput"
+speedBox.Parent = SpeedFrame
+speedBox.Size = UDim2.new(0, 50, 0, 30)
+speedBox.Position = UDim2.new(0, 190, 0, 10)
+speedBox.Text = tostring(speedValue)
+speedBox.PlaceholderText = "Speed"
+speedBox.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBox.Font = Enum.Font.SourceSansBold
+speedBox.TextScaled = true
+
+-- Cập nhật tốc độ từ ô nhập
+speedBox.FocusLost:Connect(function()
+	local newSpeed = tonumber(speedBox.Text)
+	if newSpeed and newSpeed > 0 and newSpeed <= 10 then
+		speedValue = newSpeed
+	else
+		speedBox.Text = tostring(speedValue)
+	end
+end)
+
+-- Toggle nút ON/OFF
+toggleButton.MouseButton1Click:Connect(function()
+	isActive = not isActive
+	toggleButton.Text = isActive and "ON" or "OFF"
+	toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+end)
+
+-- Hàm dịch chuyển
+local function TeleportStep()
+	if not isActive or not character or not humanoidRootPart then return end
+	local moveDirection = character:FindFirstChild("Humanoid") and character.Humanoid.MoveDirection or Vector3.zero
+	if moveDirection.Magnitude > 0 then
+		local newPos = humanoidRootPart.Position + (moveDirection * distancePerTeleport)
+		humanoidRootPart.CFrame = CFrame.new(newPos, newPos + moveDirection)
+	end
+end
+
+-- Gọi dịch chuyển mỗi frame
+runService.RenderStepped:Connect(function()
+	if isActive then
+		for _ = 1, speedValue do
+			TeleportStep()
+		end
+	end
+end)
+
+-- Cập nhật khi respawn
+player.CharacterAdded:Connect(function(char)
+	character = char
+	humanoidRootPart = char:WaitForChild("HumanoidRootPart")
+end)
+
+--title
+local HomeFrame = sections["Player"]
+
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 170, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "SPEED"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
