@@ -2237,3 +2237,77 @@ Title.TextScaled = true
 Title.Font = Enum.Font.SourceSansBold
 Title.BorderSizePixel = 2
 Title.BorderColor3 = Color3.new(255, 255, 255)
+
+-------------------------------------------------------------------------------
+--NO CLIP
+local HomeFrame = sections["Player"]
+local player = game.Players.LocalPlayer
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+
+local noclipEnabled = false
+local character = player.Character or player.CharacterAdded:Wait()
+local noclipConnection
+
+-- Hàm bật/tắt No Clip
+local function setNoclip(state)
+    if character then
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = not state
+            end
+        end
+    end
+end
+
+-- Nút No Clip trong tab Home
+local noclipButton = Instance.new("TextButton", HomeFrame)
+noclipButton.Size = UDim2.new(0, 90, 0, 30)
+noclipButton.Position = UDim2.new(0, 240, 0, 60)
+noclipButton.Text = "OFF"
+noclipButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+noclipButton.TextColor3 = Color3.new(1, 1, 1)
+noclipButton.Font = Enum.Font.SourceSansBold
+noclipButton.TextScaled = true
+
+-- Bật/Tắt No Clip
+noclipButton.MouseButton1Click:Connect(function()
+    noclipEnabled = not noclipEnabled
+    noclipButton.Text = noclipEnabled and "ON" or "OFF"
+    noclipButton.BackgroundColor3 = noclipEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+
+    if noclipEnabled then
+        if noclipConnection then noclipConnection:Disconnect() end
+        noclipConnection = runService.Stepped:Connect(function()
+            if noclipEnabled and character then
+                setNoclip(true)
+            end
+        end)
+    else
+        if noclipConnection then noclipConnection:Disconnect() end
+        setNoclip(false)
+    end
+end)
+
+-- Reset khi nhân vật hồi sinh
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    noclipEnabled = false
+    if noclipConnection then noclipConnection:Disconnect() end
+    noclipButton.Text = "OFF"
+    noclipButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+end)
+
+--title
+local HomeFrame = sections["Player"]
+
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 60)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "NO CLIP"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
