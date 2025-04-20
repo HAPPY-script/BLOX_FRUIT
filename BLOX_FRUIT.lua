@@ -118,6 +118,7 @@ local tabs = {
     {name = "Fruit", icon = "rbxthumb://type=Asset&id=130882648&w=150&h=150"},
     {name = "Visual", icon = "rbxthumb://type=Asset&id=17688532644&w=150&h=150"},
     {name = "Player", icon = "rbxthumb://type=Asset&id=11656483343&w=150&h=150"},
+    {name = "PVP", icon = "rbxthumb://type=Asset&id=4391741908&w=150&h=150"},
     {name = "Tracker", icon = "rbxthumb://type=Asset&id=136258799911155&w=150&h=150"},
     {name = "Info", icon = "rbxthumb://type=Asset&id=11780939142&w=150&h=150"}
 }
@@ -2299,16 +2300,247 @@ player.CharacterAdded:Connect(function(newChar)
     noclipButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 end)
 
---title
+--------------------------------------------------------------------------------
+--TP KEY PC
+local HomeFrame = sections["Player"]
+local player = game.Players.LocalPlayer
+local userInputService = game:GetService("UserInputService")
+
+-- Biến trạng thái
+local teleportEnabled = false
+local selectedKey = nil
+local listeningForKey = false
+
+-- Nút ON/OFF
+local TeleportButton = Instance.new("TextButton", HomeFrame)
+TeleportButton.Size = UDim2.new(0, 90, 0, 30)
+TeleportButton.Position = UDim2.new(0, 240, 0, 110)
+TeleportButton.Text = "OFF"
+TeleportButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+TeleportButton.TextColor3 = Color3.new(1, 1, 1)
+TeleportButton.Font = Enum.Font.SourceSansBold
+TeleportButton.TextScaled = true
+
+-- Ô chọn phím
+local KeySelectBox = Instance.new("TextButton", HomeFrame)
+KeySelectBox.Size = UDim2.new(0, 50, 0, 30)
+KeySelectBox.Position = UDim2.new(0, 190, 0, 110)
+KeySelectBox.Text = "Select Key"
+KeySelectBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+KeySelectBox.TextColor3 = Color3.new(1, 1, 1)
+KeySelectBox.Font = Enum.Font.SourceSans
+KeySelectBox.TextScaled = true
+
+-- Xử lý chọn phím
+KeySelectBox.MouseButton1Click:Connect(function()
+	if listeningForKey then return end
+	listeningForKey = true
+	KeySelectBox.Text = "Press a key..."
+	
+	local conn
+	conn = userInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then return end
+		
+		local inputName
+		if input.UserInputType == Enum.UserInputType.Keyboard then
+			inputName = input.KeyCode.Name
+		elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+			inputName = "MouseButton1"
+		elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+			inputName = "MouseButton2"
+		end
+
+		if inputName then
+			selectedKey = inputName
+			KeySelectBox.Text = inputName
+			conn:Disconnect()
+			listeningForKey = false
+		end
+	end)
+end)
+
+-- Chức năng dịch chuyển
+local function teleportToMouse()
+	if teleportEnabled and selectedKey then
+		local character = player.Character
+		local mouse = player:GetMouse()
+		if character and character:FindFirstChild("HumanoidRootPart") then
+			local pos = mouse.Hit.Position
+			local root = character.HumanoidRootPart
+			local distance = (root.Position - pos).Magnitude
+			if distance <= 250 then
+				root.CFrame = CFrame.new(pos)
+			end
+		end
+	end
+end
+
+-- Bật/Tắt chức năng
+TeleportButton.MouseButton1Click:Connect(function()
+	teleportEnabled = not teleportEnabled
+	TeleportButton.Text = teleportEnabled and "ON" or "OFF"
+	TeleportButton.BackgroundColor3 = teleportEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+end)
+
+-- Bắt phím để teleport
+userInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed or not teleportEnabled or not selectedKey then return end
+
+	local inputName
+	if input.UserInputType == Enum.UserInputType.Keyboard then
+		inputName = input.KeyCode.Name
+	elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+		inputName = "MouseButton1"
+	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+		inputName = "MouseButton2"
+	end
+
+	if inputName == selectedKey then
+		teleportToMouse()
+	end
+end)
+
+-- Reset khi chết
+player.CharacterAdded:Connect(function()
+	teleportEnabled = false
+	selectedKey = nil
+	TeleportButton.Text = "OFF"
+	TeleportButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+	KeySelectBox.Text = "SELECT KEY"
+end)
+
+-----------------------------------------------------------------------------------
+--TP PE
+local HomeFrame = sections["Player"]
+local player = game.Players.LocalPlayer
+local userInputService = game:GetService("UserInputService")
+local mouse = player:GetMouse()
+local teleportEnabled = false
+local tpButtonActive = false
+
+-- Nút bật/tắt chính trong Home
+local TeleportPEButton = Instance.new("TextButton", HomeFrame)
+TeleportPEButton.Size = UDim2.new(0, 90, 0, 30)
+TeleportPEButton.Position = UDim2.new(0, 240, 0, 160)
+TeleportPEButton.Text = "OFF"
+TeleportPEButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+TeleportPEButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TeleportPEButton.Font = Enum.Font.SourceSansBold
+TeleportPEButton.TextSize = 30
+
+-- Tạo nút TP trên màn hình (Không bị mất khi chết)
+local screenGui = Instance.new("ScreenGui", game.CoreGui) -- Chuyển qua CoreGui để tránh bị reset khi chết
+local MobileTPButton = Instance.new("TextButton", screenGui)
+MobileTPButton.Size = UDim2.new(0, 40, 0, 40) -- Nhỏ lại 1/3
+MobileTPButton.Position = UDim2.new(0.92, 0, 0.5, -13) -- Trung điểm cạnh phải
+MobileTPButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+MobileTPButton.BackgroundTransparency = 0.5 -- Xám trong suốt
+MobileTPButton.Text = "⚡"
+MobileTPButton.TextScaled = true
+MobileTPButton.TextColor3 = Color3.new(1, 1, 1)
+MobileTPButton.Visible = false
+
+-- Bo tròn nút TP
+local UICorner = Instance.new("UICorner", MobileTPButton)
+UICorner.CornerRadius = UDim.new(1, 0)
+
+-- Khi bật chức năng TP
+local function ToggleTeleport()
+    teleportEnabled = not teleportEnabled
+    TeleportPEButton.Text = teleportEnabled and "ON" or "OFF"
+    TeleportPEButton.BackgroundColor3 = teleportEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+
+    -- Hiện/ẩn nút tròn trên màn hình
+    MobileTPButton.Visible = teleportEnabled
+    tpButtonActive = false
+    MobileTPButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+end
+
+TeleportPEButton.MouseButton1Click:Connect(ToggleTeleport)
+
+-- Khi bấm nút tròn TP
+MobileTPButton.MouseButton1Click:Connect(function()
+    if tpButtonActive then
+        -- Nếu đang chờ TP -> Hủy TP
+        tpButtonActive = false
+        MobileTPButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Reset lại xám
+    else
+        -- Bật trạng thái chờ TP
+        tpButtonActive = true
+        MobileTPButton.BackgroundColor3 = Color3.fromRGB(0, 0, 139) -- Xanh dương
+    end
+end)
+
+-- Khi click vào màn hình để TP
+local function TeleportToMouse()
+    if teleportEnabled and tpButtonActive then
+        local targetPosition = mouse.Hit.Position
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local rootPart = character.HumanoidRootPart
+            local distance = (rootPart.Position - targetPosition).Magnitude
+            if distance <= 250 then
+                rootPart.CFrame = CFrame.new(targetPosition)
+                tpButtonActive = false
+                MobileTPButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Reset lại xám
+            end
+        end
+    end
+end
+
+-- Cho PC: Bấm chuột trái để TP
+mouse.Button1Down:Connect(TeleportToMouse)
+
+-- Cho PE: Chạm vào màn hình để TP
+userInputService.TouchTap:Connect(function(_, processed)
+    if not processed then
+        TeleportToMouse()
+    end
+end)
+
+--reset
+player.CharacterAdded:Connect(function()
+    teleportEnabled = false
+    tpButtonActive = false
+    TeleportPEButton.Text = "OFF"
+    TeleportPEButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    MobileTPButton.Visible = false
+    MobileTPButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+end)
+
+--=======================================================================================
+--TITLE PLAYER
 local HomeFrame = sections["Player"]
 
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 220, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 60)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "NO CLIP"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
+local Title_tp_pc = Instance.new("TextLabel", HomeFrame)
+Title_tp_pc.Size = UDim2.new(0, 170, 0, 30)
+Title_tp_pc.Position = UDim2.new(0, 10, 0, 110)
+Title_tp_pc.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title_tp_pc.TextColor3 = Color3.new(1, 1, 1)
+Title_tp_pc.Text = "TP KEY"
+Title_tp_pc.TextScaled = true
+Title_tp_pc.Font = Enum.Font.SourceSansBold
+Title_tp_pc.BorderSizePixel = 2
+Title_tp_pc.BorderColor3 = Color3.new(255, 255, 255)
+
+local Title_tp_pe = Instance.new("TextLabel", HomeFrame)
+Title_tp_pe.Size = UDim2.new(0, 220, 0, 30)
+Title_tp_pe.Position = UDim2.new(0, 10, 0, 160)
+Title_tp_pe.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title_tp_pe.TextColor3 = Color3.new(1, 1, 1)
+Title_tp_pe.Text = "TP KEY"
+Title_tp_pe.TextScaled = true
+Title_tp_pe.Font = Enum.Font.SourceSansBold
+Title_tp_pe.BorderSizePixel = 2
+Title_tp_pe.BorderColor3 = Color3.new(255, 255, 255)
+
+local Titlencl = Instance.new("TextLabel", HomeFrame)
+Titlencl.Size = UDim2.new(0, 220, 0, 30)
+Titlencl.Position = UDim2.new(0, 10, 0, 60)
+Titlencl.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Titlencl.TextColor3 = Color3.new(1, 1, 1)
+Titlencl.Text = "NO CLIP"
+Titlencl.TextScaled = true
+Titlencl.Font = Enum.Font.SourceSansBold
+Titlencl.BorderSizePixel = 2
+Titlencl.BorderColor3 = Color3.new(255, 255, 255)
