@@ -345,4 +345,41 @@ return function(sections)
             MobileTPButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         end)
     end
+
+        --IFN JUMP======================================================================================================
+    do
+        local HomeFrame = sections["Player"]
+        local player = game.Players.LocalPlayer
+        local userInputService = game:GetService("UserInputService")
+
+        local infiniteJumpEnabled = false
+        local jumpConnection
+
+        -- Nút bật/tắt Infinite Jump
+        local jumpButton = Instance.new("TextButton", HomeFrame)
+        jumpButton.Size = UDim2.new(0, 90, 0, 30)
+        jumpButton.Position = UDim2.new(0, 240, 0, 210)
+        jumpButton.Text = "OFF"
+        jumpButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        jumpButton.TextColor3 = Color3.new(1, 1, 1)
+        jumpButton.Font = Enum.Font.SourceSansBold
+        jumpButton.TextSize = 30
+
+        -- Kết nối sự kiện nhảy
+        jumpConnection = userInputService.JumpRequest:Connect(function()
+            if infiniteJumpEnabled then
+                local char = player.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end
+        end)
+
+        -- Xử lý bật/tắt
+        jumpButton.MouseButton1Click:Connect(function()
+            infiniteJumpEnabled = not infiniteJumpEnabled
+            jumpButton.Text = infiniteJumpEnabled and "ON" or "OFF"
+            jumpButton.BackgroundColor3 = infiniteJumpEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(250, 50, 50)
+        end)
+    end
 end
