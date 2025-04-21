@@ -1,10 +1,8 @@
 return function(sections)
     local HomeFrame = sections["Status"]
 
-        --MOON---------------------------------------------------------------------------------------------------------f
+        --MOON---------------------------------------------------------------------------------------------------------
     do
-        local Lighting = game:GetService("Lighting")
-
         -- Frame chứa ảnh mặt trăng
         local moonImage = Instance.new("ImageLabel")
         moonImage.Name = "MoonImage"
