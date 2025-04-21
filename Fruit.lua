@@ -103,3 +103,4 @@ return function(sections)
             toggleFruitESP(fruitESPEnabled)
         end)
     end
+end
