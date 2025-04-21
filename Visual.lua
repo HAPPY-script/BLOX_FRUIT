@@ -222,7 +222,7 @@ return function(sections)
         local lightEnabled = false
 
         -- Tạo nút Light
-        local lightButton = Instance.new("TextButton", VisualFrame)
+        local lightButton = Instance.new("TextButton", HomeFrame)
         lightButton.Size = UDim2.new(0, 90, 0, 30)
         lightButton.Position = UDim2.new(0, 240, 0, 110)
         lightButton.Text = "OFF"
