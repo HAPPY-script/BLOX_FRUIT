@@ -1,8 +1,9 @@
 return function(sections)
     local HomeFrame = sections["Player"]
 
-        --SPEED================================================================================================
+        --SPEED================================================================================================f
     do
+        local SpeedFrame = sections["Player"]
         local player = game.Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
         local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
