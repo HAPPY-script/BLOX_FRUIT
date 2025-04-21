@@ -1,3 +1,12 @@
+local sections = {
+    ["Raid"] = Instance.new("Frame"),
+    ["Home"] = Instance.new("Frame"),
+    ["Visual"] = Instance.new("Frame"),
+    ["Fruit"] = Instance.new("Frame"),
+    ["Player"] = Instance.new("Frame"),
+    ["Status"] = Instance.new("Frame"),
+}
+
 --====================================================================
 -- RAID ---------------------------------------------------------
 do
