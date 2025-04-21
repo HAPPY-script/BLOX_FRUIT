@@ -323,20 +323,6 @@ task.spawn(function()
 	end
 end)
 
---title
-local HomeFrame = sections["Raid"]
-
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 220, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 10)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "AUTO RAID💀"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
-
 -------------------------------------------------------------------------------
 --FRAM LV
 local HomeFrame = sections["Home"]
@@ -1286,20 +1272,6 @@ spawn(function()
     end
 end)
 
---title
-local HomeFrame = sections["Home"]
-
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 220, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 10)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "AUTO FRAM LV🔼"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
-
 ---------------------------------------------------------------------------------
 --ESP player
 local HomeFrame = sections["Visual"]
@@ -1405,20 +1377,6 @@ espButton.MouseButton1Click:Connect(function()
     espButton.BackgroundColor3 = espEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
     toggleESP(espEnabled)
 end)
-
---title
-local HomeFrame = sections["Visual"]
-
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 220, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 10)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "ESP PLAYER👤"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
 
 --------------------------------------------------------------------------------------
 --ESP NPC
@@ -1528,20 +1486,6 @@ espButton.MouseButton1Click:Connect(function()
     toggleESP(espEnabled)
 end)
 
---title
-local HomeFrame = sections["Visual"]
-
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 220, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 60)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "ESP ENEMIES🧟"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
-
 ----------------------------------------------------------------------------------
 --LIGHT
 local VisualFrame = sections["Visual"]
@@ -1581,20 +1525,6 @@ lightButton.MouseButton1Click:Connect(function()
     lightButton.BackgroundColor3 = lightEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
     toggleLight(lightEnabled)
 end)
-
---title
-local HomeFrame = sections["Visual"]
-
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 220, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 110)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "LIGHT💡"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
 
 -----------------------------------------------------------------------------------
 --ESP FRUIT
@@ -1698,20 +1628,6 @@ espFruitButton.MouseButton1Click:Connect(function()
     espFruitButton.BackgroundColor3 = fruitESPEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
     toggleFruitESP(fruitESPEnabled)
 end)
-
---title
-local HomeFrame = sections["Fruit"]
-
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 220, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 10)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "ESP FRUIT🍇"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
 
 --------------------------------------------------------------------------------------
 --FRAM BONE
@@ -1922,20 +1838,6 @@ spawn(function()
     end
 end)
 
---title
-local HomeFrame = sections["Home"]
-
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 220, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 60)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "AUTO FRAM BONE🦴"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
-
 -----------------------------------------------------------------------------------------------
 --Player view
 local PlayerFrame = sections["Tracker"]
@@ -2092,20 +1994,6 @@ player.CharacterAdded:Connect(function(char)
 	humanoidRootPart = char:WaitForChild("HumanoidRootPart")
 end)
 
---title
-local HomeFrame = sections["Player"]
-
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 170, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 10)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "SPEED"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
-
 ---------------------------------------------------------------------------------
 --MOON
 local MoonFrame = sections["Status"]
@@ -2164,20 +2052,6 @@ end)
 -- Cập nhật lần đầu
 updateMoonImage()
 
---title
-local HomeFrame = sections["Status"]
-
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 220, 0, 80)
-Title.Position = UDim2.new(0, 10, 0, 10)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "Moon"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
-
 -------------------------------------------------------------------------------
 --COUNT PLAYER
 local HomeFrame = sections["Status"]
@@ -2225,20 +2099,6 @@ Players.PlayerRemoving:Connect(updatePlayerCount)
 
 -- Cập nhật ban đầu
 updatePlayerCount()
-
---title
-local HomeFrame = sections["Status"]
-
-local Title = Instance.new("TextLabel", HomeFrame)
-Title.Size = UDim2.new(0, 220, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 110)
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Text = "Player"
-Title.TextScaled = true
-Title.Font = Enum.Font.SourceSansBold
-Title.BorderSizePixel = 2
-Title.BorderColor3 = Color3.new(255, 255, 255)
 
 -------------------------------------------------------------------------------
 --NO CLIP
@@ -2508,39 +2368,177 @@ player.CharacterAdded:Connect(function()
     MobileTPButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
 end)
 
---=======================================================================================
---TITLE PLAYER
+--====================================================================
+--TITLE==================================================================
+--====================================================================
+--RAID---------------------------------------------------------
+local HomeFrame = sections["Raid"]
+
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "AUTO RAID💀"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+--HOME---------------------------------------------------------
+local HomeFrame = sections["Home"]
+
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "AUTO FRAM LV🔼"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+--auto fram bone
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 60)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "AUTO FRAM BONE🦴"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+--VISUAL---------------------------------------------------------
+--esp player
+local HomeFrame = sections["Visual"]
+
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "ESP PLAYER👤"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+--esp npc
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 60)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "ESP ENEMIES🧟"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+--light
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 110)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "LIGHT💡"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+--Fruit---------------------------------------------------------
+--esp fruit
+local HomeFrame = sections["Fruit"]
+
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "ESP FRUIT🍇"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+--Player---------------------------------------------------------
+--speed
 local HomeFrame = sections["Player"]
 
-local Title_tp_pc = Instance.new("TextLabel", HomeFrame)
-Title_tp_pc.Size = UDim2.new(0, 170, 0, 30)
-Title_tp_pc.Position = UDim2.new(0, 10, 0, 110)
-Title_tp_pc.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title_tp_pc.TextColor3 = Color3.new(1, 1, 1)
-Title_tp_pc.Text = "TP KEY"
-Title_tp_pc.TextScaled = true
-Title_tp_pc.Font = Enum.Font.SourceSansBold
-Title_tp_pc.BorderSizePixel = 2
-Title_tp_pc.BorderColor3 = Color3.new(255, 255, 255)
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 170, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "SPEED"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
 
-local Title_tp_pe = Instance.new("TextLabel", HomeFrame)
-Title_tp_pe.Size = UDim2.new(0, 220, 0, 30)
-Title_tp_pe.Position = UDim2.new(0, 10, 0, 160)
-Title_tp_pe.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title_tp_pe.TextColor3 = Color3.new(1, 1, 1)
-Title_tp_pe.Text = "TP KEY"
-Title_tp_pe.TextScaled = true
-Title_tp_pe.Font = Enum.Font.SourceSansBold
-Title_tp_pe.BorderSizePixel = 2
-Title_tp_pe.BorderColor3 = Color3.new(255, 255, 255)
+--tp key pc
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 170, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 110)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "TP KEY PC"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
 
-local Titlencl = Instance.new("TextLabel", HomeFrame)
-Titlencl.Size = UDim2.new(0, 220, 0, 30)
-Titlencl.Position = UDim2.new(0, 10, 0, 60)
-Titlencl.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Titlencl.TextColor3 = Color3.new(1, 1, 1)
-Titlencl.Text = "NO CLIP"
-Titlencl.TextScaled = true
-Titlencl.Font = Enum.Font.SourceSansBold
-Titlencl.BorderSizePixel = 2
-Titlencl.BorderColor3 = Color3.new(255, 255, 255)
+--tp button pe
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 160)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "TP BUTTON PE"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+--no clip
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 60)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "NO CLIP"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+--Status---------------------------------------------------------
+--Moon
+local HomeFrame = sections["Status"]
+
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 80)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "Moon"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
+
+--count player
+local Title = Instance.new("TextLabel", HomeFrame)
+Title.Size = UDim2.new(0, 220, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 110)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "Player"
+Title.TextScaled = true
+Title.Font = Enum.Font.SourceSansBold
+Title.BorderSizePixel = 2
+Title.BorderColor3 = Color3.new(255, 255, 255)
