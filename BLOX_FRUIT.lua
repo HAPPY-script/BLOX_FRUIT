@@ -1996,13 +1996,13 @@ end)
 
 ---------------------------------------------------------------------------------
 --MOON
-local MoonFrame = sections["Status"]
+local HomeFrame = sections["Status"]
 local Lighting = game:GetService("Lighting")
 
 -- Frame chứa ảnh mặt trăng
 local moonImage = Instance.new("ImageLabel")
 moonImage.Name = "MoonImage"
-moonImage.Parent = MoonFrame
+moonImage.Parent = HomeFrame
 moonImage.Size = UDim2.new(0, 90, 0, 90)
 moonImage.Position = UDim2.new(0, 240, 0, 10)
 moonImage.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
