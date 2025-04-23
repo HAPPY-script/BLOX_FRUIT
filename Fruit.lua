@@ -107,4 +107,4 @@ end
 
 wait(1)
 
-print(Fruit tad SUCCESS✅)
+print("Fruit tad SUCCESS✅")
