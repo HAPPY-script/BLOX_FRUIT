@@ -4,100 +4,127 @@ return function(sections)
         --Select tool--------------------------------------------------------------------------------------------------------------
     do
         local HomeFrame = sections["Home"]
-        local player = game.Players.LocalPlayer
-        local toolToUse = nil
-        local loopEquip = false
-        local equipConnection
-        local wasLoopingBeforeDeath = false
+        local Players = game:GetService("Players")
+        local player  = Players.LocalPlayer
+        local loopEquip      = false          -- đang bật / tắt
+        local wasLoopRunning = false          -- lưu trạng thái trước khi chết
+        local savedToolName  = nil            -- nhớ tên tool đã chọn
+        local equipThread    = nil            -- thread lặp cầm tool
 
-        -- Nút chọn Tool đang cầm
-        local selectToolButton = Instance.new("TextButton", HomeFrame)
-        selectToolButton.Size = UDim2.new(0, 220, 0, 30)
-        selectToolButton.Position = UDim2.new(0, 10, 0, 10)
-        selectToolButton.Text = "SELECT"
-        selectToolButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        selectToolButton.TextColor3 = Color3.new(1, 1, 1)
-        selectToolButton.Font = Enum.Font.SourceSansBold
-        selectToolButton.TextSize = 30
+        -- ▶ tạo nút chọn tool
+        local btnSelect = Instance.new("TextButton", HomeFrame)
+        btnSelect.Size  = UDim2.new(0,220,0,30)
+        btnSelect.Position = UDim2.new(0,10,0,10)
+        btnSelect.Text  = "SELECT"
+        btnSelect.BackgroundColor3 = Color3.fromRGB(80,80,80)
+        btnSelect.TextColor3 = Color3.new(1,1,1)
+        btnSelect.Font = Enum.Font.SourceSansBold
+        btnSelect.TextSize = 30
 
-        -- Nút bật/tắt giữ tool
-        local toggleLoopButton = Instance.new("TextButton", HomeFrame)
-        toggleLoopButton.Size = UDim2.new(0, 90, 0, 30)
-        toggleLoopButton.Position = UDim2.new(0, 240, 0, 10)
-        toggleLoopButton.Text = "OFF"
-        toggleLoopButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        toggleLoopButton.TextColor3 = Color3.new(1, 1, 1)
-        toggleLoopButton.Font = Enum.Font.SourceSansBold
-        toggleLoopButton.TextSize = 30
+        -- ▶ nút bật / tắt
+        local btnToggle = Instance.new("TextButton", HomeFrame)
+        btnToggle.Size  = UDim2.new(0,90,0,30)
+        btnToggle.Position = UDim2.new(0,240,0,10)
+        btnToggle.Text  = "OFF"
+        btnToggle.BackgroundColor3 = Color3.fromRGB(255,50,50)
+        btnToggle.TextColor3 = Color3.new(1,1,1)
+        btnToggle.Font = Enum.Font.SourceSansBold
+        btnToggle.TextSize = 30
 
-        -- Hàm bật giữ tool
-        local function startEquipLoop()
-            if toolToUse then
-                equipConnection = task.spawn(function()
-                    while loopEquip and toolToUse do
-                        if not toolToUse.Parent or toolToUse.Parent ~= player.Character then
-                            toolToUse.Parent = player.Backpack
-                            wait(0.1)
-                            toolToUse.Parent = player.Character
+        -- Hàm tìm tool theo tên trong Character hoặc Backpack
+        local function findTool(name)
+            if not name then return nil end
+            local char = player.Character
+            if char then
+                local tool = char:FindFirstChild(name)
+                if tool and tool:IsA("Tool") then return tool end
+            end
+            local bp = player:FindFirstChildOfClass("Backpack")
+            return bp and bp:FindFirstChild(name)
+        end
+
+        -- Hàm khởi động vòng lặp cầm tool liên tục
+        local function startLoop()
+            if equipThread or not savedToolName then return end
+            equipThread = task.spawn(function()
+                while loopEquip do
+                    local tool = findTool(savedToolName)
+                    if tool and player.Character then
+                        if tool.Parent ~= player.Character then
+                            tool.Parent = player.Character
                         end
-                        wait(0.5)
                     end
-                end)
+                    task.wait(0.5)
+                end
+            end)
+        end
+
+        -- Hàm dừng vòng lặp
+        local function stopLoop()
+            if equipThread then
+                task.cancel(equipThread)
+                equipThread = nil
             end
         end
 
-        -- Hàm tắt giữ tool
-        local function stopEquipLoop()
-            if equipConnection then
-                task.cancel(equipConnection)
-                equipConnection = nil
-            end
-        end
-
-        -- Nút chọn Tool đang cầm
-        selectToolButton.MouseButton1Click:Connect(function()
-            local character = player.Character
-            if character then
-                for _, tool in pairs(character:GetChildren()) do
+        -- Chọn tool đang cầm
+        btnSelect.MouseButton1Click:Connect(function()
+            local char = player.Character
+            if char then
+                for _, tool in ipairs(char:GetChildren()) do
                     if tool:IsA("Tool") then
-                        toolToUse = tool
-                        selectToolButton.Text = "Selected: " .. tool.Name
+                        savedToolName = tool.Name
+                        btnSelect.Text = "Selected: "..savedToolName
                         break
                     end
                 end
             end
         end)
 
-        -- Nút bật/tắt giữ tool
-        toggleLoopButton.MouseButton1Click:Connect(function()
+        -- Bật / tắt giữ tool
+        btnToggle.MouseButton1Click:Connect(function()
             loopEquip = not loopEquip
-            toggleLoopButton.Text = loopEquip and "ON" or "OFF"
-            toggleLoopButton.BackgroundColor3 = loopEquip and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+            btnToggle.Text = loopEquip and "ON" or "OFF"
+            btnToggle.BackgroundColor3 = loopEquip and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,50,50)
 
-            stopEquipLoop()
-            if loopEquip then
-                startEquipLoop()
-            end
+            stopLoop()
+            if loopEquip then startLoop() end
         end)
 
-        -- Dừng khi chết
-        player.CharacterAdded:Connect(function(char)
-            char:WaitForChild("Humanoid").Died:Connect(function()
-                if loopEquip then
-                    wasLoopingBeforeDeath = true
-                    stopEquipLoop()
-                else
-                    wasLoopingBeforeDeath = false
-                end
+        -- Xử lý khi nhân vật chết
+        local function onCharacter(char)
+            local hum = char:WaitForChild("Humanoid")
+            hum.Died:Connect(function()
+                wasLoopRunning = loopEquip          -- ghi nhớ trạng thái
+                loopEquip = false                   -- tắt hẳn
+                stopLoop()
             end)
-        end)
+        end
+        if player.Character then onCharacter(player.Character) end
+        player.CharacterAdded:Connect(onCharacter)
 
-        -- Tiếp tục lại sau khi hồi sinh nếu đang bật
+        -- Khi hồi sinh hoàn tất
         player.CharacterAdded:Connect(function(char)
-            char:WaitForChild("HumanoidRootPart")
-            task.wait(1) -- đợi nhân vật hồi sinh đầy đủ
-            if wasLoopingBeforeDeath and loopEquip then
-                startEquipLoop()
+            char:WaitForChild("HumanoidRootPart")   -- đợi load xong
+            task.wait(0.5)
+
+            -- tự tìm lại tool cùng tên
+            if savedToolName then
+                local tool = findTool(savedToolName)
+                if tool then tool.Parent = char end
+            end
+
+            -- tự bật lại nếu trước đó đang chạy
+            if wasLoopRunning and savedToolName then
+                loopEquip = true
+                btnToggle.Text = "ON"
+                btnToggle.BackgroundColor3 = Color3.fromRGB(0,255,0)
+                startLoop()
+            else
+                -- đảm bảo nút hiển thị OFF
+                loopEquip = false
+                btnToggle.Text = "OFF"
+                btnToggle.BackgroundColor3 = Color3.fromRGB(255,50,50)
             end
         end)
     end
