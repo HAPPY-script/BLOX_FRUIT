@@ -1,4 +1,4 @@
-local FEATURE_NAME = "GUI BLOX FRUIT"
+local FEATURE_NAME = "BLOX FRUIT hub"
 
 local ok = pcall(function()
 
