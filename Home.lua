@@ -8,6 +8,7 @@ return function(sections)
         local toolToUse = nil
         local loopEquip = false
         local equipConnection
+        local wasLoopingBeforeDeath = false
 
         -- Nút chọn Tool đang cầm
         local selectToolButton = Instance.new("TextButton", HomeFrame)
@@ -29,42 +30,75 @@ return function(sections)
         toggleLoopButton.Font = Enum.Font.SourceSansBold
         toggleLoopButton.TextSize = 30
 
+        -- Hàm bật giữ tool
+        local function startEquipLoop()
+            if toolToUse then
+                equipConnection = task.spawn(function()
+                    while loopEquip and toolToUse do
+                        if not toolToUse.Parent or toolToUse.Parent ~= player.Character then
+                            toolToUse.Parent = player.Backpack
+                            wait(0.1)
+                            toolToUse.Parent = player.Character
+                        end
+                        wait(0.5)
+                    end
+                end)
+            end
+        end
+
+        -- Hàm tắt giữ tool
+        local function stopEquipLoop()
+            if equipConnection then
+                task.cancel(equipConnection)
+                equipConnection = nil
+            end
+        end
+
         -- Nút chọn Tool đang cầm
         selectToolButton.MouseButton1Click:Connect(function()
-        	local character = player.Character
-        	if character then
-        		for _, tool in pairs(character:GetChildren()) do
-        			if tool:IsA("Tool") then
-        				toolToUse = tool
-        				selectToolButton.Text = "Selected: " .. tool.Name
-        				break
-        			end
-        		end
-        	end
+            local character = player.Character
+            if character then
+                for _, tool in pairs(character:GetChildren()) do
+                    if tool:IsA("Tool") then
+                        toolToUse = tool
+                        selectToolButton.Text = "Selected: " .. tool.Name
+                        break
+                    end
+                end
+            end
         end)
 
         -- Nút bật/tắt giữ tool
         toggleLoopButton.MouseButton1Click:Connect(function()
-        	loopEquip = not loopEquip
-        	toggleLoopButton.Text = loopEquip and "ON" or "OFF"
-        	toggleLoopButton.BackgroundColor3 = loopEquip and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+            loopEquip = not loopEquip
+            toggleLoopButton.Text = loopEquip and "ON" or "OFF"
+            toggleLoopButton.BackgroundColor3 = loopEquip and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
 
-        	if loopEquip and toolToUse then
-        		equipConnection = task.spawn(function()
-        			while loopEquip and toolToUse do
-        				if not toolToUse.Parent or toolToUse.Parent ~= player.Character then
-        					toolToUse.Parent = player.Backpack
-        					wait(0.1)
-        					toolToUse.Parent = player.Character
-        				end
-        				wait(0.5)
-        			end
-        		end)
-        	else
-        		if equipConnection then
-        			task.cancel(equipConnection)
-        		end
-        	end
+            stopEquipLoop()
+            if loopEquip then
+                startEquipLoop()
+            end
+        end)
+
+        -- Dừng khi chết
+        player.CharacterAdded:Connect(function(char)
+            char:WaitForChild("Humanoid").Died:Connect(function()
+                if loopEquip then
+                    wasLoopingBeforeDeath = true
+                    stopEquipLoop()
+                else
+                    wasLoopingBeforeDeath = false
+                end
+            end)
+        end)
+
+        -- Tiếp tục lại sau khi hồi sinh nếu đang bật
+        player.CharacterAdded:Connect(function(char)
+            char:WaitForChild("HumanoidRootPart")
+            task.wait(1) -- đợi nhân vật hồi sinh đầy đủ
+            if wasLoopingBeforeDeath and loopEquip then
+                startEquipLoop()
+            end
         end)
     end
 
