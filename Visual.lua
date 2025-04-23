@@ -1,3 +1,7 @@
+local FEATURE_NAME = "Visual tad"
+
+local ok = pcall(function()
+
 return function(sections)
     local HomeFrame = sections["Visual"]
  
@@ -254,4 +258,11 @@ return function(sections)
             toggleLight(lightEnabled)
         end)
     end
+end
+
+--=========DEBUG===========================================================
+end)
+
+if ok then
+    print(FEATURE_NAME .. " SUCCESS✅")
 end
