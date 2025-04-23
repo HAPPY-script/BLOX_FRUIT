@@ -1,3 +1,7 @@
+local FEATURE_NAME = "GUI BLOX FRUIT"
+
+local ok = pcall(function()
+
 game.StarterGui:SetCore("SendNotification", {
     Title = "Blox Fruit";
     Text = "Create by HAPPY script";
@@ -314,3 +318,10 @@ FruitPage(sections)
 --Raid tad
 local RaidPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Raid.lua"))()
 RaidPage(sections)
+
+--==========DEBUG========================================================================
+end)
+
+if ok then
+    print(FEATURE_NAME .. " SUCCESS✅")
+end
