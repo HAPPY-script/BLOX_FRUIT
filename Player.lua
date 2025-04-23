@@ -386,4 +386,4 @@ end
 
 wait(1)
 
-print(Player tad SUCCESS✅)
+print("Player tad SUCCESS✅")
