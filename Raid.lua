@@ -1,3 +1,7 @@
+local FEATURE_NAME = "Raid tad"
+
+local ok = pcall(function()
+
 return function(sections)
     local HomeFrame = sections["Raid"]
 
@@ -133,4 +137,11 @@ return function(sections)
             end
         end)
     end
+end
+
+--=========DEBUG===========================================================
+end)
+
+if ok then
+    print(FEATURE_NAME .. " SUCCESS✅")
 end
