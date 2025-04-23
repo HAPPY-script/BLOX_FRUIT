@@ -1,3 +1,7 @@
+local FEATURE_NAME = "Home tad"
+
+local ok = pcall(function()
+
 return function(sections)
     local HomeFrame = sections["Home"]
 
@@ -1314,4 +1318,10 @@ return function(sections)
             end
         end)
     end
+end
+
+end)
+
+if ok then
+    print(FEATURE_NAME .. " SUCCESS✅")
 end
