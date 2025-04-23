@@ -137,4 +137,4 @@ end
 
 wait(1)
 
-print(Raid tad SUCCESS✅)
+print("Raid tad SUCCESS✅")
