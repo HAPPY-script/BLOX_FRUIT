@@ -1,6 +1,73 @@
 return function(sections)
     local HomeFrame = sections["Home"]
 
+        --Select tool--------------------------------------------------------------------------------------------------------------
+    do
+        local HomeFrame = sections["Home"]
+        local player = game.Players.LocalPlayer
+        local toolToUse = nil
+        local loopEquip = false
+        local equipConnection
+
+        -- Nút chọn Tool đang cầm
+        local selectToolButton = Instance.new("TextButton", HomeFrame)
+        selectToolButton.Size = UDim2.new(0, 220, 0, 30)
+        selectToolButton.Position = UDim2.new(0, 10, 0, 10)
+        selectToolButton.Text = "SELECT"
+        selectToolButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        selectToolButton.TextColor3 = Color3.new(1, 1, 1)
+        selectToolButton.Font = Enum.Font.SourceSansBold
+        selectToolButton.TextSize = 30
+
+        -- Nút bật/tắt giữ tool
+        local toggleLoopButton = Instance.new("TextButton", HomeFrame)
+        toggleLoopButton.Size = UDim2.new(0, 90, 0, 30)
+        toggleLoopButton.Position = UDim2.new(0, 240, 0, 10)
+        toggleLoopButton.Text = "OFF"
+        toggleLoopButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        toggleLoopButton.TextColor3 = Color3.new(1, 1, 1)
+        toggleLoopButton.Font = Enum.Font.SourceSansBold
+        toggleLoopButton.TextSize = 30
+
+        -- Nút chọn Tool đang cầm
+        selectToolButton.MouseButton1Click:Connect(function()
+        	local character = player.Character
+        	if character then
+        		for _, tool in pairs(character:GetChildren()) do
+        			if tool:IsA("Tool") then
+        				toolToUse = tool
+        				selectToolButton.Text = "Selected: " .. tool.Name
+        				break
+        			end
+        		end
+        	end
+        end)
+
+        -- Nút bật/tắt giữ tool
+        toggleLoopButton.MouseButton1Click:Connect(function()
+        	loopEquip = not loopEquip
+        	toggleLoopButton.Text = loopEquip and "ON" or "OFF"
+        	toggleLoopButton.BackgroundColor3 = loopEquip and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+
+        	if loopEquip and toolToUse then
+        		equipConnection = task.spawn(function()
+        			while loopEquip and toolToUse do
+        				if not toolToUse.Parent or toolToUse.Parent ~= player.Character then
+        					toolToUse.Parent = player.Backpack
+        					wait(0.1)
+        					toolToUse.Parent = player.Character
+        				end
+        				wait(0.5)
+        			end
+        		end)
+        	else
+        		if equipConnection then
+        			task.cancel(equipConnection)
+        		end
+        	end
+        end)
+    end
+
         --FRAM LV--------------------------------------------------------------------------------------------------------------
     do
         local Players = game:GetService("Players")
@@ -18,7 +85,7 @@ return function(sections)
         -- Nút bật/tắt Auto Farm
         local autoFarmBtn = Instance.new("TextButton")
         autoFarmBtn.Size = UDim2.new(0, 90, 0, 30)
-        autoFarmBtn.Position = UDim2.new(0, 240, 0, 10)
+        autoFarmBtn.Position = UDim2.new(0, 240, 0, 60)
         autoFarmBtn.Text = "OFF"
         autoFarmBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         autoFarmBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -967,7 +1034,7 @@ return function(sections)
         -- Nút bật/tắt Auto Farm
         local autoFarmBtn = Instance.new("TextButton")
         autoFarmBtn.Size = UDim2.new(0, 90, 0, 30)
-        autoFarmBtn.Position = UDim2.new(0, 240, 0, 60)
+        autoFarmBtn.Position = UDim2.new(0, 240, 0, 110)
         autoFarmBtn.Text = "OFF"
         autoFarmBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         autoFarmBtn.TextColor3 = Color3.new(1, 1, 1)
