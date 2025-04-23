@@ -1,3 +1,7 @@
+local FEATURE_NAME = "Player tad"
+
+local ok = pcall(function()
+
 return function(sections)
     local HomeFrame = sections["Player"]
 
@@ -382,4 +386,11 @@ return function(sections)
             jumpButton.BackgroundColor3 = infiniteJumpEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(250, 50, 50)
         end)
     end
+end
+
+--=========DEBUG===========================================================
+end)
+
+if ok then
+    print(FEATURE_NAME .. " SUCCESS✅")
 end
