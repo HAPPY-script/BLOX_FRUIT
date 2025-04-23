@@ -317,4 +317,4 @@ RaidPage(sections)
 
 wait(1)
 
-print(Blox Fruit hub SUCCESS✅)
+print("Blox Fruit hub SUCCESS✅")
