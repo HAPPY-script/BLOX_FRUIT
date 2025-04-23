@@ -258,4 +258,4 @@ end
 
 wait(1)
 
-print(Visual tad SUCCESS✅)
+print("Visual tad SUCCESS✅")
