@@ -24,7 +24,7 @@ return function(sections)
 
         local TitleHome = Instance.new("TextLabel", HomeFrame)
         TitleHome.Size = UDim2.new(0, 220, 0, 30)
-        TitleHome.Position = UDim2.new(0, 10, 0, 10)
+        TitleHome.Position = UDim2.new(0, 10, 0, 60)
         TitleHome.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleHome.TextColor3 = Color3.new(1, 1, 1)
         TitleHome.Text = "AUTO FRAM LV🔼"
@@ -35,7 +35,7 @@ return function(sections)
 
         local TitleBone = Instance.new("TextLabel", HomeFrame)
         TitleBone.Size = UDim2.new(0, 220, 0, 30)
-        TitleBone.Position = UDim2.new(0, 10, 0, 60)
+        TitleBone.Position = UDim2.new(0, 10, 0, 110)
         TitleBone.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleBone.TextColor3 = Color3.new(1, 1, 1)
         TitleBone.Text = "AUTO FRAM BONE🦴"
