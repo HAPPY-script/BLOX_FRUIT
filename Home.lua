@@ -1075,34 +1075,34 @@ return function(sections)
                     acceptQuest(zone) -- không thấy tăng Beli -> nhiệm vụ lỗi -> nhận lại
                 end
             end
+        end)
 
-            -- Tắt khi chết, bật lại sau khi hồi sinh nếu trước đó đang bật
-            local wasRunningBeforeDeath = false
+        -- Tắt khi chết, bật lại sau khi hồi sinh nếu trước đó đang bật
+        local wasRunningBeforeDeath = false
 
-            player.CharacterAdded:Connect(function(char)
-                char:WaitForChild("Humanoid").Died:Connect(function()
-                    -- Khi nhân vật chết, nếu đang Auto Farm thì lưu lại và tắt
-                    if running then
-                        wasRunningBeforeDeath = true
-                        running = false
-                        autoFarmBtn.Text = "OFF"
-                        autoFarmBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-                    else
-                        wasRunningBeforeDeath = false
-                    end
-                end)
-            end)
-
-            player.CharacterAdded:Connect(function(char)
-                char:WaitForChild("HumanoidRootPart")
-                task.wait(1) -- đợi nhân vật hồi sinh hoàn toàn
-
-                if wasRunningBeforeDeath then
-                    running = true
-                    autoFarmBtn.Text = "ON"
-                    autoFarmBtn.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
+        player.CharacterAdded:Connect(function(char)
+            char:WaitForChild("Humanoid").Died:Connect(function()
+                -- Khi nhân vật chết, nếu đang Auto Farm thì lưu lại và tắt
+                if running then
+                    wasRunningBeforeDeath = true
+                    running = false
+                    autoFarmBtn.Text = "OFF"
+                    autoFarmBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+                else
+                    wasRunningBeforeDeath = false
                 end
             end)
+        end)
+
+        player.CharacterAdded:Connect(function(char)
+            char:WaitForChild("HumanoidRootPart")
+            task.wait(1) -- đợi nhân vật hồi sinh hoàn toàn
+
+            if wasRunningBeforeDeath then
+                running = true
+                autoFarmBtn.Text = "ON"
+                autoFarmBtn.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
+            end
         end)
     end
 
