@@ -1,3 +1,7 @@
+local FEATURE_NAME = "Status tad"
+
+local ok = pcall(function()
+
 return function(sections)
     local HomeFrame = sections["Status"]
 
@@ -103,4 +107,11 @@ return function(sections)
         -- Cập nhật ban đầu
         updatePlayerCount()
     end
+end
+
+--=========DEBUG===========================================================
+end)
+
+if ok then
+    print(FEATURE_NAME .. " SUCCESS✅")
 end
