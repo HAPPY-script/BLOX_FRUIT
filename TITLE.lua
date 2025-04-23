@@ -189,4 +189,4 @@ end
 
 wait(1)
 
-print(TITLE SUCCESS✅)
+print("TITLE SUCCESS✅")
