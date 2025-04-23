@@ -107,4 +107,4 @@ end
 
 wait(1)
 
-print(Status tad SUCCESS✅)
+print("Status tad SUCCESS✅")
