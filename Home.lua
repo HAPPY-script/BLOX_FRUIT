@@ -1318,4 +1318,4 @@ end
 
 wait(1)
 
-print(Home tad SUCCESS✅)
+print("Home tad SUCCESS✅")
