@@ -1,3 +1,7 @@
+local FEATURE_NAME = "Title tad"
+
+local ok = pcall(function()
+
 return function(sections)
     local HomeFrame = sections["Raid"]
 
@@ -185,4 +189,11 @@ return function(sections)
         TitleCount.BorderSizePixel = 2
         TitleCount.BorderColor3 = Color3.new(255, 255, 255)
     end
+end
+
+--=========DEBUG===========================================================
+end)
+
+if ok then
+    print(FEATURE_NAME .. " SUCCESS✅")
 end
