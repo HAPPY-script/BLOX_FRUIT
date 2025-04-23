@@ -1,7 +1,3 @@
-local FEATURE_NAME = "Player tad"
-
-local ok = pcall(function()
-
 return function(sections)
     local HomeFrame = sections["Player"]
 
@@ -388,9 +384,6 @@ return function(sections)
     end
 end
 
---=========DEBUG===========================================================
-end)
+wait(1)
 
-if ok then
-    print(FEATURE_NAME .. " SUCCESS✅")
-end
+print(Player tad SUCCESS✅)
