@@ -254,8 +254,8 @@ return function(sections)
             toggleLight(lightEnabled)
         end)
     end
+
+    wait(1)
+
+    print("Visual tad SUCCESS✅")
 end
-
-wait(1)
-
-print("Visual tad SUCCESS✅")
