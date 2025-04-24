@@ -106,5 +106,5 @@ return function(sections)
 
     wait(1)
 
-    print("TITLE SUCCESS✅")
+    print("Fruit tad SUCCESS✅")
 end
