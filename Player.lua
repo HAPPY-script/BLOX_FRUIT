@@ -382,8 +382,8 @@ return function(sections)
             jumpButton.BackgroundColor3 = infiniteJumpEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(250, 50, 50)
         end)
     end
+
+    wait(1)
+
+    print("Player tad SUCCESS✅")
 end
-
-wait(1)
-
-print("Player tad SUCCESS✅")
