@@ -186,7 +186,7 @@ return function(sections)
         TitleCount.BorderColor3 = Color3.new(255, 255, 255)
     end
 
-    wait(1)
+    wait(0.2)
 
     print("TITLE SUCCESS✅")
 end
