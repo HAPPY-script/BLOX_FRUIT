@@ -103,8 +103,8 @@ return function(sections)
         -- Cập nhật ban đầu
         updatePlayerCount()
     end
+
+    wait(1)
+
+    print("Status tad SUCCESS✅")
 end
-
-wait(1)
-
-print("Status tad SUCCESS✅")
