@@ -315,6 +315,6 @@ FruitPage(sections)
 local RaidPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Raid.lua"))()
 RaidPage(sections)
 
-wait(1)
+wait(0.2)
 
 print("Blox Fruit hub SUCCESS✅")
