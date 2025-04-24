@@ -104,7 +104,7 @@ return function(sections)
         updatePlayerCount()
     end
 
-    wait(1)
+    wait(0.2)
 
     print("Status tad SUCCESS✅")
 end
