@@ -185,8 +185,8 @@ return function(sections)
         TitleCount.BorderSizePixel = 2
         TitleCount.BorderColor3 = Color3.new(255, 255, 255)
     end
+
+    wait(1)
+
+    print("TITLE SUCCESS✅")
 end
-
-wait(1)
-
-print("TITLE SUCCESS✅")
