@@ -1342,8 +1342,8 @@ return function(sections)
             end
         end)
     end
+
+    wait(1)
+
+    print("Home tad SUCCESS✅")
 end
-
-wait(1)
-
-print("Home tad SUCCESS✅")
