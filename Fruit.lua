@@ -103,8 +103,8 @@ return function(sections)
             toggleFruitESP(fruitESPEnabled)
         end)
     end
+
+    wait(1)
+
+    print("TITLE SUCCESS✅")
 end
-
-wait(1)
-
-print("Fruit tad SUCCESS✅")
