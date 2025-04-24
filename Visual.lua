@@ -255,7 +255,7 @@ return function(sections)
         end)
     end
 
-    wait(1)
+    wait(0.2)
 
     print("Visual tad SUCCESS✅")
 end
