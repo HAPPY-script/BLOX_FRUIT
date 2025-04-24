@@ -1134,7 +1134,7 @@ return function(sections)
         -- Config vùng farm
         local FarmZones = {
             {
-                MinLevel = 2000,
+                MinLevel = 2050,
                 MaxLevel = 99999,
                 MobName = "Posessed Mummy",
                 FarmPos = Vector3.new(-9506.13, 172.14, 6157.09),
@@ -1144,7 +1144,7 @@ return function(sections)
                 RewardBeli = 13750
             },
             {
-                MinLevel = 1900,
+                MinLevel = 2025,
                 MaxLevel = 99999,
                 MobName = "Demonic Soul",
                 FarmPos = Vector3.new(-9506.13, 172.14, 6157.09),
@@ -1154,7 +1154,7 @@ return function(sections)
                 RewardBeli = 13500
             },
             {
-                MinLevel = 1800,
+                MinLevel = 2000,
                 MaxLevel = 99999,
                 MobName = "Living Zombie",
                 FarmPos = Vector3.new(-9506.13, 172.14, 6157.09),
@@ -1164,7 +1164,7 @@ return function(sections)
                 RewardBeli = 13250
             },
             {
-                MinLevel = 1700,
+                MinLevel = 1975,
                 MaxLevel = 99999,
                 MobName = "Reborn Skeleton",
                 FarmPos = Vector3.new(-9506.13, 172.14, 6157.09),
