@@ -994,7 +994,7 @@ return function(sections)
         -- Auto click bằng VirtualInputManager
         spawn(function()
             while true do
-                wait(0.5)
+                wait(0.2)
                 if running then
                     VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
                     VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
