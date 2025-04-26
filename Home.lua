@@ -1021,9 +1021,68 @@ return function(sections)
             return closest
         end
 
+        -- Phóng to bộ phận và làm mờ quái
+        local function enlargeMobParts(mob)
+            if not mob or not mob:IsA("Model") then return end
+
+            -- Đặt PrimaryPart nếu chưa có để gom lại
+            if not mob.PrimaryPart then
+                local hrp = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("Head")
+                if hrp then
+                    mob.PrimaryPart = hrp
+                end
+            end
+
+            -- Các part cần làm to
+            local partsToScale = {}
+            for _, part in pairs(mob:GetDescendants()) do
+                if part:IsA("BasePart") and (part.Name == "Head" or part.Name == "HumanoidRootPart" or part.Name == "Torso" or part.Name:find("Upper") or part.Name:find("Lower") or part.Name:find("Arm") or part.Name:find("Leg")) then
+                    table.insert(partsToScale, part)
+                end
+            end
+
+            -- Lưu kích thước gốc nếu chưa lưu
+            for _, part in ipairs(partsToScale) do
+                if not part:FindFirstChild("OriginalSize") then
+                    local originalSize = Instance.new("Vector3Value")
+                    originalSize.Name = "OriginalSize"
+                    originalSize.Value = part.Size
+                    originalSize.Parent = part
+                end
+            end
+
+            -- Vòng lặp liên tục duy trì việc to/mờ
+            task.spawn(function()
+                while mob and mob.Parent and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChildOfClass("Humanoid").Health > 0 do
+                    for _, part in ipairs(partsToScale) do
+                        if part and part.Parent then
+                            -- Scale to 50 lần kích thước ban đầu
+                            local originalSize = part:FindFirstChild("OriginalSize")
+                            if originalSize then
+                                part.Size = originalSize.Value * 55
+                            end
+                            -- Làm mờ
+                            part.Transparency = 0.9
+                            -- Vô hiệu hóa CanCollide để tránh đẩy tung mô hình
+                            part.CanCollide = false
+                        end
+                    end
+
+                    -- Gom mô hình lại vị trí cũ
+                    if mob.PrimaryPart then
+                        local currentPivot = mob:GetPivot()
+                        mob:PivotTo(currentPivot)
+                    end
+
+                    task.wait(0.5)
+                end
+            end)
+        end
+
         -- Theo quái
         local function followMob(mob)
             local hrp = player.Character:WaitForChild("HumanoidRootPart")
+            enlargeMobParts(mob) -- gọi hàm mới
             while mob and mob.Parent and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid").Health > 0 and running do
                 hrp.CFrame = CFrame.new(mob.HumanoidRootPart.Position + Vector3.new(0, 30, 0))
                 RunService.RenderStepped:Wait()
@@ -1258,9 +1317,68 @@ return function(sections)
             return closest
         end
 
+        -- Phóng to bộ phận và làm mờ quái
+        local function enlargeMobParts(mob)
+            if not mob or not mob:IsA("Model") then return end
+
+            -- Đặt PrimaryPart nếu chưa có để gom lại
+            if not mob.PrimaryPart then
+                local hrp = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("Head")
+                if hrp then
+                    mob.PrimaryPart = hrp
+                end
+            end
+
+            -- Các part cần làm to
+            local partsToScale = {}
+            for _, part in pairs(mob:GetDescendants()) do
+                if part:IsA("BasePart") and (part.Name == "Head" or part.Name == "HumanoidRootPart" or part.Name == "Torso" or part.Name:find("Upper") or part.Name:find("Lower") or part.Name:find("Arm") or part.Name:find("Leg")) then
+                    table.insert(partsToScale, part)
+                end
+            end
+
+            -- Lưu kích thước gốc nếu chưa lưu
+            for _, part in ipairs(partsToScale) do
+                if not part:FindFirstChild("OriginalSize") then
+                    local originalSize = Instance.new("Vector3Value")
+                    originalSize.Name = "OriginalSize"
+                    originalSize.Value = part.Size
+                    originalSize.Parent = part
+                end
+            end
+
+            -- Vòng lặp liên tục duy trì việc to/mờ
+            task.spawn(function()
+                while mob and mob.Parent and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChildOfClass("Humanoid").Health > 0 do
+                    for _, part in ipairs(partsToScale) do
+                        if part and part.Parent then
+                            -- Scale to 50 lần kích thước ban đầu
+                            local originalSize = part:FindFirstChild("OriginalSize")
+                            if originalSize then
+                                part.Size = originalSize.Value * 55
+                            end
+                            -- Làm mờ
+                            part.Transparency = 0.9
+                            -- Vô hiệu hóa CanCollide để tránh đẩy tung mô hình
+                            part.CanCollide = false
+                        end
+                    end
+
+                    -- Gom mô hình lại vị trí cũ
+                    if mob.PrimaryPart then
+                        local currentPivot = mob:GetPivot()
+                        mob:PivotTo(currentPivot)
+                    end
+
+                    task.wait(0.5)
+                end
+            end)
+        end
+
         -- Theo quái
         local function followMob(mob)
             local hrp = player.Character:WaitForChild("HumanoidRootPart")
+            enlargeMobParts(mob) -- gọi hàm mới
             while mob and mob.Parent and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid").Health > 0 and running do
                 hrp.CFrame = CFrame.new(mob.HumanoidRootPart.Position + Vector3.new(0, 30, 0))
                 RunService.RenderStepped:Wait()
