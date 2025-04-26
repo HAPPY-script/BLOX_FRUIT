@@ -29,7 +29,7 @@ return function(sections)
                     VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
                     VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
                 end
-                task.wait(0.5)
+                task.wait(0.2)
             end
         end)
 
@@ -88,10 +88,66 @@ return function(sections)
             return enemies
         end
 
+        -- Làm to và làm mờ quái
+        local function enlargeAndFadeEnemy(mob)
+            if not mob or not mob:IsA("Model") then return end
+
+            -- Đặt PrimaryPart nếu chưa có
+            if not mob.PrimaryPart then
+                local hrp = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("Head")
+                if hrp then
+                    mob.PrimaryPart = hrp
+                end
+            end
+
+            -- Tìm các bộ phận cần làm to
+            local partsToScale = {}
+            for _, part in pairs(mob:GetDescendants()) do
+                if part:IsA("BasePart") and (part.Name == "Head" or part.Name == "HumanoidRootPart" or part.Name == "Torso" or part.Name:find("Upper") or part.Name:find("Lower") or part.Name:find("Arm") or part.Name:find("Leg")) then
+                    table.insert(partsToScale, part)
+                end
+            end
+
+            -- Lưu kích thước gốc nếu chưa lưu
+            for _, part in ipairs(partsToScale) do
+                if not part:FindFirstChild("OriginalSize") then
+                    local originalSize = Instance.new("Vector3Value")
+                    originalSize.Name = "OriginalSize"
+                    originalSize.Value = part.Size
+                    originalSize.Parent = part
+                end
+            end
+
+            -- Vòng lặp giữ nguyên độ to/mờ
+            task.spawn(function()
+                while mob and mob.Parent and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChildOfClass("Humanoid").Health > 0 and running do
+                    for _, part in ipairs(partsToScale) do
+                        if part and part.Parent then
+                            local originalSize = part:FindFirstChild("OriginalSize")
+                            if originalSize then
+                                part.Size = originalSize.Value * 55 -- đổi thành 55 lần
+                            end
+                            part.Transparency = 0.9 -- mờ 90%
+                            part.CanCollide = false
+                        end
+                    end
+
+                    -- Gom lại để không lệch mô hình
+                    if mob.PrimaryPart then
+                        local pivot = mob:GetPivot()
+                        mob:PivotTo(pivot)
+                    end
+
+                    task.wait(0.5)
+                end
+            end)
+        end
+
         -- Theo dõi và đánh quái
         local function followEnemy(enemy)
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             if not hrpEnemy then return end
+    			enlargeAndFadeEnemy(enemy)
             while enemy:FindFirstChildOfClass("Humanoid") and enemy:FindFirstChildOfClass("Humanoid").Health > 0 and running do
                 if not hrp then break end
                 hrp.CFrame = CFrame.new(hrpEnemy.Position + Vector3.new(0, 30, 0))
