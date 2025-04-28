@@ -595,9 +595,9 @@ return function(sections)
             silentAimEnabled = false
             isAimHeld = false
             AimButton.Text = "OFF"
-            AimButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            AimButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
             MobileAimButton.Visible = false
-            MobileAimButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+            MobileAimButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         end)
     end
 
