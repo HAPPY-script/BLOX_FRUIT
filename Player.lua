@@ -383,6 +383,116 @@ return function(sections)
         end)
     end
 
+        --IFN JUMP======================================================================================================
+    do
+        local HomeFrame = sections["Player"]
+        local player = game.Players.LocalPlayer
+        local camera = workspace.CurrentCamera
+        local userInputService = game:GetService("UserInputService")
+        local runService = game:GetService("RunService")
+
+        local aimModEnabled = false
+        local selectedInput = Enum.KeyCode.F
+        local isKeyHeld = false
+        local waitingForKey = false
+
+        -- 🟢 Nút bật/tắt Aim Player
+        local AimModButton = Instance.new("TextButton", HomeFrame)
+        AimModButton.Size  = UDim2.new(0,90,0,30)
+        AimModButton.Position = UDim2.new(0,240,0,260)
+        AimModButton.Text  = "OFF"
+        AimModButton.BackgroundColor3 = Color3.fromRGB(255,50,50)
+        AimModButton.TextColor3 = Color3.fromRGB(255,255,255)
+        AimModButton.Font = Enum.Font.SourceSansBold
+        AimModButton.TextSize = 30
+
+        -- 🔵 Nút chọn phím Aim Player
+        local KeybindButton = Instance.new("TextButton", HomeFrame)
+        KeybindButton.Size = UDim2.new(0, 50, 0, 30)
+        KeybindButton.Position = UDim2.new(0, 190, 0, 260)
+        KeybindButton.Text = "Select\nkey"
+        KeybindButton.BackgroundColor3 = Color3.fromRGB(50, 50, 200)
+        KeybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+        -- 🔹 Khi bấm nút bật Aim
+        AimModButton.MouseButton1Click:Connect(function()
+            aimModEnabled = not aimModEnabled
+            AimModButton.Text = aimModEnabled and "ON" or "OFF"
+            AimModButton.BackgroundColor3 = aimModEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+        end)
+
+        -- 🔹 Khi bấm nút chọn phím
+        KeybindButton.MouseButton1Click:Connect(function()
+            KeybindButton.Text = "Select key..."
+            waitingForKey = true
+        end)
+
+        -- 🔹 Bắt input
+        userInputService.InputBegan:Connect(function(input, gameProcessed)
+            if waitingForKey then
+                if input.UserInputType == Enum.UserInputType.Keyboard or input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 then
+                    selectedInput = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode or input.UserInputType
+                    KeybindButton.Text = "Select key:\n" .. (input.KeyCode.Name or tostring(input.UserInputType.Name))
+                    waitingForKey = false
+                end
+            else
+                if input.KeyCode == selectedInput or input.UserInputType == selectedInput then
+                    isKeyHeld = true
+                end
+            end
+        end)
+
+        userInputService.InputEnded:Connect(function(input)
+            if input.KeyCode == selectedInput or input.UserInputType == selectedInput then
+                isKeyHeld = false
+            end
+        end)
+
+        -- 🔹 **Tìm người chơi gần nhất**
+        local function GetClosestPlayerHead()
+            local closestHead = nil
+            local closestDistance = math.huge
+            local crosshair = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+            local maxRadius = 200
+
+            for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+                if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Head") then
+                    local head = otherPlayer.Character.Head
+                    local screenPoint, onScreen = camera:WorldToViewportPoint(head.Position)
+                    if onScreen then
+                        local screenPos = Vector2.new(screenPoint.X, screenPoint.Y)
+                        local screenDistance = (screenPos - crosshair).magnitude
+                        if screenDistance < closestDistance and screenDistance <= maxRadius then
+                            closestDistance = screenDistance
+                            closestHead = head
+                        end
+                    end
+                end
+            end
+            return closestHead
+        end
+
+        -- 🔹 **Cập nhật Aim**
+        local function AimAtTarget()
+            if not aimModEnabled or not isKeyHeld then return end
+
+            local targetHead = GetClosestPlayerHead()
+            if targetHead then
+                camera.CFrame = CFrame.new(camera.CFrame.Position, targetHead.Position)
+            end
+        end
+
+        runService.RenderStepped:Connect(AimAtTarget)
+
+        -- 🔄 Reset khi hồi sinh
+        player.CharacterAdded:Connect(function()
+            aimModEnabled = false
+            isKeyHeld = false
+            AimModButton.Text = "OFF"
+            AimModButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        end)
+    end
+
     wait(0.2)
 
     print("Player tad SUCCESS✅")
