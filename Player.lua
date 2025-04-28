@@ -3,7 +3,6 @@ return function(sections)
 
         --SPEED================================================================================================f
     do
-        local SpeedFrame = sections["Player"]
         local player = game.Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
         local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
@@ -348,7 +347,6 @@ return function(sections)
 
         --IFN JUMP======================================================================================================
     do
-        local HomeFrame = sections["Player"]
         local player = game.Players.LocalPlayer
         local userInputService = game:GetService("UserInputService")
 
@@ -385,7 +383,6 @@ return function(sections)
 
         --AIMBOT KEY PC======================================================================================================
     do
-        local HomeFrame = sections["Player"]
         local player = game.Players.LocalPlayer
         local camera = workspace.CurrentCamera
         local userInputService = game:GetService("UserInputService")
@@ -490,6 +487,117 @@ return function(sections)
             isKeyHeld = false
             AimModButton.Text = "OFF"
             AimModButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        end)
+    end
+
+        --AIMBOT KEY PC======================================================================================================
+    do
+        local player = game.Players.LocalPlayer
+        local camera = workspace.CurrentCamera
+        local userInputService = game:GetService("UserInputService")
+        local runService = game:GetService("RunService")
+        local mouse = player:GetMouse()
+
+        local silentAimEnabled = false
+        local isAimHeld = false
+
+        -- 🟢 NÚT BẬT/TẮT AIM (TRONG HOME TAB)
+        local AimButton = Instance.new("TextButton", HomeFrame)
+        AimButton.Size = UDim2.new(0, 90, 0, 30)
+        AimButton.Position = UDim2.new(0, 240, 0, 310)
+        AimButton.Text = "OFF"
+        AimButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        AimButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        AimButton.Font = Enum.Font.SourceSansBold
+        AimButton.TextSize = 30
+
+        -- 🟢 NÚT AIM TRÊN MÀN HÌNH (DÀNH CHO PE)
+        local screenGui = Instance.new("ScreenGui", game.CoreGui)
+        local MobileAimButton = Instance.new("TextButton", screenGui)
+        MobileAimButton.Size = UDim2.new(0, 40, 0, 40)
+        MobileAimButton.Position = UDim2.new(0.89, 0, 0.5, -70)
+        MobileAimButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        MobileAimButton.BackgroundTransparency = 0.5
+        MobileAimButton.Text = "🎯"
+        MobileAimButton.TextScaled = true
+        MobileAimButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        MobileAimButton.Visible = false
+
+        -- Bo tròn nút Aim
+        local UICorner = Instance.new("UICorner", MobileAimButton)
+        UICorner.CornerRadius = UDim.new(1, 0)
+
+        -- 🟢 BẬT/TẮT CHỨC NĂNG AIM
+        local function ToggleAim()
+            silentAimEnabled = not silentAimEnabled
+            AimButton.Text = silentAimEnabled and "ON" or "OFF"
+            AimButton.BackgroundColor3 = silentAimEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+
+            -- Hiện nút Aim khi bật chức năng
+            MobileAimButton.Visible = silentAimEnabled
+            MobileAimButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        end
+
+        AimButton.MouseButton1Click:Connect(ToggleAim)
+
+        -- 🟢 GIỮ NÚT AIM ĐỂ BẬT AIM MOD
+        MobileAimButton.MouseButton1Down:Connect(function()
+            if silentAimEnabled then
+                isAimHeld = true
+                MobileAimButton.BackgroundColor3 = Color3.fromRGB(0, 0, 139) -- Chuyển sang màu xanh dương khi giữ
+            end
+        end)
+
+        MobileAimButton.MouseButton1Up:Connect(function()
+            isAimHeld = false
+            MobileAimButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Reset về màu xám
+        end)
+
+        -- 🟢 HÀM TÌM VÀ AIM VÀO NGƯỜI CHƠI
+        local function GetClosestPlayerHeadInRange()
+            local closestHead = nil
+            local closestScreenDistance = math.huge
+            local crosshairPosition = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+            local maxRadius = 200
+
+            for _, plr in ipairs(game.Players:GetPlayers()) do
+                if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") then
+                    local head = plr.Character.Head
+                    local screenPoint, onScreen = camera:WorldToViewportPoint(head.Position)
+                    if onScreen then
+                        local screenPosition = Vector2.new(screenPoint.X, screenPoint.Y)
+                        local screenDistance = (screenPosition - crosshairPosition).magnitude
+                        if screenDistance < closestScreenDistance and screenDistance <= maxRadius then
+                            closestScreenDistance = screenDistance
+                            closestHead = head
+                        end
+                    end
+                end
+            end
+
+            return closestHead
+        end
+
+        -- 🟢 AIM VÀO ĐẦU NGƯỜI CHƠI
+        local function AimAtPlayerHead()
+            if not silentAimEnabled or not isAimHeld then return end
+
+            local targetHead = GetClosestPlayerHeadInRange()
+            if targetHead then
+                camera.CFrame = CFrame.new(camera.CFrame.Position, targetHead.Position)
+            end
+        end
+
+        runService.RenderStepped:Connect(AimAtPlayerHead)
+
+        -- 🟢 RESET TRẠNG THÁI KHI CHẾT
+        player.CharacterAdded:Connect(function()
+            silentAimEnabled = false
+            isAimHeld = false
+            AimButton.Text = "OFF"
+            AimButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            MobileAimButton.Visible = false
+            MobileAimButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         end)
     end
 
