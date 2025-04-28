@@ -15,7 +15,7 @@ return function(sections)
         -- Nút bật/tắt
         local toggleButton = Instance.new("TextButton")
         toggleButton.Name = "ToggleSpeed"
-        toggleButton.Parent = SpeedFrame
+        toggleButton.Parent = HomeFrame
         toggleButton.Size = UDim2.new(0, 90, 0, 30)
         toggleButton.Position = UDim2.new(0, 240, 0, 10)
         toggleButton.Text = "OFF"
@@ -27,7 +27,7 @@ return function(sections)
         -- Ô nhập tốc độ
         local speedBox = Instance.new("TextBox")
         speedBox.Name = "SpeedInput"
-        speedBox.Parent = SpeedFrame
+        speedBox.Parent = HomeFrame
         speedBox.Size = UDim2.new(0, 50, 0, 30)
         speedBox.Position = UDim2.new(0, 190, 0, 10)
         speedBox.Text = tostring(speedValue)
