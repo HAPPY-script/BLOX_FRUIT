@@ -383,7 +383,7 @@ return function(sections)
         end)
     end
 
-        --IFN JUMP======================================================================================================
+        --AIMBOT KEY PC======================================================================================================
     do
         local HomeFrame = sections["Player"]
         local player = game.Players.LocalPlayer
