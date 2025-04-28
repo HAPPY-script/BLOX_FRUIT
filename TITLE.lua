@@ -157,6 +157,17 @@ return function(sections)
         TitleTPButton.Font = Enum.Font.SourceSansBold
         TitleTPButton.BorderSizePixel = 2
         TitleTPButton.BorderColor3 = Color3.new(255, 255, 255)
+
+        local TitleTPKey = Instance.new("TextLabel", HomeFrame)
+        TitleTPKey.Size = UDim2.new(0, 170, 0, 30)
+        TitleTPKey.Position = UDim2.new(0, 10, 0, 260)
+        TitleTPKey.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleTPKey.TextColor3 = Color3.new(1, 1, 1)
+        TitleTPKey.Text = "AIMBOT KEY PC"
+        TitleTPKey.TextScaled = true
+        TitleTPKey.Font = Enum.Font.SourceSansBold
+        TitleTPKey.BorderSizePixel = 2
+        TitleTPKey.BorderColor3 = Color3.new(255, 255, 255)
     end
 
     -- STATUS ---------------------------------------------------------
