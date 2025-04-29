@@ -99,6 +99,19 @@ return function(sections)
         TitleFruit.BorderColor3 = Color3.new(255, 255, 255)
     end
 
+    do
+        local TitleFruit = Instance.new("TextLabel", HomeFrame)
+        TitleFruit.Size = UDim2.new(0, 220, 0, 30)
+        TitleFruit.Position = UDim2.new(0, 10, 0, 60)
+        TitleFruit.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleFruit.TextColor3 = Color3.new(1, 1, 1)
+        TitleFruit.Text = "🏃‍♂️COLECT FRUIT🍇"
+        TitleFruit.TextScaled = true
+        TitleFruit.Font = Enum.Font.SourceSansBold
+        TitleFruit.BorderSizePixel = 2
+        TitleFruit.BorderColor3 = Color3.new(255, 255, 255)
+    end
+
     -- PLAYER ---------------------------------------------------------
     do
         local HomeFrame = sections["Player"]
@@ -108,7 +121,7 @@ return function(sections)
         TitleSpeed.Position = UDim2.new(0, 10, 0, 10)
         TitleSpeed.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleSpeed.TextColor3 = Color3.new(1, 1, 1)
-        TitleSpeed.Text = "SPEED"
+        TitleSpeed.Text = "SPEED⚡"
         TitleSpeed.TextScaled = true
         TitleSpeed.Font = Enum.Font.SourceSansBold
         TitleSpeed.BorderSizePixel = 2
@@ -119,7 +132,7 @@ return function(sections)
         TitleNoClip.Position = UDim2.new(0, 10, 0, 60)
         TitleNoClip.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleNoClip.TextColor3 = Color3.new(1, 1, 1)
-        TitleNoClip.Text = "NO CLIP"
+        TitleNoClip.Text = "NO CLIP🧱"
         TitleNoClip.TextScaled = true
         TitleNoClip.Font = Enum.Font.SourceSansBold
         TitleNoClip.BorderSizePixel = 2
@@ -130,7 +143,7 @@ return function(sections)
         TitleTPKey.Position = UDim2.new(0, 10, 0, 110)
         TitleTPKey.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleTPKey.TextColor3 = Color3.new(1, 1, 1)
-        TitleTPKey.Text = "TP KEY PC"
+        TitleTPKey.Text = "TP PC🖱️"
         TitleTPKey.TextScaled = true
         TitleTPKey.Font = Enum.Font.SourceSansBold
         TitleTPKey.BorderSizePixel = 2
@@ -141,7 +154,7 @@ return function(sections)
         TitleTPButton.Position = UDim2.new(0, 10, 0, 160)
         TitleTPButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleTPButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleTPButton.Text = "TP BUTTON PE"
+        TitleTPButton.Text = "TP PE📱"
         TitleTPButton.TextScaled = true
         TitleTPButton.Font = Enum.Font.SourceSansBold
         TitleTPButton.BorderSizePixel = 2
@@ -152,7 +165,7 @@ return function(sections)
         TitleTPButton.Position = UDim2.new(0, 10, 0, 210)
         TitleTPButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleTPButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleTPButton.Text = "IFN JUMP"
+        TitleTPButton.Text = "IFN JUMP🦘"
         TitleTPButton.TextScaled = true
         TitleTPButton.Font = Enum.Font.SourceSansBold
         TitleTPButton.BorderSizePixel = 2
@@ -163,7 +176,7 @@ return function(sections)
         TitleTPKey.Position = UDim2.new(0, 10, 0, 260)
         TitleTPKey.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleTPKey.TextColor3 = Color3.new(1, 1, 1)
-        TitleTPKey.Text = "AIMBOT KEY PC"
+        TitleTPKey.Text = "AIMBOT PC🎯🖱️"
         TitleTPKey.TextScaled = true
         TitleTPKey.Font = Enum.Font.SourceSansBold
         TitleTPKey.BorderSizePixel = 2
@@ -174,7 +187,7 @@ return function(sections)
         TitleTPButton.Position = UDim2.new(0, 10, 0, 310)
         TitleTPButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleTPButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleTPButton.Text = "AIMBOT PE"
+        TitleTPButton.Text = "AIMBOT PE🎯📱"
         TitleTPButton.TextScaled = true
         TitleTPButton.Font = Enum.Font.SourceSansBold
         TitleTPButton.BorderSizePixel = 2
