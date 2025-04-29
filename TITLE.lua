@@ -100,16 +100,16 @@ return function(sections)
     end
 
     do
-        local TitleFruit = Instance.new("TextLabel", HomeFrame)
-        TitleFruit.Size = UDim2.new(0, 220, 0, 30)
-        TitleFruit.Position = UDim2.new(0, 10, 0, 60)
-        TitleFruit.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        TitleFruit.TextColor3 = Color3.new(1, 1, 1)
-        TitleFruit.Text = "🏃‍♂️COLECT FRUIT🍇"
-        TitleFruit.TextScaled = true
-        TitleFruit.Font = Enum.Font.SourceSansBold
-        TitleFruit.BorderSizePixel = 2
-        TitleFruit.BorderColor3 = Color3.new(255, 255, 255)
+        local ColectFruit = Instance.new("TextLabel", HomeFrame)
+        ColectFruit.Size = UDim2.new(0, 220, 0, 30)
+        ColectFruit.Position = UDim2.new(0, 10, 0, 60)
+        ColectFruit.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        ColectFruit.TextColor3 = Color3.new(1, 1, 1)
+        ColectFruit.Text = "🏃‍♂️COLECT FRUIT🍇"
+        ColectFruit.TextScaled = true
+        ColectFruit.Font = Enum.Font.SourceSansBold
+        ColectFruit.BorderSizePixel = 2
+        ColectFruit.BorderColor3 = Color3.new(255, 255, 255)
     end
 
     -- PLAYER ---------------------------------------------------------
