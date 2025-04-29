@@ -147,7 +147,7 @@ return function(sections)
             local dir = (targetPos - hrp.Position).Unit
             local dist = (targetPos - hrp.Position).Magnitude
             local lungeSpeed = 330
-            local tpThreshold = 250
+            local tpThreshold = 300
             local t0 = tick()
 
             while tick() - t0 < dist / lungeSpeed do
@@ -204,7 +204,7 @@ return function(sections)
                         break -- chỉ đi đến 1 trái đầu tiên tìm được
                     end
                 end
-                task.wait(1)
+                task.wait(0.1)
             end
         end
 
