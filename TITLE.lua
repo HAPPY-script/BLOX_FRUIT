@@ -96,9 +96,7 @@ return function(sections)
         TitleFruit.Font = Enum.Font.SourceSansBold
         TitleFruit.BorderSizePixel = 2
         TitleFruit.BorderColor3 = Color3.new(255, 255, 255)
-    end
 
-    do
         local ColectFruit = Instance.new("TextLabel", HomeFrame)
         ColectFruit.Size = UDim2.new(0, 220, 0, 30)
         ColectFruit.Position = UDim2.new(0, 10, 0, 60)
