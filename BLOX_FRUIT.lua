@@ -289,31 +289,48 @@ end)
 --====================================================================
 --TITLE
 local titleScript = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/TITLE.lua"))()
+wait(0.2)
 titleScript(sections)
 
 --Player tad
 local PlayerPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Player.lua"))()
+wait(0.2)
 PlayerPage(sections)
 
 --Home tad
 local HomePage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Home.lua"))()
+wait(0.2)
 HomePage(sections)
 
 --Status tad
 local StatusPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Status.lua"))()
+wait(0.2)
 StatusPage(sections)
 
 --Visual tad
 local VisualPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Visual.lua"))()
+wait(0.2)
 VisualPage(sections)
 
 --Fruit tad
 local FruitPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/CHECK_Fruit.lua"))()
+wait(0.2)
 FruitPage(sections)
 
 --Raid tad
 local RaidPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Raid.lua"))()
+wait(0.2)
 RaidPage(sections)
+
+--Raid tad
+local RaidPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Raid.lua"))()
+wait(0.2)
+RaidPage(sections)
+
+--PVP tad
+local PVPPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Raid.lua"))()
+wait(0.2)
+PVPPage(sections)
 
 wait(0.2)
 
