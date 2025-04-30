@@ -322,11 +322,6 @@ local RaidPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPP
 wait(0.2)
 RaidPage(sections)
 
---Raid tad
-local RaidPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Raid.lua"))()
-wait(0.2)
-RaidPage(sections)
-
 --PVP tad
 local PVPPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/PVP.lua"))()
 wait(0.2)
