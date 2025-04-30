@@ -219,6 +219,22 @@ return function(sections)
         TitleCount.BorderColor3 = Color3.new(255, 255, 255)
     end
 
+    -- PVP ---------------------------------------------------------
+    do
+        local HomeFrame = sections["PVP"]
+
+        local TitleSpeed = Instance.new("TextLabel", HomeFrame)
+        TitleSpeed.Size = UDim2.new(0, 170, 0, 30)
+        TitleSpeed.Position = UDim2.new(0, 10, 0, 10)
+        TitleSpeed.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleSpeed.TextColor3 = Color3.new(1, 1, 1)
+        TitleSpeed.Text = "FOLLOW PLAYER🚶‍♂️"
+        TitleSpeed.TextScaled = true
+        TitleSpeed.Font = Enum.Font.SourceSansBold
+        TitleSpeed.BorderSizePixel = 2
+        TitleSpeed.BorderColor3 = Color3.new(255, 255, 255)
+    end
+
     wait(0.2)
 
     print("TITLE SUCCESS✅")
