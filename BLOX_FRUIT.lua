@@ -308,7 +308,7 @@ local VisualPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HA
 VisualPage(sections)
 
 --Fruit tad
-local FruitPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Fruit.lua"))()
+local FruitPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/CHECK_Fruit.lua"))()
 FruitPage(sections)
 
 --Raid tad
