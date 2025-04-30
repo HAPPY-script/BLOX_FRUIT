@@ -190,7 +190,7 @@ return function(sections)
                 performLunge(fruitPos)
             else
                 -- Dùng đường tắt
-                teleportRepeatedly(tpPos, 0.5)
+                teleportRepeatedly(tpPos, 1)
                 teleportRepeatedly(tpPos + Vector3.new(0, 100, 0), 0.3)
                 task.wait(0.1)
                 performLunge(fruitPos)
