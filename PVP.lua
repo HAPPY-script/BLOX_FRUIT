@@ -54,7 +54,7 @@ return function(sections)
             local dir = (targetPos - hrp.Position).Unit
             local dist = (targetPos - hrp.Position).Magnitude
             local lungeSpeed = 320
-            local tpThreshold = 250
+            local tpThreshold = 200
             local t0 = tick()
 
             while tick() - t0 < dist / lungeSpeed do
