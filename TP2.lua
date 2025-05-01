@@ -244,5 +244,5 @@ do
 end
 
     wait(0.2)
-    print("Map tad SUCCESS✅")
+    print("TP tad SUCCESS✅")
 end
