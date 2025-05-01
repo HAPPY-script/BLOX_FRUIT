@@ -324,7 +324,7 @@ wait(0.2)
 RaidPage(sections)
 
 --PVP tad
-local PVPPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/PVP.lua"))()
+local PVPPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/CHECK_PVP.lua"))()
 wait(0.2)
 PVPPage(sections)
 
