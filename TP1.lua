@@ -1,4 +1,5 @@
 return function(sections)
+
     local HomeFrame = sections["TP"]
 
     --===========SEA=========================================================================================
@@ -212,5 +213,5 @@ return function(sections)
     end
 
     wait(0.2)
-    print("Map tad SUCCESS✅")
+    print("TP tad SUCCESS✅")
 end
