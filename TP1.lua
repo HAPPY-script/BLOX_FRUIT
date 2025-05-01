@@ -131,7 +131,7 @@ return function(sections)
     --===========VOLCANO=========================================================================================
     do
         -- Tạo nút "Chạy Script Từ URL"
-        CreateButton(HomeFrame, "VOLCANO", 510, function()
+        CreateButton(HomeFrame, "VOLCANO", 460, function()
             local url = "https://raw.githubusercontent.com/HAPPY-script/VOLCANO/refs/heads/main/VOLCANO"
             local success, result = pcall(function()
                 loadstring(game:HttpGet(url))()
@@ -145,7 +145,7 @@ return function(sections)
     --===========FORTRESS=========================================================================================
     do
         -- Tạo nút "Chạy Script Từ URL"
-        CreateButton(HomeFrame, "FORTRESS", 560, function()
+        CreateButton(HomeFrame, "FORTRESS", 510, function()
             local url = "https://raw.githubusercontent.com/HAPPY-script/FORTRESS/refs/heads/main/FORTRESS"
             local success, result = pcall(function()
                 loadstring(game:HttpGet(url))()
@@ -159,7 +159,7 @@ return function(sections)
     --===========DESERT=========================================================================================
     do
         -- Tạo nút "Chạy Script Từ URL"
-        CreateButton(HomeFrame, "DESERT", 610, function()
+        CreateButton(HomeFrame, "DESERT", 560, function()
             local url = "https://raw.githubusercontent.com/HAPPY-script/DESERT/refs/heads/main/DESERT"
             local success, result = pcall(function()
                 loadstring(game:HttpGet(url))()
@@ -173,7 +173,7 @@ return function(sections)
     --===========TOWN=========================================================================================
     do
         -- Tạo nút "Chạy Script Từ URL"
-        CreateButton(HomeFrame, "TOWN", 660, function()
+        CreateButton(HomeFrame, "TOWN", 610, function()
             local url = "https://raw.githubusercontent.com/HAPPY-script/TOWN/refs/heads/main/TOWN"
             local success, result = pcall(function()
                 loadstring(game:HttpGet(url))()
@@ -187,7 +187,7 @@ return function(sections)
     --===========ON_SKY=========================================================================================
     do
         -- Tạo nút "Chạy Script Từ URL"
-        CreateButton(HomeFrame, "ON_SKY", 710, function()
+        CreateButton(HomeFrame, "ON_SKY", 660, function()
             local url = "https://raw.githubusercontent.com/HAPPY-script/ON_SKY/refs/heads/main/ON_SKY"
             local success, result = pcall(function()
                 loadstring(game:HttpGet(url))()
@@ -201,7 +201,7 @@ return function(sections)
     --===========SNOW=========================================================================================
     do
         -- Tạo nút "Chạy Script Từ URL"
-        CreateButton(HomeFrame, "SNOW", 760, function()
+        CreateButton(HomeFrame, "SNOW", 710, function()
             local url = "https://raw.githubusercontent.com/HAPPY-script/SNOW/refs/heads/main/SNOW"
             local success, result = pcall(function()
                 loadstring(game:HttpGet(url))()
