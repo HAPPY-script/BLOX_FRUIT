@@ -114,9 +114,7 @@ return function(sections)
         local teleportPoints = {
             Vector3.new(-12463.61, 374.91, -7549.53), --mansion
             Vector3.new(5661.53, 1013.04, -334.96), --women
-            Vector3.new(-5073.83, 314.51, -3152.52), --castle
-            Vector3.new(-11993.58, 331.98, -8979.18), --trung tâm đảo rùa
-            Vector3.new(5369.02, 25.36, -497.11) --hao hoa
+            Vector3.new(-5073.83, 314.51, -3152.52) --castle
         }
 
         -- Nút bật/tắt nhặt Fruit
