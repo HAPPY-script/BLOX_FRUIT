@@ -119,6 +119,7 @@ local tabs = {
     {name = "Visual", icon = "rbxthumb://type=Asset&id=17688532644&w=150&h=150"},
     {name = "Player", icon = "rbxthumb://type=Asset&id=11656483343&w=150&h=150"},
     {name = "PVP", icon = "rbxthumb://type=Asset&id=4391741908&w=150&h=150"},
+    {name = "TP", icon = "rbxthumb://type=Asset&id=18155317361&w=150&h=150"},
     {name = "Tracker", icon = "rbxthumb://type=Asset&id=136258799911155&w=150&h=150"},
     {name = "Info", icon = "rbxthumb://type=Asset&id=11780939142&w=150&h=150"}
 }
@@ -267,7 +268,7 @@ updatePlayerList()
 
 --------------------------------------------------------------------------------------------
 --Info
-local InfoFrame = sections["Info"]
+local HomeFrame = sections["Info"]
 
 local function copyToClipboard(text)
     if setclipboard then
@@ -280,7 +281,7 @@ local function copyToClipboard(text)
 end
 
 -- Tạo nút "Discord"
-CreateButton(InfoFrame, "👾 Discord", 10, function()
+CreateButton(HomeFrame, "👾 Discord", 10, function()
     copyToClipboard("https://discord.gg/HSEfQPzdpH") -- Thay link này bằng link Discord của bạn
 end)
 
@@ -323,9 +324,14 @@ wait(0.2)
 RaidPage(sections)
 
 --PVP tad
-local PVPPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/CHECK_PVP.lua"))()
+local PVPPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/PVP.lua"))()
 wait(0.2)
 PVPPage(sections)
+
+--TP tad
+local TPPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/PVP.lua"))()
+wait(0.2)
+TPPage(sections)
 
 wait(0.2)
 
