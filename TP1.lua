@@ -6,7 +6,7 @@ return function(sections)
     do
         -- Tạo nút "SEA" trong HomeFrame
         local btnSEA = Instance.new("TextButton", HomeFrame)
-        btnSEA.Size = UDim2.new(0, 90, 0, 30)
+        btnSEA.Size = UDim2.new(0, 320, 0, 40)
         btnSEA.Position = UDim2.new(0, 10, 0, 10) -- Vị trí có thể thay đổi nếu cần
         btnSEA.Text = "SEA"
         btnSEA.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
@@ -29,7 +29,7 @@ return function(sections)
     do
         -- Tạo nút "PIRATE" trong HomeFrame
         local btnPIRATE = Instance.new("TextButton", HomeFrame)
-        btnPIRATE.Size = UDim2.new(0, 90, 0, 30)
+        btnPIRATE.Size = UDim2.new(0, 320, 0, 40)
         btnPIRATE.Position = UDim2.new(0, 10, 0, 60) -- Cách SEA 100px theo chiều ngang
         btnPIRATE.Text = "PIRATE"
         btnPIRATE.BackgroundColor3 = Color3.fromRGB(255, 85, 0)
@@ -52,7 +52,7 @@ return function(sections)
     do
         -- Tạo nút "FOUNTAIN" trong HomeFrame
         local btnFOUNTAIN = Instance.new("TextButton", HomeFrame)
-        btnFOUNTAIN.Size = UDim2.new(0, 90, 0, 30)
+        btnFOUNTAIN.Size = UDim2.new(0, 320, 0, 40)
         btnFOUNTAIN.Position = UDim2.new(0, 10, 0, 110) -- Đặt nút đầu tiên ở vị trí đầu tiên
         btnFOUNTAIN.Text = "FOUNTAIN"
         btnFOUNTAIN.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
@@ -75,7 +75,7 @@ return function(sections)
     do
         -- Tạo nút "SKY" trong HomeFrame
         local btnSKY = Instance.new("TextButton", HomeFrame)
-        btnSKY.Size = UDim2.new(0, 90, 0, 30)
+        btnSKY.Size = UDim2.new(0, 320, 0, 40)
         btnSKY.Position = UDim2.new(0, 10, 0, 160) -- Đặt nút này cách nút FOUNTAIN 40px theo chiều dọc
         btnSKY.Text = "SKY"
         btnSKY.BackgroundColor3 = Color3.fromRGB(135, 206, 235)
@@ -98,7 +98,7 @@ return function(sections)
     do
         -- Tạo nút "ARENA" trong HomeFrame
         local btnARENA = Instance.new("TextButton", HomeFrame)
-        btnARENA.Size = UDim2.new(0, 90, 0, 30)
+        btnARENA.Size = UDim2.new(0, 320, 0, 40)
         btnARENA.Position = UDim2.new(0, 10, 0, 210) -- Đặt nút này cách nút SKY 40px theo chiều dọc
         btnARENA.Text = "ARENA"
         btnARENA.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
@@ -121,7 +121,7 @@ return function(sections)
     do
         -- Tạo nút "MIRANE" trong HomeFrame
         local btnMIRANE = Instance.new("TextButton", HomeFrame)
-        btnMIRANE.Size = UDim2.new(0, 90, 0, 30)
+        btnMIRANE.Size = UDim2.new(0, 320, 0, 40)
         btnMIRANE.Position = UDim2.new(0, 10, 0, 260) -- Đặt nút này cách nút ARENA 40px theo chiều dọc
         btnMIRANE.Text = "MIRANE"
         btnMIRANE.BackgroundColor3 = Color3.fromRGB(255, 99, 71)
@@ -144,7 +144,7 @@ return function(sections)
     do
         -- Tạo nút "MONKEY" trong HomeFrame
         local btnMONKEY = Instance.new("TextButton", HomeFrame)
-        btnMONKEY.Size = UDim2.new(0, 90, 0, 30)
+        btnMONKEY.Size = UDim2.new(0, 320, 0, 40)
         btnMONKEY.Position = UDim2.new(0, 10, 0, 310) -- Vị trí của nút MONKEY
         btnMONKEY.Text = "MONKEY"
         btnMONKEY.BackgroundColor3 = Color3.fromRGB(255, 223, 0)
@@ -167,7 +167,7 @@ return function(sections)
     do
         -- Tạo nút "VILLAGE" trong HomeFrame
         local btnVILLAGE = Instance.new("TextButton", HomeFrame)
-        btnVILLAGE.Size = UDim2.new(0, 90, 0, 30)
+        btnVILLAGE.Size = UDim2.new(0, 320, 0, 40)
         btnVILLAGE.Position = UDim2.new(0, 10, 0, 360) -- Vị trí của nút VILLAGE
         btnVILLAGE.Text = "VILLAGE"
         btnVILLAGE.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
@@ -190,7 +190,7 @@ return function(sections)
     do
         -- Tạo nút "PRISON" trong HomeFrame
         local btnPRISON = Instance.new("TextButton", HomeFrame)
-        btnPRISON.Size = UDim2.new(0, 90, 0, 30)
+        btnPRISON.Size = UDim2.new(0, 320, 0, 40)
         btnPRISON.Position = UDim2.new(0, 10, 0, 410) -- Vị trí của nút PRISON
         btnPRISON.Text = "PRISON"
         btnPRISON.BackgroundColor3 = Color3.fromRGB(255, 99, 71)
@@ -213,7 +213,7 @@ return function(sections)
     do
         -- Tạo nút "VOLCANO" trong HomeFrame
         local btnVOLCANO = Instance.new("TextButton", HomeFrame)
-        btnVOLCANO.Size = UDim2.new(0, 90, 0, 30)
+        btnVOLCANO.Size = UDim2.new(0, 320, 0, 40)
         btnVOLCANO.Position = UDim2.new(0, 10, 0, 460) -- Vị trí của nút VOLCANO
         btnVOLCANO.Text = "VOLCANO"
         btnVOLCANO.BackgroundColor3 = Color3.fromRGB(255, 69, 0)
@@ -236,7 +236,7 @@ return function(sections)
     do
         -- Tạo nút "FORTRESS" trong HomeFrame
         local btnFORTRESS = Instance.new("TextButton", HomeFrame)
-        btnFORTRESS.Size = UDim2.new(0, 90, 0, 30)
+        btnFORTRESS.Size = UDim2.new(0, 320, 0, 40)
         btnFORTRESS.Position = UDim2.new(0, 10, 0, 510) -- Vị trí của nút FORTRESS
         btnFORTRESS.Text = "FORTRESS"
         btnFORTRESS.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
@@ -259,7 +259,7 @@ return function(sections)
     do
         -- Tạo nút "DESERT" trong HomeFrame
         local btnDESERT = Instance.new("TextButton", HomeFrame)
-        btnDESERT.Size = UDim2.new(0, 90, 0, 30)
+        btnDESERT.Size = UDim2.new(0, 320, 0, 40)
         btnDESERT.Position = UDim2.new(0, 10, 0, 560) -- Vị trí của nút DESERT
         btnDESERT.Text = "DESERT"
         btnDESERT.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
@@ -282,7 +282,7 @@ return function(sections)
     do
         -- Tạo nút "TOWN" trong HomeFrame
         local btnTOWN = Instance.new("TextButton", HomeFrame)
-        btnTOWN.Size = UDim2.new(0, 90, 0, 30)
+        btnTOWN.Size = UDim2.new(0, 90, 0, 40)
         btnTOWN.Position = UDim2.new(0, 10, 0, 610) -- Vị trí của nút TOWN
         btnTOWN.Text = "TOWN"
         btnTOWN.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
@@ -305,7 +305,7 @@ return function(sections)
     do
         -- Tạo nút "ON_SKY" trong HomeFrame
         local btnON_SKY = Instance.new("TextButton", HomeFrame)
-        btnON_SKY.Size = UDim2.new(0, 90, 0, 30)
+        btnON_SKY.Size = UDim2.new(0, 90, 0, 40)
         btnON_SKY.Position = UDim2.new(0, 10, 0, 660) -- Vị trí của nút ON_SKY
         btnON_SKY.Text = "ON_SKY"
         btnON_SKY.BackgroundColor3 = Color3.fromRGB(135, 206, 235)
@@ -328,7 +328,7 @@ return function(sections)
     do
         -- Tạo nút "SNOW" trong HomeFrame
         local btnSNOW = Instance.new("TextButton", HomeFrame)
-        btnSNOW.Size = UDim2.new(0, 90, 0, 30)
+        btnSNOW.Size = UDim2.new(0, 90, 0, 40)
         btnSNOW.Position = UDim2.new(0, 10, 0, 710) -- Vị trí của nút SNOW
         btnSNOW.Text = "SNOW"
         btnSNOW.BackgroundColor3 = Color3.fromRGB(255, 250, 250)
