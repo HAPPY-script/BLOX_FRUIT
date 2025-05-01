@@ -329,7 +329,7 @@ wait(0.2)
 PVPPage(sections)
 
 --TP tad
---local TPPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/PVP.lua"))()
+--local TPPage = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/CHECK_TP.lua"))()
 --wait(0.2)
 --TPPage(sections)
 
