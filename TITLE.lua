@@ -169,27 +169,6 @@ return function(sections)
         TitleTPButton.BorderSizePixel = 2
         TitleTPButton.BorderColor3 = Color3.new(255, 255, 255)
 
-        local TitleTPKey = Instance.new("TextLabel", HomeFrame)
-        TitleTPKey.Size = UDim2.new(0, 170, 0, 30)
-        TitleTPKey.Position = UDim2.new(0, 10, 0, 260)
-        TitleTPKey.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        TitleTPKey.TextColor3 = Color3.new(1, 1, 1)
-        TitleTPKey.Text = "AIMBOT PC🎯🖱️"
-        TitleTPKey.TextScaled = true
-        TitleTPKey.Font = Enum.Font.SourceSansBold
-        TitleTPKey.BorderSizePixel = 2
-        TitleTPKey.BorderColor3 = Color3.new(255, 255, 255)
-
-        local TitleTPButton = Instance.new("TextLabel", HomeFrame)
-        TitleTPButton.Size = UDim2.new(0, 220, 0, 30)
-        TitleTPButton.Position = UDim2.new(0, 10, 0, 310)
-        TitleTPButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        TitleTPButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleTPButton.Text = "AIMBOT PE🎯📱"
-        TitleTPButton.TextScaled = true
-        TitleTPButton.Font = Enum.Font.SourceSansBold
-        TitleTPButton.BorderSizePixel = 2
-        TitleTPButton.BorderColor3 = Color3.new(255, 255, 255)
     end
 
     -- STATUS ---------------------------------------------------------
@@ -233,6 +212,28 @@ return function(sections)
         TitleSpeed.Font = Enum.Font.SourceSansBold
         TitleSpeed.BorderSizePixel = 2
         TitleSpeed.BorderColor3 = Color3.new(255, 255, 255)
+
+        local TitleTPKey = Instance.new("TextLabel", HomeFrame)
+        TitleTPKey.Size = UDim2.new(0, 170, 0, 30)
+        TitleTPKey.Position = UDim2.new(0, 10, 0, 60)
+        TitleTPKey.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleTPKey.TextColor3 = Color3.new(1, 1, 1)
+        TitleTPKey.Text = "AIMBOT PC🎯🖱️"
+        TitleTPKey.TextScaled = true
+        TitleTPKey.Font = Enum.Font.SourceSansBold
+        TitleTPKey.BorderSizePixel = 2
+        TitleTPKey.BorderColor3 = Color3.new(255, 255, 255)
+
+        local TitleTPButton = Instance.new("TextLabel", HomeFrame)
+        TitleTPButton.Size = UDim2.new(0, 220, 0, 30)
+        TitleTPButton.Position = UDim2.new(0, 10, 0, 110)
+        TitleTPButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleTPButton.TextColor3 = Color3.new(1, 1, 1)
+        TitleTPButton.Text = "AIMBOT PE🎯📱"
+        TitleTPButton.TextScaled = true
+        TitleTPButton.Font = Enum.Font.SourceSansBold
+        TitleTPButton.BorderSizePixel = 2
+        TitleTPButton.BorderColor3 = Color3.new(255, 255, 255)
     end
 
     wait(0.2)
