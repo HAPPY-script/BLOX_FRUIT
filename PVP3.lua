@@ -153,7 +153,7 @@ return function(sections)
         -- 🟢 Nút bật/tắt Aim Player
         local AimModButton = Instance.new("TextButton", HomeFrame)
         AimModButton.Size  = UDim2.new(0,90,0,30)
-        AimModButton.Position = UDim2.new(0,240,0,260)
+        AimModButton.Position = UDim2.new(0,240,0,60)
         AimModButton.Text  = "OFF"
         AimModButton.BackgroundColor3 = Color3.fromRGB(255,50,50)
         AimModButton.TextColor3 = Color3.fromRGB(255,255,255)
@@ -163,7 +163,7 @@ return function(sections)
         -- 🔵 Nút chọn phím Aim Player
         local KeybindButton = Instance.new("TextButton", HomeFrame)
         KeybindButton.Size = UDim2.new(0, 50, 0, 30)
-        KeybindButton.Position = UDim2.new(0, 190, 0, 260)
+        KeybindButton.Position = UDim2.new(0, 190, 0, 60)
         KeybindButton.Text = "Select\nkey"
         KeybindButton.BackgroundColor3 = Color3.fromRGB(50, 50, 200)
         KeybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -261,7 +261,7 @@ return function(sections)
         -- 🟢 NÚT BẬT/TẮT AIM (TRONG HOME TAB)
         local AimButton = Instance.new("TextButton", HomeFrame)
         AimButton.Size = UDim2.new(0, 90, 0, 30)
-        AimButton.Position = UDim2.new(0, 240, 0, 310)
+        AimButton.Position = UDim2.new(0, 240, 0, 110)
         AimButton.Text = "OFF"
         AimButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         AimButton.TextColor3 = Color3.fromRGB(255, 255, 255)
