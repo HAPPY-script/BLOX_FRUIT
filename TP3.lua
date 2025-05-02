@@ -203,7 +203,7 @@ end
 do
     local btn = Instance.new("TextButton", HomeFrame)
     btn.Size = UDim2.new(0, 320, 0, 40)
-    btn.Position = UDim2.new(0, 10, 0, 510)
+    btn.Position = UDim2.new(0, 10, 0, 460)
     btn.Text = "WOMEN"
     btn.BackgroundColor3 = Color3.fromRGB(255, 182, 193)
     btn.TextColor3 = Color3.new(0, 0, 0)
@@ -225,7 +225,7 @@ end
 do
     local btn = Instance.new("TextButton", HomeFrame)
     btn.Size = UDim2.new(0, 320, 0, 40)
-    btn.Position = UDim2.new(0, 10, 0, 560)
+    btn.Position = UDim2.new(0, 10, 0, 510)
     btn.Text = "TIKI"
     btn.BackgroundColor3 = Color3.fromRGB(34, 139, 34)
     btn.TextColor3 = Color3.new(1, 1, 1)
@@ -247,7 +247,7 @@ end
 do
     local btn = Instance.new("TextButton", HomeFrame)
     btn.Size = UDim2.new(0, 320, 0, 40)
-    btn.Position = UDim2.new(0, 10, 0, 610)
+    btn.Position = UDim2.new(0, 10, 0, 560)
     btn.Text = "ON_TREE"
     btn.BackgroundColor3 = Color3.fromRGB(34, 139, 34)
     btn.TextColor3 = Color3.new(1, 1, 1)
