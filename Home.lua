@@ -139,7 +139,7 @@ return function(sections)
         local mouse = player:GetMouse()
         local currentQuestBeli = 0
         local currentQuestKills = 0
-        local maxQuestKills = 10 -- số quái cần giết để hoàn thành
+        local maxQuestKills = 9 -- số quái cần giết để hoàn thành
         local expectedRewardBeli = 500000 -- mặc định, bạn sẽ thay theo từng vùng nếu cần
         local VirtualInputManager = game:GetService("VirtualInputManager")
 
