@@ -218,6 +218,33 @@ return function(sections)
         end)
     end
 
+    --RANDUM FRUIT-------------------------------------------------------------------------------------------
+    do
+        local btnRandom = Instance.new("TextButton", HomeFrame)
+        btnRandom.Size  = UDim2.new(0, 320, 0, 40)
+        btnRandom.Position = UDim2.new(0, 10, 0, 110)
+        btnRandom.Text  = "🎲 Random Fruit"
+        btnRandom.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+        btnRandom.TextColor3 = Color3.new(1, 1, 1)
+        btnRandom.Font = Enum.Font.SourceSansBold
+        btnRandom.TextSize = 20
+
+        btnRandom.MouseButton1Click:Connect(function()
+            local args = {
+                "Cousin",
+                "Buy"
+            }
+
+            local success, err = pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+            end)
+
+            if not success then
+                warn("Không thể random Fruit: " .. tostring(err))
+            end
+        end)
+    end
+
     wait(0.2)
 
     print("Fruit tad SUCCESS✅")
