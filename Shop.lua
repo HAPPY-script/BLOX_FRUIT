@@ -26,4 +26,8 @@ return function(sections)
             end
         end)
     end
+
+    wait(0.2)
+
+    print("Shop tad SUCCESS✅")
 end
