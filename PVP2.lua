@@ -53,7 +53,7 @@ return function(sections)
             local hrp = character:WaitForChild("HumanoidRootPart")
             local dir = (targetPos - hrp.Position).Unit
             local dist = (targetPos - hrp.Position).Magnitude
-            local lungeSpeed = 320
+            local lungeSpeed = 300
             local tpThreshold = 200
             local t0 = tick()
 
