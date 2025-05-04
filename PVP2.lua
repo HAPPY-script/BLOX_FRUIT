@@ -105,7 +105,7 @@ return function(sections)
                     if playerToTargetDist < tpToTargetDist then
                         performLunge(targetPos)
                     else
-                        teleportRepeatedly(tpPos, 1)
+                        teleportRepeatedly(tpPos, 2)
                         teleportRepeatedly(tpPos + Vector3.new(0, 100, 0), 0.3)
                         task.wait(0.1)
                         performLunge(targetPos - (targetPos - myPos).Unit * 1)
