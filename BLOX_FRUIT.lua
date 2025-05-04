@@ -353,6 +353,11 @@ local TPPage = safeLoadPage("https://raw.githubusercontent.com/HAPPY-script/BLOX
 wait(0.2)
 TPPage(sections)
 
+--Shop tab
+local ShopPage = safeLoadPage("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Shop.lua")
+wait(0.2)
+ShopPage(sections)
+
 wait(0.2)
 
-print("Blox Fruit hub SUCCESS✅")
+print("✅✅Blox Fruit hub SUCCESS✅✅")
