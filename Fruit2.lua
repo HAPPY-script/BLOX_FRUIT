@@ -228,7 +228,7 @@ return function(sections)
         btnRandom.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
         btnRandom.TextColor3 = Color3.new(1, 1, 1)
         btnRandom.Font = Enum.Font.SourceSansBold
-        btnRandom.TextSize = 20
+        btnRandom.TextSize = 30
 
         btnRandom.MouseButton1Click:Connect(function()
             local args = {
