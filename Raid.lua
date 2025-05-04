@@ -22,14 +22,22 @@ return function(sections)
         local running = false
         local autoClicking = false
 
-        -- Auto click loop
-        task.spawn(function()
+        -- Auto click remote
+        spawn(function()
             while true do
-                if autoClicking then
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                task.wait(0.4)
+                if running then
+                    pcall(function()
+                        local args = {
+                            0.4000000059604645
+                        }
+                        game:GetService("ReplicatedStorage")
+                            :WaitForChild("Modules")
+                            :WaitForChild("Net")
+                            :WaitForChild("RE/RegisterAttack")
+                            :FireServer(unpack(args))
+                    end)
                 end
-                task.wait(0.2)
             end
         end)
 
