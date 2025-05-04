@@ -141,7 +141,6 @@ return function(sections)
         local currentQuestKills = 0
         local maxQuestKills = 9 -- số quái cần giết để hoàn thành
         local expectedRewardBeli = 500000 -- mặc định, bạn sẽ thay theo từng vùng nếu cần
-        local VirtualInputManager = game:GetService("VirtualInputManager")
 
         -- Nút bật/tắt Auto Farm
         local autoFarmBtn = Instance.new("TextButton")
@@ -991,13 +990,21 @@ return function(sections)
             end
         end
 
-        -- Auto click bằng VirtualInputManager
+        -- Auto click bằng FireServer đặc biệt
         spawn(function()
             while true do
-                wait(0.2)
+                task.wait(0.4)
                 if running then
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                    pcall(function()
+                        local args = {
+                            0.4000000059604645
+                        }
+                        game:GetService("ReplicatedStorage")
+                            :WaitForChild("Modules")
+                            :WaitForChild("Net")
+                            :WaitForChild("RE/RegisterAttack")
+                            :FireServer(unpack(args))
+                    end)
                 end
             end
         end)
@@ -1118,7 +1125,6 @@ return function(sections)
         local currentQuestKills = 0
         local maxQuestKills = 10 -- số quái cần giết để hoàn thành
         local expectedRewardBeli = 500000 -- mặc định, bạn sẽ thay theo từng vùng nếu cần
-        local VirtualInputManager = game:GetService("VirtualInputManager")
 
         -- Nút bật/tắt Auto Farm
         local autoFarmBtn = Instance.new("TextButton")
@@ -1228,13 +1234,21 @@ return function(sections)
             end
         end
 
-        -- Auto click bằng VirtualInputManager
+        -- Auto click bằng FireServer đặc biệt
         spawn(function()
             while true do
-                wait(0.2)
+                task.wait(0.4)
                 if running then
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                    pcall(function()
+                        local args = {
+                            0.4000000059604645
+                        }
+                        game:GetService("ReplicatedStorage")
+                            :WaitForChild("Modules")
+                            :WaitForChild("Net")
+                            :WaitForChild("RE/RegisterAttack")
+                            :FireServer(unpack(args))
+                    end)
                 end
             end
         end)
