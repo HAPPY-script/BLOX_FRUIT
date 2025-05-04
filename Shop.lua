@@ -7,9 +7,9 @@ return function(sections)
         btnBuyCyborg.Position = UDim2.new(0, 10, 0, 10)
         btnBuyCyborg.Text  = "🤖 Buy Cyborg Race"
         btnBuyCyborg.BackgroundColor3 = Color3.fromRGB(179, 0, 255)
-        btnBuyCyborg.TextColor3 = Color3.new(0, 0, 0)
+        btnBuyCyborg.TextColor3 = Color3.new(255, 255, 255)
         btnBuyCyborg.Font = Enum.Font.SourceSansBold
-        btnBuyCyborg.TextSize = 30
+        btnBuyCyborg.TextSize = 20
 
         btnBuyCyborg.MouseButton1Click:Connect(function()
             local args = {
