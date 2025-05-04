@@ -120,6 +120,7 @@ local tabs = {
     {name = "Player", icon = "rbxthumb://type=Asset&id=11656483343&w=150&h=150"},
     {name = "PVP", icon = "rbxthumb://type=Asset&id=4391741908&w=150&h=150"},
     {name = "TP", icon = "rbxthumb://type=Asset&id=18155317361&w=150&h=150"},
+    {name = "Shop", icon = "rbxthumb://type=Asset&id=13429538960&w=150&h=150"},
     {name = "Tracker", icon = "rbxthumb://type=Asset&id=136258799911155&w=150&h=150"},
     {name = "Info", icon = "rbxthumb://type=Asset&id=11780939142&w=150&h=150"}
 }
