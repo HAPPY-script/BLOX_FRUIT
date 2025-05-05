@@ -27,7 +27,7 @@ return function(sections)
         TitleHome.Position = UDim2.new(0, 10, 0, 60)
         TitleHome.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleHome.TextColor3 = Color3.new(1, 1, 1)
-        TitleHome.Text = "AUTO FRAM LV🔼"
+        TitleHome.Text = "AUTO FARM LV🔼"
         TitleHome.TextScaled = true
         TitleHome.Font = Enum.Font.SourceSansBold
         TitleHome.BorderSizePixel = 2
@@ -38,7 +38,7 @@ return function(sections)
         TitleBone.Position = UDim2.new(0, 10, 0, 110)
         TitleBone.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleBone.TextColor3 = Color3.new(1, 1, 1)
-        TitleBone.Text = "AUTO FRAM BONE🦴"
+        TitleBone.Text = "AUTO FARM BONE🦴"
         TitleBone.TextScaled = true
         TitleBone.Font = Enum.Font.SourceSansBold
         TitleBone.BorderSizePixel = 2
