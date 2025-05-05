@@ -446,17 +446,13 @@ return function(sections)
         	return closest
         end
 
-        -- Coroutine tấn công Enemy (kết hợp 2 token)
+        -- Coroutine tấn công Enemy
         coroutine.wrap(function()
         	while true do
         		if isFastAttackEnemyEnabled then
         			local target = getClosestEnemy()
         			if target then
-        				local NetRE = Net:WaitForChild("RE"):WaitForChild("RegisterHit")
-        				-- Token thường
-        				NetRE:FireServer(target, {}, "3269aee8")
-        				-- Token cho võ riêng biệt
-        				NetRE:FireServer(target, {}, "32693cfc")
+        				Net:WaitForChild("RE/RegisterHit"):FireServer(target, {}, "3269aee8")
         			end
         		end
         		wait(0.05)
