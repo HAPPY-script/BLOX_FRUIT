@@ -459,7 +459,7 @@ return function(sections)
         				NetRE:FireServer(target, {}, "32693cfc")
         			end
         		end
-        		wait(0.1)
+        		wait(0.5)
         	end
         end)()
 
