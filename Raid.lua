@@ -17,6 +17,8 @@ return function(sections)
         toggleRaid.Text = "OFF"
         toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         toggleRaid.TextColor3 = Color3.new(1, 1, 1)
+		toggleRaid.Font = Enum.Font.SourceSansBold
+        toggleRaid.TextScaled = true
 
         -- Trạng thái RAID
         local running = false
