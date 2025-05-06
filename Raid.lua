@@ -144,6 +144,42 @@ return function(sections)
         end)
     end
 
+        --START RAID------------------------------------------------------------------------------------------------------------------
+    do
+        local btnStartRaid = Instance.new("TextButton", HomeFrame)
+        btnStartRaid.Size = UDim2.new(0, 320, 0, 40)
+        btnStartRaid.Position = UDim2.new(0, 10, 0, 110)
+        btnStartRaid.Text = "Start Raid▶️"
+        btnStartRaid.BackgroundColor3 = Color3.fromRGB(51, 19, 145)
+        btnStartRaid.TextColor3 = Color3.new(1, 1, 1)
+        btnStartRaid.Font = Enum.Font.SourceSansBold
+        btnStartRaid.TextSize = 20
+
+        btnStartRaid.MouseButton1Click:Connect(function()
+            local clickDetector
+
+            -- Kiểm tra ClickDetector Sea 3 trước
+            local sea3 = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Boat Castle")
+            if sea3 and sea3:FindFirstChild("RaidSummon2") then
+                clickDetector = sea3.RaidSummon2:FindFirstChild("Button") and sea3.RaidSummon2.Button:FindFirstChild("Main") and sea3.RaidSummon2.Button.Main:FindFirstChild("ClickDetector")
+            end
+
+            -- Nếu không tìm thấy ở Sea 3 thì thử Sea 2
+            if not clickDetector then
+                local sea2 = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("CircleIsland")
+                if sea2 and sea2:FindFirstChild("RaidSummon2") then
+                    clickDetector = sea2.RaidSummon2:FindFirstChild("Button") and sea2.RaidSummon2.Button:FindFirstChild("Main") and sea2.RaidSummon2.Button.Main:FindFirstChild("ClickDetector")
+                end
+            end
+
+            if clickDetector then
+                fireclickdetector(clickDetector)
+            else
+                warn("❌ Không tìm thấy ClickDetector để Start Raid (không phải Sea 2 hoặc Sea 3).")
+            end
+        end)
+    end
+
         --BUY CHIP------------------------------------------------------------------------------------------------------------------
     do
         local selectedChip = "Flame" -- mặc định ban đầu
@@ -217,42 +253,6 @@ return function(sections)
 
             if not success then
                 warn("❌ Không thể mua microchip: " .. tostring(err))
-            end
-        end)
-    end
-
-        --BUY CHIP------------------------------------------------------------------------------------------------------------------
-    do
-        local btnStartRaid = Instance.new("TextButton", HomeFrame)
-        btnStartRaid.Size = UDim2.new(0, 320, 0, 40)
-        btnStartRaid.Position = UDim2.new(0, 10, 0, 110)
-        btnStartRaid.Text = "Start Raid▶️"
-        btnStartRaid.BackgroundColor3 = Color3.fromRGB(51, 19, 145)
-        btnStartRaid.TextColor3 = Color3.new(1, 1, 1)
-        btnStartRaid.Font = Enum.Font.SourceSansBold
-        btnStartRaid.TextSize = 20
-
-        btnStartRaid.MouseButton1Click:Connect(function()
-            local clickDetector
-
-            -- Kiểm tra ClickDetector Sea 3 trước
-            local sea3 = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Boat Castle")
-            if sea3 and sea3:FindFirstChild("RaidSummon2") then
-                clickDetector = sea3.RaidSummon2:FindFirstChild("Button") and sea3.RaidSummon2.Button:FindFirstChild("Main") and sea3.RaidSummon2.Button.Main:FindFirstChild("ClickDetector")
-            end
-
-            -- Nếu không tìm thấy ở Sea 3 thì thử Sea 2
-            if not clickDetector then
-                local sea2 = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("CircleIsland")
-                if sea2 and sea2:FindFirstChild("RaidSummon2") then
-                    clickDetector = sea2.RaidSummon2:FindFirstChild("Button") and sea2.RaidSummon2.Button:FindFirstChild("Main") and sea2.RaidSummon2.Button.Main:FindFirstChild("ClickDetector")
-                end
-            end
-
-            if clickDetector then
-                fireclickdetector(clickDetector)
-            else
-                warn("❌ Không tìm thấy ClickDetector để Start Raid (không phải Sea 2 hoặc Sea 3).")
             end
         end)
     end
