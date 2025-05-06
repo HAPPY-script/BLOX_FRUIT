@@ -26,6 +26,33 @@ return function(sections)
             end
         end)
     end
+        --========Buy Ghoul===============================================================================================
+    do
+        local btnBuyGhoul = Instance.new("TextButton", HomeFrame)
+        btnBuyGhoul.Size = UDim2.new(0, 320, 0, 40)
+        btnBuyGhoul.Position = UDim2.new(0, 10, 0, 60)
+        btnBuyGhoul.Text = "👻 Buy Ghoul Race"
+        btnBuyGhoul.BackgroundColor3 = Color3.fromRGB(128, 0, 128)
+        btnBuyGhoul.TextColor3 = Color3.new(1, 1, 1)
+        btnBuyGhoul.Font = Enum.Font.SourceSansBold
+        btnBuyGhoul.TextSize = 20
+
+        btnBuyGhoul.MouseButton1Click:Connect(function()
+            local args = {
+                "Ectoplasm",
+                "Change",
+                4
+            }
+
+            local success, err = pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+            end)
+
+            if not success then
+                warn("❌ Không thể mua Ghoul Race: " .. tostring(err))
+            end
+        end)
+    end
 
         --========BUY MELEE===============================================================================================
     do
@@ -986,6 +1013,33 @@ return function(sections)
         		"2"
         	}
         	game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+        end)
+    end
+        --RANDUM RACE==============================================================================================================
+    do
+        local btnRandRace = Instance.new("TextButton", HomeFrame)
+        btnRandRace.Size = UDim2.new(0, 320, 0, 40)
+        btnRandRace.Position = UDim2.new(0, 10, 0, 500)
+        btnRandRace.Text = "🎲 Random Race"
+        btnRandRace.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+        btnRandRace.TextColor3 = Color3.new(1, 1, 1)
+        btnRandRace.Font = Enum.Font.SourceSansBold
+        btnRandRace.TextSize = 20
+
+        btnRandRace.MouseButton1Click:Connect(function()
+            local args = {
+                "BlackbeardReward",
+                "Reroll",
+                "2"
+            }
+
+            local success, err = pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+            end)
+
+            if not success then
+                warn("❌ Không thể random race: " .. tostring(err))
+            end
         end)
     end
 
