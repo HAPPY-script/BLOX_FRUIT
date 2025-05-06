@@ -14,8 +14,8 @@ return function(sections)
         local toggleRaid = Instance.new("TextButton", HomeFrame)
         toggleRaid.Size = UDim2.new(0, 90, 0, 30)
         toggleRaid.Position = UDim2.new(0, 240, 0, 10)
-        toggleRaid.Text = "[⚔️] START"
-        toggleRaid.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        toggleRaid.Text = "OFF"
+        toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         toggleRaid.TextColor3 = Color3.new(1, 1, 1)
 
         -- Trạng thái RAID
@@ -45,7 +45,7 @@ return function(sections)
         local function resetRaidButton()
             running = false
             autoClicking = false
-            toggleRaid.Text = "[⚔️] START"
+            toggleRaid.Text = "OFF"
             toggleRaid.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
         end
 
@@ -53,8 +53,8 @@ return function(sections)
         toggleRaid.MouseButton1Click:Connect(function()
             running = not running
             autoClicking = running
-            toggleRaid.Text = running and "[🛑] STOP" or "[⚔️] START"
-            toggleRaid.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(0, 170, 255)
+            toggleRaid.Text = running and "ON" or "OFF"
+            toggleRaid.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
         end)
 
         -- Tween đến vị trí
