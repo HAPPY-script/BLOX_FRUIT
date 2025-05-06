@@ -74,7 +74,7 @@ ScreenGui.ResetOnSpawn = false
 local Frame = Instance.new("Frame")
 Frame.Size = UDim2.new(0, 400, 0, 300)
 Frame.Position = UDim2.new(0.3, 0, 0, 0)
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BackgroundColor3 = Color3.fromRGB(45, 20, 70)
 Frame.BorderSizePixel = 2
 Frame.Parent = ScreenGui
 mainFrame = Frame -- Gán biến cho Frame chính của menu
@@ -111,7 +111,7 @@ end)
 
 -- Danh sách tab (Dễ dàng thêm tab mới)
 local tabs = {
-    {name = "Page change", icon = "rbxthumb://type=Asset&id=1587302690&w=150&h=150"},
+    {name = "Page change", icon = "rbxthumb://type=Asset&id=79711600576180&w=150&h=150"},
     {name = "Status", icon = "rbxthumb://type=Asset&id=93942197037043&w=150&h=150"},
     {name = "Home", icon = "rbxthumb://type=Asset&id=13060262582&w=150&h=150"},
     {name = "Raid", icon = "rbxthumb://type=Asset&id=17600288795&w=150&h=150"},
@@ -129,7 +129,7 @@ local tabs = {
 local TabFrame = Instance.new("ScrollingFrame")
 TabFrame.Size = UDim2.new(0, 50, 0.98, 0)
 TabFrame.Position = UDim2.new(0, 0, 0, 5) -- Hạ thấp tab xuống để Home không bị che
-TabFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+TabFrame.BackgroundColor3 = Color3.fromRGB(60, 35, 85)
 TabFrame.ScrollBarThickness = 5
 TabFrame.CanvasSize = UDim2.new(0, 0, 0, #tabs * 50) -- Đảm bảo đủ khoảng trống để lăn chuột
 TabFrame.Parent = Frame
@@ -138,7 +138,7 @@ TabFrame.Parent = Frame
 local ContentFrame = Instance.new("ScrollingFrame")
 ContentFrame.Size = UDim2.new(1, -60, 1, -30)
 ContentFrame.Position = UDim2.new(0, 55, 0, 30)
-ContentFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ContentFrame.BackgroundColor3 = Color3.fromRGB(25, 18, 40)
 ContentFrame.ScrollBarThickness = 5
 ContentFrame.CanvasSize = UDim2.new(0, 0, 2, 0) -- phần cuộn chuột các nút
 ContentFrame.Parent = Frame
@@ -147,9 +147,9 @@ ContentFrame.Parent = Frame
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1, 0, 0, 30)
 TitleLabel.Position = UDim2.new(0, 0, 0, 0)
-TitleLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+TitleLabel.BackgroundColor3 = Color3.fromRGB(45, 20, 70)
 TitleLabel.Text = "Menu"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextColor3 = Color3.fromRGB(220, 210, 255)
 TitleLabel.Font = Enum.Font.SourceSansBold
 TitleLabel.TextSize = 20
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
