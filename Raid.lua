@@ -144,6 +144,83 @@ return function(sections)
         end)
     end
 
+        --BUY CHIP------------------------------------------------------------------------------------------------------------------
+    do
+        local selectedChip = "Flame" -- mặc định ban đầu
+
+        -- Dropdown chọn loại Microchip
+        local dropdown = Instance.new("TextButton", HomeFrame)
+        dropdown.Size = UDim2.new(0, 320, 0, 40)
+        dropdown.Position = UDim2.new(0, 10, 0, 110)
+        dropdown.Text = "🔥 Select Microchip: " .. selectedChip
+        dropdown.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+        dropdown.TextColor3 = Color3.new(1, 1, 1)
+        dropdown.Font = Enum.Font.SourceSansBold
+        dropdown.TextSize = 18
+
+        -- Danh sách loại Microchip
+        local chipList = {
+            "Flame", "Ice", "Quake", "Light", "Dark",
+            "Spider", "Rumble", "Magma", "Buddha", "Sand"
+        }
+
+        -- Menu chọn chip
+        local chipMenu = Instance.new("Frame", HomeFrame)
+        chipMenu.Size = UDim2.new(0, 320, 0, #chipList * 30)
+        chipMenu.Position = UDim2.new(0, 10, 0, 150)
+        chipMenu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        chipMenu.Visible = false
+
+        -- Tạo nút chọn cho từng loại chip
+        for i, chipName in ipairs(chipList) do
+            local btn = Instance.new("TextButton", chipMenu)
+            btn.Size = UDim2.new(1, 0, 0, 30)
+            btn.Position = UDim2.new(0, 0, 0, (i - 1) * 30)
+            btn.Text = chipName
+            btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            btn.TextColor3 = Color3.new(1, 1, 1)
+            btn.Font = Enum.Font.SourceSans
+            btn.TextSize = 18
+
+            btn.MouseButton1Click:Connect(function()
+                selectedChip = chipName
+                dropdown.Text = "🔥 Select Microchip: " .. selectedChip
+                chipMenu.Visible = false
+            end)
+        end
+
+        -- Toggle hiện/ẩn menu khi nhấn dropdown
+        dropdown.MouseButton1Click:Connect(function()
+            chipMenu.Visible = not chipMenu.Visible
+        end)
+
+        -- Nút mua microchip
+        local btnBuyChip = Instance.new("TextButton", HomeFrame)
+        btnBuyChip.Size = UDim2.new(0, 320, 0, 40)
+        btnBuyChip.Position = UDim2.new(0, 10, 0, 160 + #chipList * 30)
+        btnBuyChip.Text = "🧩 Buy Microchip"
+        btnBuyChip.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+        btnBuyChip.TextColor3 = Color3.new(1, 1, 1)
+        btnBuyChip.Font = Enum.Font.SourceSansBold
+        btnBuyChip.TextSize = 20
+
+        btnBuyChip.MouseButton1Click:Connect(function()
+            local args = {
+                "RaidsNpc",
+                "Select",
+                selectedChip
+            }
+
+            local success, err = pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+            end)
+
+            if not success then
+                warn("❌ Không thể mua microchip: " .. tostring(err))
+            end
+        end)
+    end
+
     wait(0.2)
 
     print("Raid tad SUCCESS✅")
