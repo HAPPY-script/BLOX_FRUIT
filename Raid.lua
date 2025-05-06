@@ -48,7 +48,7 @@ return function(sections)
             running = false
             autoClicking = false
             toggleRaid.Text = "OFF"
-            toggleRaid.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+            toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         end
 
         -- Bật/tắt RAID khi bấm nút
