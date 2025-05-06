@@ -1019,7 +1019,7 @@ return function(sections)
     do
         local btnRandRace = Instance.new("TextButton", HomeFrame)
         btnRandRace.Size = UDim2.new(0, 320, 0, 40)
-        btnRandRace.Position = UDim2.new(0, 10, 0, 500)
+        btnRandRace.Position = UDim2.new(0, 10, 0, 520)
         btnRandRace.Text = "🎲 Random Race"
         btnRandRace.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
         btnRandRace.TextColor3 = Color3.new(1, 1, 1)
