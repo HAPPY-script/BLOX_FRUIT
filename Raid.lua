@@ -150,10 +150,10 @@ return function(sections)
 
         -- Dropdown chọn loại Microchip
         local dropdown = Instance.new("TextButton", HomeFrame)
-        dropdown.Size = UDim2.new(0, 320, 0, 40)
-        dropdown.Position = UDim2.new(0, 10, 0, 110)
-        dropdown.Text = "🔥 Select Microchip: " .. selectedChip
-        dropdown.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+        dropdown.Size = UDim2.new(0, 220, 0, 40)
+        dropdown.Position = UDim2.new(0, 10, 0, 55)
+        dropdown.Text = "🧩Microchip: " .. selectedChip
+        dropdown.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
         dropdown.TextColor3 = Color3.new(1, 1, 1)
         dropdown.Font = Enum.Font.SourceSansBold
         dropdown.TextSize = 18
@@ -166,8 +166,8 @@ return function(sections)
 
         -- Menu chọn chip
         local chipMenu = Instance.new("Frame", HomeFrame)
-        chipMenu.Size = UDim2.new(0, 320, 0, #chipList * 30)
-        chipMenu.Position = UDim2.new(0, 10, 0, 150)
+        chipMenu.Size = UDim2.new(0, 220, 0, #chipList * 30)
+        chipMenu.Position = UDim2.new(0, 10, 0, 95)
         chipMenu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         chipMenu.Visible = false
 
@@ -184,7 +184,7 @@ return function(sections)
 
             btn.MouseButton1Click:Connect(function()
                 selectedChip = chipName
-                dropdown.Text = "🔥 Select Microchip: " .. selectedChip
+                dropdown.Text = "🧩Microchip: " .. selectedChip
                 chipMenu.Visible = false
             end)
         end
@@ -196,13 +196,13 @@ return function(sections)
 
         -- Nút mua microchip
         local btnBuyChip = Instance.new("TextButton", HomeFrame)
-        btnBuyChip.Size = UDim2.new(0, 320, 0, 40)
-        btnBuyChip.Position = UDim2.new(0, 10, 0, 160 + #chipList * 30)
-        btnBuyChip.Text = "🧩 Buy Microchip"
-        btnBuyChip.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+        btnBuyChip.Size = UDim2.new(0, 90, 0, 30)
+        btnBuyChip.Position = UDim2.new(0, 240, 0, 60)
+        btnBuyChip.Text = "Buy🛒"
+        btnBuyChip.BackgroundColor3 = Color3.fromRGB(50, 50, 255)
         btnBuyChip.TextColor3 = Color3.new(1, 1, 1)
         btnBuyChip.Font = Enum.Font.SourceSansBold
-        btnBuyChip.TextSize = 20
+        btnBuyChip.TextSize = 18
 
         btnBuyChip.MouseButton1Click:Connect(function()
             local args = {
