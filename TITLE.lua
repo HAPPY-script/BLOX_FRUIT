@@ -43,6 +43,17 @@ return function(sections)
         TitleBone.Font = Enum.Font.SourceSansBold
         TitleBone.BorderSizePixel = 2
         TitleBone.BorderColor3 = Color3.new(255, 255, 255)
+
+        local TitleBone = Instance.new("TextLabel", HomeFrame)
+        TitleBone.Size = UDim2.new(0, 220, 0, 30)
+        TitleBone.Position = UDim2.new(0, 10, 0, 160)
+        TitleBone.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleBone.TextColor3 = Color3.new(1, 1, 1)
+        TitleBone.Text = "FARM AREA🧟"
+        TitleBone.TextScaled = true
+        TitleBone.Font = Enum.Font.SourceSansBold
+        TitleBone.BorderSizePixel = 2
+        TitleBone.BorderColor3 = Color3.new(255, 255, 255)
     end
 
     -- VISUAL ---------------------------------------------------------
