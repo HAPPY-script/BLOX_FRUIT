@@ -257,7 +257,6 @@ return function(sections)
         end)
     end
 
-    do
     wait(0.2)
 
     print("Raid tad SUCCESS✅")
