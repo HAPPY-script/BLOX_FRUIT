@@ -223,7 +223,6 @@ return function(sections)
 
         --BUY CHIP------------------------------------------------------------------------------------------------------------------
     do
-        local HomeFrame = sections["Raid"]
         local btnStartRaid = Instance.new("TextButton", HomeFrame)
         btnStartRaid.Size = UDim2.new(0, 320, 0, 40)
         btnStartRaid.Position = UDim2.new(0, 10, 0, 110)
