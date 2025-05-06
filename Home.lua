@@ -1357,6 +1357,134 @@ return function(sections)
         end)
     end
 
+        --FRAM AREA-------------------------------------------------------------------------------------------------
+    do
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        local RunService = game:GetService("RunService")
+        local TweenService = game:GetService("TweenService")
+
+        -- Nút bật/tắt Farm Area
+        local toggleFarm = Instance.new("TextButton", HomeFrame)
+        toggleFarm.Size = UDim2.new(0, 90, 0, 30)
+        toggleFarm.Position = UDim2.new(0, 240, 0, 160)
+        toggleFarm.Text = "OFF"
+        toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        toggleFarm.TextColor3 = Color3.new(1, 1, 1)
+        toggleFarm.Font = Enum.Font.SourceSansBold
+        toggleFarm.TextScaled = true
+
+        -- Trạng thái
+        local running = false
+        local farmCenter = nil
+
+        -- Tween tiện ích
+        local function tweenTo(pos)
+            local dist = (hrp.Position - pos).Magnitude
+            if dist > 10000 then return end
+            local tween = TweenService:Create(hrp, TweenInfo.new(dist / 300, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
+            tween:Play()
+            tween.Completed:Wait()
+        end
+
+        -- Tìm enemy trong vùng
+        local function getNearestEnemy(centerPos)
+            local folder = workspace:FindFirstChild("Enemies")
+            if not folder then return nil end
+
+            local nearest, nearestDist = nil, math.huge
+            for _, mob in ipairs(folder:GetChildren()) do
+                if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid") then
+                    local hp = mob:FindFirstChildOfClass("Humanoid")
+                    if hp and hp.Health > 0 then
+                        local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
+                        if dist < 2000 and dist < nearestDist then
+                            nearest = mob
+                            nearestDist = dist
+                        end
+                    end
+                end
+            end
+            return nearest
+        end
+
+        -- Theo dõi enemy
+        local function followEnemy(enemy)
+            local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
+            local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+            if not hrpEnemy or not humanoid then return end
+
+            local dist = (hrp.Position - hrpEnemy.Position).Magnitude
+            if dist > 200 then
+                tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
+            else
+                while humanoid.Health > 0 and running do
+                    hrp.CFrame = CFrame.new(hrpEnemy.Position + Vector3.new(0, 30, 0))
+                    RunService.RenderStepped:Wait()
+                end
+            end
+        end
+
+        -- Reset khi chết
+        player.CharacterAdded:Connect(function(newChar)
+            character = newChar
+            hrp = character:WaitForChild("HumanoidRootPart")
+            running = false
+            farmCenter = nil
+            toggleFarm.Text = "OFF"
+            toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        end)
+
+        -- Bật/tắt khi bấm nút
+        toggleFarm.MouseButton1Click:Connect(function()
+            running = not running
+            toggleFarm.Text = running and "ON" or "OFF"
+            toggleFarm.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+
+            if running then
+                farmCenter = hrp.Position
+            else
+                farmCenter = nil
+            end
+        end)
+
+        -- Auto farm vòng lặp
+        task.spawn(function()
+            while true do
+                task.wait()
+                if not running or not hrp or not farmCenter then continue end
+
+                -- Ra khỏi vùng 2000m thì quay về tâm
+                if (hrp.Position - farmCenter).Magnitude > 2000 then
+                    tweenTo(farmCenter + Vector3.new(0, 10, 0))
+                    continue
+                end
+
+                local target = getNearestEnemy(hrp.Position)
+                if target then
+                    followEnemy(target)
+                end
+            end
+        end)
+
+        -- Auto đánh
+        task.spawn(function()
+            while true do
+                task.wait(0.4)
+                if running then
+                    pcall(function()
+                        game:GetService("ReplicatedStorage")
+                            :WaitForChild("Modules")
+                            :WaitForChild("Net")
+                            :WaitForChild("RE/RegisterAttack")
+                            :FireServer(0.4)
+                    end)
+                end
+            end
+        end)
+    end
+
     wait(0.2)
 
     print("Home tad SUCCESS✅")
