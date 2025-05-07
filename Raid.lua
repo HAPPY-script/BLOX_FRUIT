@@ -158,17 +158,36 @@ return function(sections)
         btnStartRaid.MouseButton1Click:Connect(function()
             local clickDetector
 
-            -- Kiểm tra ClickDetector Sea 3 trước
-            local sea3 = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("BoatCastle")
-            if sea3 and sea3:FindFirstChild("RaidSummon2") then
-                clickDetector = sea3.RaidSummon2:FindFirstChild("Button") and sea3.RaidSummon2.Button:FindFirstChild("Main") and sea3.RaidSummon2.Button.Main:FindFirstChild("ClickDetector")
+            -- SEA 3: Boat Castle
+            local map = workspace:FindFirstChild("Map")
+            local boatCastle = map and map:FindFirstChild("Boat Castle")
+            if boatCastle then
+                local raid = boatCastle:FindFirstChild("RaidSummon2")
+                if raid then
+                    local button = raid:FindFirstChild("Button")
+                    if button then
+                        local main = button:FindFirstChild("Main")
+                        if main then
+                            clickDetector = main:FindFirstChild("ClickDetector")
+                        end
+                    end
+                end
             end
 
-            -- Nếu không tìm thấy ở Sea 3 thì thử Sea 2
+            -- SEA 2: CircleIsland
             if not clickDetector then
-                local sea2 = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("CircleIsland")
-                if sea2 and sea2:FindFirstChild("RaidSummon2") then
-                    clickDetector = sea2.RaidSummon2:FindFirstChild("Button") and sea2.RaidSummon2.Button:FindFirstChild("Main") and sea2.RaidSummon2.Button.Main:FindFirstChild("ClickDetector")
+                local circleIsland = map and map:FindFirstChild("CircleIsland")
+                if circleIsland then
+                    local raid = circleIsland:FindFirstChild("RaidSummon2")
+                    if raid then
+                        local button = raid:FindFirstChild("Button")
+                        if button then
+                            local main = button:FindFirstChild("Main")
+                            if main then
+                                clickDetector = main:FindFirstChild("ClickDetector")
+                            end
+                        end
+                    end
                 end
             end
 
@@ -178,7 +197,6 @@ return function(sections)
                 warn("❌ Không tìm thấy ClickDetector để Start Raid (không phải Sea 2 hoặc Sea 3).")
             end
         end)
-    end
 
         --BUY CHIP------------------------------------------------------------------------------------------------------------------
     do
