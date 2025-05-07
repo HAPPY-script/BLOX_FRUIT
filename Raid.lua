@@ -159,27 +159,16 @@ return function(sections)
             local clickDetector
 
             -- Kiểm tra ClickDetector Sea 3 trước
-            local map = workspace:FindFirstChild("Map")
-            if map and map:FindFirstChild("Boat Castle") then
-                local raid = map["BoatCastle"]:FindFirstChild("RaidSummon2")
-                if raid and raid:FindFirstChild("Button") then
-                    local buttonMain = raid.Button:FindFirstChild("Main")
-                    if buttonMain then
-                        clickDetector = buttonMain:FindFirstChild("ClickDetector")
-                    end
-                end
+            local sea3 = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("BoatCastle")
+            if sea3 and sea3:FindFirstChild("RaidSummon2") then
+                clickDetector = sea3.RaidSummon2:FindFirstChild("Button") and sea3.RaidSummon2.Button:FindFirstChild("Main") and sea3.RaidSummon2.Button.Main:FindFirstChild("ClickDetector")
             end
 
             -- Nếu không tìm thấy ở Sea 3 thì thử Sea 2
             if not clickDetector then
-                if map and map:FindFirstChild("CircleIsland") then
-                    local raid = map.CircleIsland:FindFirstChild("RaidSummon2")
-                    if raid and raid:FindFirstChild("Button") then
-                        local buttonMain = raid.Button:FindFirstChild("Main")
-                        if buttonMain then
-                            clickDetector = buttonMain:FindFirstChild("ClickDetector")
-                        end
-                    end
+                local sea2 = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("CircleIsland")
+                if sea2 and sea2:FindFirstChild("RaidSummon2") then
+                    clickDetector = sea2.RaidSummon2:FindFirstChild("Button") and sea2.RaidSummon2.Button:FindFirstChild("Main") and sea2.RaidSummon2.Button.Main:FindFirstChild("ClickDetector")
                 end
             end
 
