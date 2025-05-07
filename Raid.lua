@@ -156,21 +156,29 @@ return function(sections)
         btnStartRaid.TextSize = 20
 
         btnStartRaid.MouseButton1Click:Connect(function()
-            local clickDetector = nil
+            local clickDetector
 
-            -- Danh sách các đảo có thể có nút Raid
-            local possibleIslands = {
-                "Boat Castle", -- Sea 3
-                "CircleIsland" -- Sea 2
-            }
+            -- Kiểm tra ClickDetector Sea 3 trước
+            local map = workspace:FindFirstChild("Map")
+            if map and map:FindFirstChild("Boat Castle") then
+                local raid = map["Boat Castle"]:FindFirstChild("RaidSummon2")
+                if raid and raid:FindFirstChild("Button") then
+                    local buttonMain = raid.Button:FindFirstChild("Main")
+                    if buttonMain then
+                        clickDetector = buttonMain:FindFirstChild("ClickDetector")
+                    end
+                end
+            end
 
-            for _, islandName in ipairs(possibleIslands) do
-                local island = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild(islandName)
-                if island then
-                    local summon = island:FindFirstChild("RaidSummon2") or island:FindFirstChild("RaidSummon") or island:FindFirstChildWhichIsA("Model", true)
-                    if summon then
-                        clickDetector = summon:FindFirstChildWhichIsA("ClickDetector", true)
-                        if clickDetector then break end
+            -- Nếu không tìm thấy ở Sea 3 thì thử Sea 2
+            if not clickDetector then
+                if map and map:FindFirstChild("CircleIsland") then
+                    local raid = map.CircleIsland:FindFirstChild("RaidSummon2")
+                    if raid and raid:FindFirstChild("Button") then
+                        local buttonMain = raid.Button:FindFirstChild("Main")
+                        if buttonMain then
+                            clickDetector = buttonMain:FindFirstChild("ClickDetector")
+                        end
                     end
                 end
             end
@@ -178,7 +186,7 @@ return function(sections)
             if clickDetector then
                 fireclickdetector(clickDetector)
             else
-                warn("❌ Không tìm thấy ClickDetector để Start Raid (có thể đang không ở Sea 2 hoặc Sea 3, hoặc cấu trúc khác).")
+                warn("❌ Không tìm thấy ClickDetector để Start Raid (không phải Sea 2 hoặc Sea 3).")
             end
         end)
     end
