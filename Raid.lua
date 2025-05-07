@@ -161,7 +161,7 @@ return function(sections)
             -- Kiểm tra ClickDetector Sea 3 trước
             local map = workspace:FindFirstChild("Map")
             if map and map:FindFirstChild("Boat Castle") then
-                local raid = map["Boat Castle"]:FindFirstChild("RaidSummon2")
+                local raid = map["BoatCastle"]:FindFirstChild("RaidSummon2")
                 if raid and raid:FindFirstChild("Button") then
                     local buttonMain = raid.Button:FindFirstChild("Main")
                     if buttonMain then
