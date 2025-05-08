@@ -162,7 +162,7 @@ return function(sections)
             local map = workspace:FindFirstChild("Map")
             local boatCastle = map and map:FindFirstChild("Boat Castle")
             if boatCastle then
-                local raid = boatCastle:FindFirstChild("RaidSummon2")
+                local raid = boat Castle:FindFirstChild("RaidSummon2")
                 if raid then
                     local button = raid:FindFirstChild("Button")
                     if button then
