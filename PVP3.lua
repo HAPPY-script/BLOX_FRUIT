@@ -367,8 +367,6 @@ return function(sections)
         local EnemiesFolder = workspace:WaitForChild("Enemies")
         local LocalPlayer = Players.LocalPlayer
 
-        local HomeFrame = sections["Player"]
-
         -- Nút Fast Attack Enemy
         local btnFastAttackEnemy = Instance.new("TextButton", HomeFrame)
         btnFastAttackEnemy.Size = UDim2.new(0, 90, 0, 30)
