@@ -359,6 +359,99 @@ return function(sections)
         end)
     end
 
+        --FAST ATTACK======================================================================================================
+    do
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local Players = game:GetService("Players")
+        local Net = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net")
+        local EnemiesFolder = workspace:WaitForChild("Enemies")
+        local LocalPlayer = Players.LocalPlayer
+
+        local HomeFrame = sections["Player"]
+
+        -- Nút Fast Attack Enemy
+        local btnFastAttackEnemy = Instance.new("TextButton", HomeFrame)
+        btnFastAttackEnemy.Size = UDim2.new(0, 90, 0, 30)
+        btnFastAttackEnemy.Position = UDim2.new(0, 240, 0, 160)
+        btnFastAttackEnemy.Text = "OFF"
+        btnFastAttackEnemy.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        btnFastAttackEnemy.TextColor3 = Color3.new(1, 1, 1)
+        btnFastAttackEnemy.Font = Enum.Font.SourceSansBold
+        btnFastAttackEnemy.TextSize = 30
+
+        local isFastAttackEnemyEnabled = false
+
+        btnFastAttackEnemy.MouseButton1Click:Connect(function()
+        	isFastAttackEnemyEnabled = not isFastAttackEnemyEnabled
+        	btnFastAttackEnemy.Text = isFastAttackEnemyEnabled and "ON" or "OFF"
+        	btnFastAttackEnemy.BackgroundColor3 = isFastAttackEnemyEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+        end)
+
+        -- Nút Attack Player
+        local btnAttackPlayer = Instance.new("TextButton", HomeFrame)
+        btnAttackPlayer.Size = UDim2.new(0, 90, 0, 30)
+        btnAttackPlayer.Position = UDim2.new(0, 240, 0, 210)
+        btnAttackPlayer.Text = "OFF"
+        btnAttackPlayer.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        btnAttackPlayer.TextColor3 = Color3.new(1, 1, 1)
+        btnAttackPlayer.Font = Enum.Font.SourceSansBold
+        btnAttackPlayer.TextSize = 30
+
+        local isAttackPlayerEnabled = false
+
+        btnAttackPlayer.MouseButton1Click:Connect(function()
+        	isAttackPlayerEnabled = not isAttackPlayerEnabled
+        	btnAttackPlayer.Text = isAttackPlayerEnabled and "ON" or "OFF"
+        	btnAttackPlayer.BackgroundColor3 = isAttackPlayerEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+        end)
+
+        -- Tìm Enemy gần nhất
+        local function getClosestEnemy()
+        	local closest = nil
+        	local shortest = math.huge
+        	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        	if not hrp then return nil end
+        	for _, enemy in pairs(EnemiesFolder:GetChildren()) do
+        		local part = enemy:FindFirstChild("UpperTorso")
+        		if part then
+        			local dist = (part.Position - hrp.Position).Magnitude
+        			if dist < shortest then
+        				shortest = dist
+        				closest = part
+        			end
+        		end
+        	end
+        	return closest
+        end
+
+        -- Coroutine tấn công Enemy
+        coroutine.wrap(function()
+        	while true do
+        		if isFastAttackEnemyEnabled then
+        			local target = getClosestEnemy()
+        			if target then
+        				Net:WaitForChild("RE/RegisterHit"):FireServer(target, {}, "3269aee8")
+        			end
+        		end
+        		wait(0.05)
+        	end
+        end)()
+
+        -- Coroutine tấn công Player (luôn chạy nếu bật)
+        coroutine.wrap(function()
+        	while true do
+        		if isAttackPlayerEnabled then
+        			for _, player in pairs(Players:GetPlayers()) do
+        				if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+        					Net:WaitForChild("RE/RegisterHit"):FireServer(player.Character.Head, {}, "326880d6")
+        				end
+        			end
+        		end
+        		wait(0.05)
+        	end
+        end)()
+    end
+
     wait(0.2)
 
     print("PVP tad SUCCESS✅")
