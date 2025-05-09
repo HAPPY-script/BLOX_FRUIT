@@ -381,6 +381,88 @@ return function(sections)
         end)
     end
 
+        --SELECT TEAM======================================================================================================
+    do
+        -- Tạo frame chứa 2 nút
+        local teamFrame = Instance.new("Frame", HomeFrame)
+        teamFrame.Size = UDim2.new(0, 320, 0, 40)
+        teamFrame.Position = UDim2.new(0, 10, 0, 255)
+        teamFrame.BackgroundTransparency = 1
+
+        -- Marines Button
+        local btnMarines = Instance.new("TextButton", teamFrame)
+        btnMarines.Size = UDim2.new(0, 160, 0, 40)
+        btnMarines.Position = UDim2.new(0, 0, 0, 0)
+        btnMarines.Text = "Marines"
+        btnMarines.BackgroundColor3 = Color3.fromRGB(52, 152, 219)
+        btnMarines.TextColor3 = Color3.new(1, 1, 1)
+        btnMarines.Font = Enum.Font.SourceSansBold
+        btnMarines.TextSize = 20
+        btnMarines.BorderSizePixel = 0
+
+        -- Pirates Button
+        local btnPirates = Instance.new("TextButton", teamFrame)
+        btnPirates.Size = UDim2.new(0, 160, 0, 40)
+        btnPirates.Position = UDim2.new(0, 160, 0, 0)
+        btnPirates.Text = "Pirates"
+        btnPirates.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
+        btnPirates.TextColor3 = Color3.new(1, 1, 1)
+        btnPirates.Font = Enum.Font.SourceSansBold
+        btnPirates.TextSize = 20
+        btnPirates.BorderSizePixel = 0
+
+        -- Overlay để chặn bấm + countdown
+        local cooldownOverlay = Instance.new("TextLabel", teamFrame)
+        cooldownOverlay.Size = UDim2.new(1, 0, 1, 0)
+        cooldownOverlay.Position = UDim2.new(0, 0, 0, 0)
+        cooldownOverlay.BackgroundColor3 = Color3.new(0, 0, 0)
+        cooldownOverlay.BackgroundTransparency = 0.4
+        cooldownOverlay.TextColor3 = Color3.new(1, 1, 1)
+        cooldownOverlay.Font = Enum.Font.SourceSansBold
+        cooldownOverlay.TextSize = 20
+        cooldownOverlay.Text = ""
+        cooldownOverlay.Visible = false
+
+        -- Hàm cooldown 10s
+        local isCooldown = false
+        local function handleCooldown()
+        	isCooldown = true
+        	btnMarines.Active = false
+        	btnMarines.AutoButtonColor = false
+        	btnPirates.Active = false
+        	btnPirates.AutoButtonColor = false
+        	cooldownOverlay.Visible = true
+
+        	for i = 10, 1, -1 do
+        		cooldownOverlay.Text = "Wait " .. i .. "s"
+        		wait(1)
+        	end
+
+        	cooldownOverlay.Text = ""
+        	cooldownOverlay.Visible = false
+        	btnMarines.Active = true
+        	btnMarines.AutoButtonColor = true
+        	btnPirates.Active = true
+        	btnPirates.AutoButtonColor = true
+        	isCooldown = false
+        end
+
+        -- Xử lý nút
+        btnMarines.MouseButton1Click:Connect(function()
+        	if isCooldown then return end
+        	local args = { "SetTeam", "Marines" }
+        	game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+        	handleCooldown()
+        end)
+
+        btnPirates.MouseButton1Click:Connect(function()
+        	if isCooldown then return end
+        	local args = { "SetTeam", "Pirates" }
+        	game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer(unpack(args))
+        	handleCooldown()
+        end)
+    end
+
     wait(0.2)
 
     print("Player tad SUCCESS✅")
