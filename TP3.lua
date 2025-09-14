@@ -270,7 +270,7 @@ end
 do
     local btn = Instance.new("TextButton", HomeFrame)
     btn.Size = UDim2.new(0, 320, 0, 40)
-    btn.Position = UDim2.new(0, 10, 0, 560)
+    btn.Position = UDim2.new(0, 10, 0, 610)
     btn.Text = "Unsersea"
     btn.BackgroundColor3 = Color3.fromRGB(0, 110, 255)
     btn.TextColor3 = Color3.new(255, 255, 255)
