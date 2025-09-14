@@ -140,7 +140,7 @@ ContentFrame.Size = UDim2.new(1, -60, 1, -30)
 ContentFrame.Position = UDim2.new(0, 55, 0, 30)
 ContentFrame.BackgroundColor3 = Color3.fromRGB(25, 18, 40)
 ContentFrame.ScrollBarThickness = 5
-ContentFrame.CanvasSize = UDim2.new(0, 0, 2, 0) -- phần cuộn chuột các nút
+ContentFrame.CanvasSize = UDim2.new(0, 0, 3, 0) -- phần cuộn chuột các nút
 ContentFrame.Parent = Frame
 
 -- Tiêu đề menu
