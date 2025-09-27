@@ -13,6 +13,10 @@ return function(sections)
         -- Sea 3
         local PVPPage3 = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/PVP3.lua"))()
         PVPPage3(sections)
+    elseif placeId == 95165932064349 then
+        -- Even
+        local PVPPage3 = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/PVP3.lua"))()
+        PVPPage3(sections)
     else
         -- Nếu không phải cả 3 Sea trên, chạy script ngoại lệ
         loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/NONE/refs/heads/main/NONE"))()
