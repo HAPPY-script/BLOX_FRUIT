@@ -361,3 +361,79 @@ ShopPage(sections)
 wait(0.2)
 
 print("✅✅Blox Fruit hub SUCCESS✅✅")
+
+-- se
+local BLOX_FRUITS_GAME_ID = 2753915549
+local SECOND_SEA_GAME_ID = 4442272183
+local THIRD_SEA_GAME_ID = 100117331123089
+
+local currentGameId = game.PlaceId
+if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID or currentGameId == THIRD_SEA_GAME_ID then
+
+    local RunService = game:GetService("RunService")
+    local player = game.Players.LocalPlayer
+
+    -- 🧱 Tầng block chính
+    local blockMain = Instance.new("Part")
+    blockMain.Size = Vector3.new(500, 2.1, 500)
+    blockMain.Anchored = true
+    blockMain.Position = Vector3.new(0, 0, 0)
+    blockMain.Transparency = 1
+    blockMain.CanCollide = true
+    blockMain.Parent = workspace
+
+    -- 🧱 Tầng block phụ (sâu hơn)
+    local blockBottom = Instance.new("Part")
+    blockBottom.Size = Vector3.new(500, 2.1, 500)
+    blockBottom.Anchored = true
+    blockBottom.Position = Vector3.new(0, -2160, 0)
+    blockBottom.Transparency = 1
+    blockBottom.CanCollide = true
+    blockBottom.Parent = workspace
+
+    -- ⚙️ Cập nhật vị trí & logic bảo vệ
+    local function updateBlockPosition(character)
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        local humanoid = character:WaitForChild("Humanoid")
+
+        local connection
+        connection = RunService.RenderStepped:Connect(function()
+            if not character or not hrp then return end
+
+            local playerPos = hrp.Position
+
+            -- Di chuyển 2 block theo người chơi
+            blockMain.Position = Vector3.new(playerPos.X, -5, playerPos.Z)
+            blockBottom.Position = Vector3.new(playerPos.X, -2163, playerPos.Z)
+
+            local mainSurfaceY = blockMain.Position.Y + (blockMain.Size.Y / 2)
+            local bottomSurfaceY = blockBottom.Position.Y + (blockBottom.Size.Y / 2)
+
+            -- Nếu nhân vật nằm dưới block chính, nhưng không quá 100m => bị lún, kéo lên
+            if hrp.Position.Y < mainSurfaceY and hrp.Position.Y > blockMain.Position.Y - 100 then
+                hrp.CFrame = CFrame.new(hrp.Position.X, mainSurfaceY + 5, hrp.Position.Z)
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+
+            -- Nếu rơi sâu hơn cả block phụ (phòng trường hợp bug cực nặng)
+            if hrp.Position.Y < bottomSurfaceY then
+                hrp.CFrame = CFrame.new(hrp.Position.X, bottomSurfaceY + 10, hrp.Position.Z)
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+
+        player.CharacterRemoving:Connect(function()
+            if connection then connection:Disconnect() end
+        end)
+    end
+
+    player.CharacterAdded:Connect(updateBlockPosition)
+    if player.Character then
+        updateBlockPosition(player.Character)
+    end
+
+else
+    warn("Script này chỉ hoạt động trong game Blox Fruits.")
+end
+
+print("✅✅ Sea Protection Active ✅✅")
