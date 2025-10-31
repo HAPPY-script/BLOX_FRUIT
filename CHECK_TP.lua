@@ -1,10 +1,11 @@
+local sea1ID = 85211729168715
 local sea2ID = 79091703265657
 local sea3ID = 100117331123089
 
 return function(sections)
     local placeId = game.PlaceId
 
-    if placeId == 2753915549 then
+    if placeId == sea1ID then
         local TPPage1 = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/TP1.lua"))()
         TPPage1(sections)
     elseif placeId == sea2ID then
