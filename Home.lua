@@ -927,13 +927,73 @@ return function(sections)
             },
             {
                 MinLevel = 2575,
-                MaxLevel = 99999,
+                MaxLevel = 2599,
                 MobName = "Skull Slayer",
                 FarmPos = Vector3.new(-16843.12, 71.28, 1643.89),
                 QuestNPCPos = Vector3.new(-16654.62, 105.88, 1590.55),
                 QuestName = "TikiQuest3",
                 QuestIndex = 2,
                 RewardBeli = 16000
+            },
+            {
+                MinLevel = 2600,
+                MaxLevel = 2624,
+                MobName = "Reef Bandit",
+                FarmPos = Vector3.new(10984.98, -2024.68, 9170.98),
+                QuestNPCPos = Vector3.new(10780.76, -2083.79, 9260.74),
+                QuestName = "SubmergedQuest1",
+                QuestIndex = 1,
+                RewardBeli = 15450
+            },
+            {
+                MinLevel = 2625,
+                MaxLevel = 2649,
+                MobName = "Coral Pirate",
+                FarmPos = Vector3.new(10749.90, -2078.04, 9471.10),
+                QuestNPCPos = Vector3.new(10780.76, -2083.79, 9260.74),
+                QuestName = "SubmergedQuest1",
+                QuestIndex = 2,
+                RewardBeli = 15500
+            },
+            {
+                MinLevel = 2650,
+                MaxLevel = 2674,
+                MobName = "Sea Chanter",
+                FarmPos = Vector3.new(10697.05, -2052.69, 9993.14),
+                QuestNPCPos = Vector3.new(10883.67, -2082.30, 10034.12),
+                QuestName = "SubmergedQuest2",
+                QuestIndex = 1,
+                RewardBeli = 15550
+            },
+            {
+                MinLevel = 2675,
+                MaxLevel = 2699,
+                MobName = "Ocean Prophet",
+                FarmPos = Vector3.new(10985.31, -2047.34, 10188.33),
+                QuestNPCPos = Vector3.new(10883.67, -2082.30, 10034.12),
+                QuestName = "SubmergedQuest3",
+                QuestIndex = 2,
+                RewardBeli = 15600
+            },
+            {
+                MinLevel = 2700,
+                MaxLevel = 2724,
+                MobName = "High Disciple",
+                FarmPos = Vector3.new(9807.89, -1989.81, 9674.30),
+                QuestNPCPos = Vector3.new(9637.59, -1988.38, 9616.68),
+                QuestName = "SubmergedQuest3",
+                QuestIndex = 1,
+                RewardBeli = 15650
+            },
+            {
+                MinLevel = 2725,
+                MaxLevel = 99999,
+                MobName = "Grand Devotee",
+                FarmPos = Vector3.new(9577.99, -1928.17, 9935.49),
+                QuestNPCPos = Vector3.new(9637.59, -1988.38, 9616.68),
+                QuestName = "SubmergedQuest3",
+                QuestIndex = 2,
+                RewardBeli = 15700
             }
         }
 
