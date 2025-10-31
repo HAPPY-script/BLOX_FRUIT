@@ -409,8 +409,8 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
             local mainSurfaceY = blockMain.Position.Y + (blockMain.Size.Y / 2)
             local bottomSurfaceY = blockBottom.Position.Y + (blockBottom.Size.Y / 2)
 
-            -- Nếu nhân vật nằm dưới block chính, nhưng không quá 100m => bị lún, kéo lên
-            if hrp.Position.Y < mainSurfaceY and hrp.Position.Y > blockMain.Position.Y - 100 then
+            -- Nếu nhân vật nằm dưới block chính, nhưng không quá 300m => bị lún, kéo lên
+            if hrp.Position.Y < mainSurfaceY and hrp.Position.Y > blockMain.Position.Y - 300 then
                 hrp.CFrame = CFrame.new(hrp.Position.X, mainSurfaceY + 5, hrp.Position.Z)
                 humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
             end
