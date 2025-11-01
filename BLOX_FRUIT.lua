@@ -373,7 +373,6 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
     local RunService = game:GetService("RunService")
     local player = game.Players.LocalPlayer
 
-    -- 🧱 Tầng block chính
     local blockMain = Instance.new("Part")
     blockMain.Size = Vector3.new(500, 2.1, 500)
     blockMain.Anchored = true
@@ -382,19 +381,6 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
     blockMain.CanCollide = true
     blockMain.Parent = workspace
 
-    -- 🧱 Tầng block phụ (Sea 3)
-    local blockBottom
-    if currentGameId == THIRD_SEA_GAME_ID then
-        blockBottom = Instance.new("Part")
-        blockBottom.Size = Vector3.new(500, 2.1, 500)
-        blockBottom.Anchored = true
-        blockBottom.Position = Vector3.new(0, -2160, 0)
-        blockBottom.Transparency = 1
-        blockBottom.CanCollide = true
-        blockBottom.Parent = workspace
-    end
-
-    -- ⚙️ Cập nhật vị trí & xử lý giới hạn
     local function updateBlockPosition(character)
         local hrp = character:WaitForChild("HumanoidRootPart")
         local humanoid = character:WaitForChild("Humanoid")
@@ -405,32 +391,12 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
 
             local playerPos = hrp.Position
 
-            -- 🧱 Block chính luôn theo người chơi
             blockMain.Position = Vector3.new(playerPos.X, -5, playerPos.Z)
             local mainSurfaceY = blockMain.Position.Y + (blockMain.Size.Y / 2)
 
-            -- 🚫 Nếu nhân vật dưới block chính nhưng chưa quá 500m → kéo lên
             if hrp.Position.Y < mainSurfaceY and hrp.Position.Y > blockMain.Position.Y - 500 then
                 hrp.CFrame = CFrame.new(hrp.Position.X, mainSurfaceY + 5, hrp.Position.Z)
                 humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-
-            -- 🧱 Nếu có block phụ (Sea 3)
-            if blockBottom then
-                blockBottom.Position = Vector3.new(playerPos.X, -2163, playerPos.Z)
-                local bottomSurfaceY = blockBottom.Position.Y + (blockBottom.Size.Y / 2)
-
-                -- 🚫 Nếu nhân vật nằm dưới block phụ nhưng chưa quá 500m
-                if hrp.Position.Y < bottomSurfaceY and hrp.Position.Y > blockBottom.Position.Y - 500 then
-                    hrp.CFrame = CFrame.new(hrp.Position.X, bottomSurfaceY + 5, hrp.Position.Z)
-                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                end
-
-                -- 🛑 Nếu rơi sâu hơn 500m dưới block phụ
-                if hrp.Position.Y < blockBottom.Position.Y - 300 then
-                    hrp.CFrame = CFrame.new(hrp.Position.X, bottomSurfaceY + 10, hrp.Position.Z)
-                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                end
             end
         end)
 
@@ -445,7 +411,7 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
     end
 
 else
-    warn("Script này chỉ hoạt động trong game Blox Fruits.")
+    warn("⚠️ Script này chỉ hoạt động trong game Blox Fruits.")
 end
 
-print("✅✅ Sea Protection Active ✅✅")
+print("✅✅ Sea Protection Active (Single Layer) ✅✅")
