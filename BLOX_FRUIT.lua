@@ -383,13 +383,16 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
     blockMain.Parent = workspace
 
     -- 🧱 Tầng block phụ (sâu hơn)
-    local blockBottom = Instance.new("Part")
-    blockBottom.Size = Vector3.new(500, 2.1, 500)
-    blockBottom.Anchored = true
-    blockBottom.Position = Vector3.new(0, -2160, 0)
-    blockBottom.Transparency = 1
-    blockBottom.CanCollide = true
-    blockBottom.Parent = workspace
+    local blockBottom
+    if currentGameId == THIRD_SEA_GAME_ID then
+        blockBottom = Instance.new("Part")
+        blockBottom.Size = Vector3.new(500, 2.1, 500)
+        blockBottom.Anchored = true
+        blockBottom.Position = Vector3.new(0, -2160, 0)
+        blockBottom.Transparency = 1
+        blockBottom.CanCollide = true
+        blockBottom.Parent = workspace
+    end
 
     -- ⚙️ Cập nhật vị trí & logic bảo vệ
     local function updateBlockPosition(character)
@@ -402,23 +405,26 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
 
             local playerPos = hrp.Position
 
-            -- Di chuyển 2 block theo người chơi
+            -- Di chuyển block chính
             blockMain.Position = Vector3.new(playerPos.X, -5, playerPos.Z)
-            blockBottom.Position = Vector3.new(playerPos.X, -2163, playerPos.Z)
-
             local mainSurfaceY = blockMain.Position.Y + (blockMain.Size.Y / 2)
-            local bottomSurfaceY = blockBottom.Position.Y + (blockBottom.Size.Y / 2)
 
-            -- Nếu nhân vật nằm dưới block chính, nhưng không quá 500m => bị lún, kéo lên
+            -- Nếu nhân vật nằm dưới block chính nhưng không quá 500m
             if hrp.Position.Y < mainSurfaceY and hrp.Position.Y > blockMain.Position.Y - 500 then
                 hrp.CFrame = CFrame.new(hrp.Position.X, mainSurfaceY + 5, hrp.Position.Z)
                 humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
             end
 
-            -- Nếu rơi sâu hơn cả block phụ (phòng trường hợp bug cực nặng)
-            if hrp.Position.Y < bottomSurfaceY then
-                hrp.CFrame = CFrame.new(hrp.Position.X, bottomSurfaceY + 10, hrp.Position.Z)
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            -- Nếu có block phụ (Sea 3)
+            if blockBottom then
+                blockBottom.Position = Vector3.new(playerPos.X, -2163, playerPos.Z)
+                local bottomSurfaceY = blockBottom.Position.Y + (blockBottom.Size.Y / 2)
+
+                -- Nếu rơi sâu hơn cả block phụ (phòng trường hợp bug cực nặng)
+                if hrp.Position.Y < bottomSurfaceY then
+                    hrp.CFrame = CFrame.new(hrp.Position.X, bottomSurfaceY + 10, hrp.Position.Z)
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
             end
         end)
 
