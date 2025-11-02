@@ -365,7 +365,7 @@ print("✅✅Blox Fruit hub SUCCESS✅✅")
 -- se
 local BLOX_FRUITS_GAME_ID = 85211729168715
 local SECOND_SEA_GAME_ID = 79091703265657
-local THIRD_SEA_GAME_ID = 100117331123089
+local THIRD_SEA_GAME_ID = 7449423635
 
 local currentGameId = game.PlaceId
 if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID or currentGameId == THIRD_SEA_GAME_ID then
@@ -409,9 +409,9 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
     if player.Character then
         updateBlockPosition(player.Character)
     end
+    
+    print("✅✅ Sea Protection Active (Single Layer) ✅✅")
 
 else
-    warn("⚠️ Script này chỉ hoạt động trong game Blox Fruits.")
+    warn("⚠️ Script Sea Protection chỉ hoạt động trong game Blox Fruits.")
 end
-
-print("✅✅ Sea Protection Active (Single Layer) ✅✅")
