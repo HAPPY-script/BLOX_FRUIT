@@ -1,6 +1,6 @@
 local sea1ID = 85211729168715
 local sea2ID = 79091703265657
-local sea3ID = 100117331123089
+local sea3ID = 7449423635
 return function(sections)
     local placeId = game.PlaceId
     if placeId == sea1ID then
