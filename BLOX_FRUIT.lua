@@ -365,7 +365,8 @@ print("✅✅Blox Fruit hub SUCCESS✅✅")
 -- se
 local BLOX_FRUITS_GAME_ID = 85211729168715
 local SECOND_SEA_GAME_ID = 79091703265657
-local THIRD_SEA_GAME_ID = 7449423635
+local THIRD_SEA_GAME_ID = 100117331123089
+local THIRD_SEA_GAME_ID2 = 0
 
 local currentGameId = game.PlaceId
 if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID or currentGameId == THIRD_SEA_GAME_ID then
