@@ -17,7 +17,7 @@ local iconButton = Instance.new("ImageButton")
 iconButton.Size = UDim2.new(0, 50, 0, 50)
 iconButton.Position = UDim2.new(0.05, 0, 0.05, 0) -- Vị trí ban đầu
 iconButton.BackgroundTransparency = 1
-iconButton.Image = "rbxthumb://type=Asset&id=86710626358228&w=150&h=150" -- Icon bạn yêu cầu
+iconButton.Image = "rbxthumb://type=Asset&id=86710626358228&w=150&h=150"
 iconButton.Parent = iconGui
 
 -- Kéo thả nút icon
