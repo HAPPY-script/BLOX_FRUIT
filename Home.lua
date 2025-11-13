@@ -1424,6 +1424,7 @@ return function(sections)
         local hrp = character:WaitForChild("HumanoidRootPart")
         local RunService = game:GetService("RunService")
         local TweenService = game:GetService("TweenService")
+        local UserInputService = game:GetService("UserInputService")
         local camera = workspace.CurrentCamera
 
         -- Nút bật/tắt Farm Area
@@ -1438,6 +1439,8 @@ return function(sections)
 
         local running = false
         local farmCenter = nil
+        local zoom = 75
+        local rotation = Vector2.new(45, 0)
 
         -- Tween tiện ích
         local function tweenTo(pos)
@@ -1447,6 +1450,34 @@ return function(sections)
             tween:Play()
             tween.Completed:Wait()
         end
+
+        -- Nhận góc xoay từ chuột
+        local dragging = false
+        local lastMousePos
+
+        UserInputService.InputBegan:Connect(function(input, processed)
+            if processed then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton2 then
+                dragging = true
+                lastMousePos = input.Position
+            end
+        end)
+
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton2 then
+                dragging = false
+            end
+        end)
+
+        UserInputService.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+                local delta = input.Delta
+                rotation = rotation + Vector2.new(-delta.Y * 0.25, -delta.X * 0.25)
+                rotation = Vector2.new(math.clamp(rotation.X, -80, 80), rotation.Y)
+            elseif input.UserInputType == Enum.UserInputType.MouseWheel then
+                zoom = math.clamp(zoom - input.Position.Z * 5, 15, 200)
+            end
+        end)
 
         -- Tìm enemy
         local function getNearestEnemy(centerPos)
@@ -1474,10 +1505,7 @@ return function(sections)
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
 
-            -- Khóa camera về chế độ Scriptable để không bị giật
             camera.CameraType = Enum.CameraType.Scriptable
-
-            local camOffset = Vector3.new(0, 45, 75) -- góc nhìn mượt cao hơn một chút
             local smoothness = 0.25
 
             local dist = (hrp.Position - hrpEnemy.Position).Magnitude
@@ -1485,22 +1513,21 @@ return function(sections)
                 tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
             else
                 while humanoid.Health > 0 and running do
-                    -- Cố định nhân vật chính xác tuyệt đối
+                    -- Giữ vị trí nhân vật cố định tuyệt đối
                     local lockPos = hrpEnemy.Position + Vector3.new(0, 30, 0)
                     hrp.CFrame = CFrame.new(lockPos)
 
-                    -- Cập nhật camera mượt, không giật
-                    local targetCamPos = lockPos + camOffset
-                    camera.CFrame = camera.CFrame:Lerp(
-                        CFrame.new(targetCamPos, lockPos),
-                        smoothness
-                    )
+                    -- Tính hướng xoay và cập nhật camera
+                    local rotationCFrame = CFrame.Angles(math.rad(rotation.X), math.rad(rotation.Y), 0)
+                    local camPos = lockPos + (rotationCFrame.LookVector * -zoom)
+
+                    -- Cập nhật camera mượt mà
+                    camera.CFrame = camera.CFrame:Lerp(CFrame.new(camPos, lockPos), smoothness)
 
                     RunService.RenderStepped:Wait()
                 end
             end
 
-            -- Trả lại camera nếu dừng
             if not running then
                 camera.CameraType = Enum.CameraType.Custom
             end
