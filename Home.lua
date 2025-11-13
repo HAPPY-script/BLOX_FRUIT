@@ -1018,8 +1018,12 @@ return function(sections)
         local function tweenTo(pos)
             local char = player.Character or player.CharacterAdded:Wait()
             local hrp = char:WaitForChild("HumanoidRootPart")
+
             local distance = (hrp.Position - pos).Magnitude
-            local tween = TweenService:Create(hrp, TweenInfo.new(distance / 300, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
+            if distance > 10000 then return end
+
+            local tweenTime = math.clamp(distance / 300, 0.5, 5) -- thời gian tween hợp lý
+            local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
             tween:Play()
             tween.Completed:Wait()
         end
@@ -1090,13 +1094,56 @@ return function(sections)
 
         -- Theo quái
         local function followMob(mob)
-            local hrp = player.Character:WaitForChild("HumanoidRootPart")
-            while mob and mob.Parent and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid").Health > 0 and running do
-                hrp.CFrame = CFrame.new(mob.HumanoidRootPart.Position + Vector3.new(0, 30, 0))
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            local camera = workspace.CurrentCamera
+            local RunService = game:GetService("RunService")
+
+            -- Tạo anchor ảo neo camera (giúp ổn định nhìn)
+            local anchor = Instance.new("Part")
+            anchor.Anchored = true
+            anchor.CanCollide = false
+            anchor.Transparency = 1
+            anchor.Size = Vector3.new(1, 1, 1)
+            anchor.CFrame = hrp.CFrame
+            anchor.Parent = workspace
+
+            camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = anchor
+
+            local anchorY = mob.HumanoidRootPart.Position.Y + 25
+            local lastUpdate = tick()
+
+            while mob and mob.Parent and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChildOfClass("Humanoid").Health > 0 and running do
+                local hrpEnemy = mob:FindFirstChild("HumanoidRootPart")
+                if not hrpEnemy then break end
+
+                -- Nếu đã hơn 2s hoặc mob di chuyển lên/xuống khác nhiều -> cập nhật Y
+                if (tick() - lastUpdate) > 2 or math.abs(anchorY - hrpEnemy.Position.Y) > 15 then
+                    anchorY = hrpEnemy.Position.Y + 25
+                    lastUpdate = tick()
+                end
+
+                -- Mục tiêu ổn định để neo camera và giữ vị trí
+                local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
+
+                -- Cập nhật anchor và vị trí người chơi mượt
+                anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
+
                 RunService.RenderStepped:Wait()
             end
-        end
 
+            -- Sau khi xong -> trả lại camera bình thường
+            camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = hrp
+
+            if anchor then
+                anchor:Destroy()
+            end
+        end
+        
         -- Toggle ON/OFF
         autoFarmBtn.MouseButton1Click:Connect(function()
             running = not running
@@ -1262,8 +1309,12 @@ return function(sections)
         local function tweenTo(pos)
             local char = player.Character or player.CharacterAdded:Wait()
             local hrp = char:WaitForChild("HumanoidRootPart")
+
             local distance = (hrp.Position - pos).Magnitude
-            local tween = TweenService:Create(hrp, TweenInfo.new(distance / 300, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
+            if distance > 10000 then return end
+
+            local tweenTime = math.clamp(distance / 300, 0.5, 5) -- thời gian tween hợp lý
+            local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
             tween:Play()
             tween.Completed:Wait()
         end
@@ -1334,10 +1385,53 @@ return function(sections)
 
         -- Theo quái
         local function followMob(mob)
-            local hrp = player.Character:WaitForChild("HumanoidRootPart")
-            while mob and mob.Parent and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid").Health > 0 and running do
-                hrp.CFrame = CFrame.new(mob.HumanoidRootPart.Position + Vector3.new(0, 30, 0))
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            local camera = workspace.CurrentCamera
+            local RunService = game:GetService("RunService")
+
+            -- Tạo anchor ảo neo camera (giúp ổn định nhìn)
+            local anchor = Instance.new("Part")
+            anchor.Anchored = true
+            anchor.CanCollide = false
+            anchor.Transparency = 1
+            anchor.Size = Vector3.new(1, 1, 1)
+            anchor.CFrame = hrp.CFrame
+            anchor.Parent = workspace
+
+            camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = anchor
+
+            local anchorY = mob.HumanoidRootPart.Position.Y + 25
+            local lastUpdate = tick()
+
+            while mob and mob.Parent and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid") and mob:FindFirstChildOfClass("Humanoid").Health > 0 and running do
+                local hrpEnemy = mob:FindFirstChild("HumanoidRootPart")
+                if not hrpEnemy then break end
+
+                -- Nếu đã hơn 2s hoặc mob di chuyển lên/xuống khác nhiều -> cập nhật Y
+                if (tick() - lastUpdate) > 2 or math.abs(anchorY - hrpEnemy.Position.Y) > 15 then
+                    anchorY = hrpEnemy.Position.Y + 25
+                    lastUpdate = tick()
+                end
+
+                -- Mục tiêu ổn định để neo camera và giữ vị trí
+                local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
+
+                -- Cập nhật anchor và vị trí người chơi mượt
+                anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
+
                 RunService.RenderStepped:Wait()
+            end
+
+            -- Sau khi xong -> trả lại camera bình thường
+            camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = hrp
+
+            if anchor then
+                anchor:Destroy()
             end
         end
 
