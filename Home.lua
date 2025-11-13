@@ -1535,6 +1535,8 @@ return function(sections)
         local anchor = nil
         local anchorY = nil
         local lastUpdate = 0
+        local anchorUpdateInterval = 1
+        local lastAnchorUpdate = 0
 
         -- 🧱 Tạo part làm tâm camera
         local function ensureAnchor()
@@ -1595,10 +1597,10 @@ return function(sections)
 
             local anchor = ensureAnchor()
 
-            -- Nếu chưa có Y hoặc đã 2s trôi qua -> cập nhật lại
-            if not anchorY or (tick() - lastUpdate) > 2 then
+            -- Cập nhật trục Y mỗi anchorUpdateInterval giây
+            if not anchorY or (tick() - lastAnchorUpdate) > anchorUpdateInterval then
                 anchorY = hrpEnemy.Position.Y + 25
-                lastUpdate = tick()
+                lastAnchorUpdate = tick()
             end
 
             camera.CameraType = Enum.CameraType.Custom
@@ -1610,9 +1612,7 @@ return function(sections)
             else
                 while humanoid.Health > 0 and running do
                     local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
-                    anchor.Position = anchor.Position:Lerp(targetPos, 0.15) -- mượt, tránh giật
-
-                    -- giữ player không trượt, nhưng không ép cứng
+                    anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
                     hrp.AssemblyLinearVelocity = Vector3.zero
                     hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
 
