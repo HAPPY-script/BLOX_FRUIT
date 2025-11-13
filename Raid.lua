@@ -132,19 +132,15 @@ return function(sections)
             while humanoid.Health > 0 and running do
                 if not hrp then break end
 
-                -- Cập nhật Y nếu enemy di chuyển cao/thấp
-                if (tick() - lastUpdate) > 0.5 or math.abs(anchorY - hrpEnemy.Position.Y) > 5 then
-                    anchorY = hrpEnemy.Position.Y + 25
-                    lastUpdate = tick()
-                end
+                -- Cập nhật anchorY liên tục, mượt theo enemy
+                local anchorY = hrpEnemy.Position.Y + 25
 
-                -- Vị trí mục tiêu
                 local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
 
                 -- Neo camera mượt
                 anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
 
-                -- Di chuyển HRP mượt, giữ yên không trượt
+                -- Di chuyển HRP mượt theo enemy
                 hrp.AssemblyLinearVelocity = Vector3.zero
                 hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
 
