@@ -1451,6 +1451,14 @@ return function(sections)
                 anchor.Transparency = 1
                 anchor.Size = Vector3.new(1, 1, 1)
                 anchor.Name = "CameraAnchor"
+        
+                -- 🧭 Tạo ngay tại vị trí hiện tại của người chơi
+                if hrp and hrp:IsDescendantOf(workspace) then
+                    anchor.Position = hrp.Position
+                else
+                    anchor.Position = Vector3.new(0, 10, 0)
+                end
+        
                 anchor.Parent = workspace
             end
             return anchor
