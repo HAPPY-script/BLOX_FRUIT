@@ -1424,9 +1424,10 @@ return function(sections)
         local hrp = character:WaitForChild("HumanoidRootPart")
         local RunService = game:GetService("RunService")
         local TweenService = game:GetService("TweenService")
+        local UserInputService = game:GetService("UserInputService")
         local camera = workspace.CurrentCamera
 
-        -- Nút bật/tắt Farm Area
+        -- Giao diện bật tắt
         local toggleFarm = Instance.new("TextButton", HomeFrame)
         toggleFarm.Size = UDim2.new(0, 90, 0, 30)
         toggleFarm.Position = UDim2.new(0, 240, 0, 160)
@@ -1438,8 +1439,34 @@ return function(sections)
 
         local running = false
         local farmCenter = nil
+        local zoom = 75
+        local rotation = Vector2.new(30, 0)
 
-        -- Tween tiện ích
+        local dragging = false
+
+        -- 🎯 Giữ góc xoay từ chuột
+        UserInputService.InputBegan:Connect(function(input, processed)
+            if processed then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton2 then
+                dragging = true
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton2 then
+                dragging = false
+            end
+        end)
+        UserInputService.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+                local delta = input.Delta
+                rotation = rotation + Vector2.new(-delta.Y * 0.25, -delta.X * 0.25)
+                rotation = Vector2.new(math.clamp(rotation.X, -80, 80), rotation.Y)
+            elseif input.UserInputType == Enum.UserInputType.MouseWheel then
+                zoom = math.clamp(zoom - input.Position.Z * 5, 15, 200)
+            end
+        end)
+
+        -- 🧭 Tween tiện ích
         local function tweenTo(pos)
             local dist = (hrp.Position - pos).Magnitude
             if dist > 10000 then return end
@@ -1448,17 +1475,17 @@ return function(sections)
             tween.Completed:Wait()
         end
 
-        -- Tìm enemy gần nhất
+        -- 🔍 Tìm enemy gần nhất
         local function getNearestEnemy(centerPos)
             local folder = workspace:FindFirstChild("Enemies")
             if not folder then return nil end
-            local nearest, nearestDist = nil, math.huge
+            local nearest, nearestDist
             for _, mob in ipairs(folder:GetChildren()) do
-                if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid") then
+                if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") then
                     local hp = mob:FindFirstChildOfClass("Humanoid")
                     if hp and hp.Health > 0 then
                         local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
-                        if dist < 2000 and dist < nearestDist then
+                        if not nearestDist or dist < nearestDist then
                             nearest = mob
                             nearestDist = dist
                         end
@@ -1468,61 +1495,66 @@ return function(sections)
             return nearest
         end
 
-        -- Theo dõi enemy
+        -- 🧠 Theo dõi enemy với điểm neo camera cố định
         local function followEnemy(enemy)
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
 
-            -- KHÔNG đổi camera type — để người chơi tự xoay zoom như mặc định
+            -- Tạo tọa độ cố định riêng (neo camera)
+            local fixedPoint = hrpEnemy.Position + Vector3.new(0, 25, 0)
+            local smoothness = 0.25
+            camera.CameraType = Enum.CameraType.Scriptable
+
             local dist = (hrp.Position - hrpEnemy.Position).Magnitude
             if dist > 200 then
-                tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
+                tweenTo(fixedPoint + Vector3.new(0, 5, 0))
             else
                 while humanoid.Health > 0 and running do
-                    -- Giữ vị trí cứng tuyệt đối, không giật, không rơi
-                    local lockPos = hrpEnemy.Position + Vector3.new(0, 30, 0)
-                    hrp.CFrame = CFrame.new(lockPos, hrpEnemy.Position)
+                    -- Giữ nhân vật ở vị trí an toàn, không rơi
+                    hrp.CFrame = CFrame.new(fixedPoint)
+
+                    -- Cập nhật camera dựa trên góc xoay hiện tại
+                    local rotCFrame = CFrame.Angles(math.rad(rotation.X), math.rad(rotation.Y), 0)
+                    local camPos = fixedPoint + (rotCFrame.LookVector * -zoom)
+                    local camCF = CFrame.new(camPos, fixedPoint)
+
+                    camera.CFrame = camera.CFrame:Lerp(camCF, smoothness)
 
                     RunService.RenderStepped:Wait()
                 end
             end
+
+            camera.CameraType = Enum.CameraType.Custom
         end
 
-        -- Reset khi chết
+        -- 🧩 Khi chết
         player.CharacterAdded:Connect(function(newChar)
             character = newChar
-            hrp = character:WaitForChild("HumanoidRootPart")
+            hrp = newChar:WaitForChild("HumanoidRootPart")
             running = false
             farmCenter = nil
             toggleFarm.Text = "OFF"
             toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+            camera.CameraType = Enum.CameraType.Custom
         end)
 
-        -- Bật/tắt
+        -- 🔘 Nút bật tắt
         toggleFarm.MouseButton1Click:Connect(function()
             running = not running
             toggleFarm.Text = running and "ON" or "OFF"
             toggleFarm.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
-
-            if running then
-                farmCenter = hrp.Position
-            else
-                farmCenter = nil
+            farmCenter = running and hrp.Position or nil
+            if not running then
+                camera.CameraType = Enum.CameraType.Custom
             end
         end)
 
-        -- Auto farm
+        -- ♻️ Auto farm
         task.spawn(function()
             while true do
                 task.wait()
-                if not running or not hrp or not farmCenter then continue end
-
-                if (hrp.Position - farmCenter).Magnitude > 2000 then
-                    tweenTo(farmCenter + Vector3.new(0, 10, 0))
-                    continue
-                end
-
+                if not running or not hrp then continue end
                 local target = getNearestEnemy(hrp.Position)
                 if target then
                     followEnemy(target)
@@ -1530,7 +1562,7 @@ return function(sections)
             end
         end)
 
-        -- Auto đánh
+        -- ⚔️ Auto đánh
         task.spawn(function()
             while true do
                 task.wait(0.4)
