@@ -1438,8 +1438,23 @@ return function(sections)
 
         local running = false
         local farmCenter = nil
-        local fixedY = nil
+        local anchor = nil
+        local anchorY = nil
         local lastUpdate = 0
+
+        -- 🧱 Tạo part làm tâm camera
+        local function ensureAnchor()
+            if not anchor or not anchor.Parent then
+                anchor = Instance.new("Part")
+                anchor.Anchored = true
+                anchor.CanCollide = false
+                anchor.Transparency = 1
+                anchor.Size = Vector3.new(1, 1, 1)
+                anchor.Name = "CameraAnchor"
+                anchor.Parent = workspace
+            end
+            return anchor
+        end
 
         -- 🧭 Tween tiện ích
         local function tweenTo(pos)
@@ -1470,32 +1485,35 @@ return function(sections)
             return nearest
         end
 
-        -- 🧠 Theo dõi enemy với điểm neo camera cố định Y
+        -- 🧠 Theo dõi enemy với anchor camera
         local function followEnemy(enemy)
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
 
+            local anchor = ensureAnchor()
+
             -- Nếu chưa có Y hoặc đã 2s trôi qua -> cập nhật lại
-            if not fixedY or (tick() - lastUpdate) > 2 then
-                fixedY = hrpEnemy.Position.Y + 25
+            if not anchorY or (tick() - lastUpdate) > 2 then
+                anchorY = hrpEnemy.Position.Y + 25
                 lastUpdate = tick()
             end
 
-            local smoothness = 0.15
-            camera.CameraType = Enum.CameraType.Custom -- Giữ tự do xoay, zoom
+            camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = anchor -- 👈 neo camera vào part này
 
             local dist = (hrp.Position - hrpEnemy.Position).Magnitude
             if dist > 200 then
                 tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
             else
                 while humanoid.Health > 0 and running do
-                    -- Giữ vị trí nhân vật
-                    local lockPos = Vector3.new(hrpEnemy.Position.X, fixedY, hrpEnemy.Position.Z)
-                    hrp.CFrame = CFrame.new(lockPos)
+                    local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
+                    anchor.Position = anchor.Position:Lerp(targetPos, 0.15) -- mượt, tránh giật
 
-                    -- Camera mặc định tự do, không chỉnh trực tiếp
-                    -- Chỉ giữ vị trí nhân vật ổn định, không ảnh hưởng tới camera
+                    -- giữ player không trượt, nhưng không ép cứng
+                    hrp.AssemblyLinearVelocity = Vector3.zero
+                    hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
+
                     RunService.RenderStepped:Wait()
                 end
             end
@@ -1506,10 +1524,12 @@ return function(sections)
             character = newChar
             hrp = newChar:WaitForChild("HumanoidRootPart")
             running = false
-            fixedY = nil
+            anchorY = nil
+            if anchor then anchor:Destroy() end
             toggleFarm.Text = "OFF"
             toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
             camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = hrp
         end)
 
         -- 🔘 Nút bật/tắt
@@ -1520,6 +1540,8 @@ return function(sections)
             farmCenter = running and hrp.Position or nil
             if not running then
                 camera.CameraType = Enum.CameraType.Custom
+                camera.CameraSubject = hrp
+                if anchor then anchor:Destroy() end
             end
         end)
 
