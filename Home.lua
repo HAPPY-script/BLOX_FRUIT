@@ -1435,9 +1435,9 @@ return function(sections)
         toggleFarm.Font = Enum.Font.SourceSansBold
         toggleFarm.TextScaled = true
 
-        -- Trạng thái
         local running = false
         local farmCenter = nil
+        local camera = workspace.CurrentCamera
 
         -- Tween tiện ích
         local function tweenTo(pos)
@@ -1448,11 +1448,10 @@ return function(sections)
             tween.Completed:Wait()
         end
 
-        -- Tìm enemy trong vùng
+        -- Tìm enemy
         local function getNearestEnemy(centerPos)
             local folder = workspace:FindFirstChild("Enemies")
             if not folder then return nil end
-
             local nearest, nearestDist = nil, math.huge
             for _, mob in ipairs(folder:GetChildren()) do
                 if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid") then
@@ -1469,18 +1468,30 @@ return function(sections)
             return nearest
         end
 
-        -- Theo dõi enemy
+        -- Theo dõi enemy (mượt + không giật camera)
         local function followEnemy(enemy)
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
 
+            -- Camera theo góc nhìn ổn định (không giật)
+            local camOffset = Vector3.new(0, 20, -20)
+            local cameraSmooth = TweenService:Create(
+                camera,
+                TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+                {CFrame = CFrame.new(hrp.Position + camOffset, hrpEnemy.Position)}
+            )
+            cameraSmooth:Play()
+
+            -- Di chuyển tới enemy mượt
             local dist = (hrp.Position - hrpEnemy.Position).Magnitude
             if dist > 200 then
                 tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
             else
                 while humanoid.Health > 0 and running do
-                    hrp.CFrame = CFrame.new(hrpEnemy.Position + Vector3.new(0, 30, 0))
+                    local targetPos = hrpEnemy.Position + Vector3.new(0, 25, 0)
+                    local newCFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
+                    hrp.CFrame = newCFrame
                     RunService.RenderStepped:Wait()
                 end
             end
@@ -1496,7 +1507,7 @@ return function(sections)
             toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         end)
 
-        -- Bật/tắt khi bấm nút
+        -- Bật/tắt farm
         toggleFarm.MouseButton1Click:Connect(function()
             running = not running
             toggleFarm.Text = running and "ON" or "OFF"
@@ -1509,13 +1520,12 @@ return function(sections)
             end
         end)
 
-        -- Auto farm vòng lặp
+        -- Auto farm
         task.spawn(function()
             while true do
                 task.wait()
                 if not running or not hrp or not farmCenter then continue end
 
-                -- Ra khỏi vùng 2000m thì quay về tâm
                 if (hrp.Position - farmCenter).Magnitude > 2000 then
                     tweenTo(farmCenter + Vector3.new(0, 10, 0))
                     continue
