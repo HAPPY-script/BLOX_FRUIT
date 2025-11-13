@@ -1424,6 +1424,7 @@ return function(sections)
         local hrp = character:WaitForChild("HumanoidRootPart")
         local RunService = game:GetService("RunService")
         local TweenService = game:GetService("TweenService")
+        local camera = workspace.CurrentCamera
 
         -- Nút bật/tắt Farm Area
         local toggleFarm = Instance.new("TextButton", HomeFrame)
@@ -1437,7 +1438,6 @@ return function(sections)
 
         local running = false
         local farmCenter = nil
-        local camera = workspace.CurrentCamera
 
         -- Tween tiện ích
         local function tweenTo(pos)
@@ -1468,32 +1468,41 @@ return function(sections)
             return nearest
         end
 
-        -- Theo dõi enemy (mượt + không giật camera)
+        -- Theo dõi enemy
         local function followEnemy(enemy)
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
 
-            -- Camera theo góc nhìn ổn định (không giật)
-            local camOffset = Vector3.new(0, 20, -20)
-            local cameraSmooth = TweenService:Create(
-                camera,
-                TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
-                {CFrame = CFrame.new(hrp.Position + camOffset, hrpEnemy.Position)}
-            )
-            cameraSmooth:Play()
+            -- Khóa camera về chế độ Scriptable để không bị giật
+            camera.CameraType = Enum.CameraType.Scriptable
 
-            -- Di chuyển tới enemy mượt
+            local camOffset = Vector3.new(0, 45, 75) -- góc nhìn mượt cao hơn một chút
+            local smoothness = 0.25
+
             local dist = (hrp.Position - hrpEnemy.Position).Magnitude
             if dist > 200 then
                 tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
             else
                 while humanoid.Health > 0 and running do
-                    local targetPos = hrpEnemy.Position + Vector3.new(0, 25, 0)
-                    local newCFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
-                    hrp.CFrame = newCFrame
+                    -- Cố định nhân vật chính xác tuyệt đối
+                    local lockPos = hrpEnemy.Position + Vector3.new(0, 30, 0)
+                    hrp.CFrame = CFrame.new(lockPos)
+
+                    -- Cập nhật camera mượt, không giật
+                    local targetCamPos = lockPos + camOffset
+                    camera.CFrame = camera.CFrame:Lerp(
+                        CFrame.new(targetCamPos, lockPos),
+                        smoothness
+                    )
+
                     RunService.RenderStepped:Wait()
                 end
+            end
+
+            -- Trả lại camera nếu dừng
+            if not running then
+                camera.CameraType = Enum.CameraType.Custom
             end
         end
 
@@ -1505,9 +1514,10 @@ return function(sections)
             farmCenter = nil
             toggleFarm.Text = "OFF"
             toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+            camera.CameraType = Enum.CameraType.Custom
         end)
 
-        -- Bật/tắt farm
+        -- Bật/tắt khi bấm nút
         toggleFarm.MouseButton1Click:Connect(function()
             running = not running
             toggleFarm.Text = running and "ON" or "OFF"
@@ -1517,6 +1527,7 @@ return function(sections)
                 farmCenter = hrp.Position
             else
                 farmCenter = nil
+                camera.CameraType = Enum.CameraType.Custom
             end
         end)
 
