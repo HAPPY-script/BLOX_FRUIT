@@ -17,7 +17,7 @@ local iconButton = Instance.new("ImageButton")
 iconButton.Size = UDim2.new(0, 50, 0, 50)
 iconButton.Position = UDim2.new(0.05, 0, 0.05, 0) -- Vị trí ban đầu
 iconButton.BackgroundTransparency = 1
-iconButton.Image = "rbxthumb://type=Asset&id=86710626358228&w=150&h=150"
+iconButton.Image = "rbxthumb://type=Asset&id=86710626358228&w=150&h=150" -- Icon bạn yêu cầu
 iconButton.Parent = iconGui
 
 -- Kéo thả nút icon
@@ -395,7 +395,7 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
             blockMain.Position = Vector3.new(playerPos.X, -5, playerPos.Z)
             local mainSurfaceY = blockMain.Position.Y + (blockMain.Size.Y / 2)
 
-            if hrp.Position.Y < mainSurfaceY and hrp.Position.Y > blockMain.Position.Y - 500 then
+            if hrp.Position.Y < mainSurfaceY and hrp.Position.Y > blockMain.Position.Y - 250 then
                 hrp.CFrame = CFrame.new(hrp.Position.X, mainSurfaceY + 5, hrp.Position.Z)
                 humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
             end
@@ -416,3 +416,7 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
 else
     warn("⚠️ Script Sea Protection chỉ hoạt động trong game Blox Fruits.")
 end
+
+wait(3)
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/FLY/refs/heads/main/FLY"))()
