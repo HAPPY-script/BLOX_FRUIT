@@ -416,7 +416,3 @@ if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID o
 else
     warn("⚠️ Script Sea Protection chỉ hoạt động trong game Blox Fruits.")
 end
-
-wait(3)
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/FLY/refs/heads/main/FLY"))()
