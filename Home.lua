@@ -1424,10 +1424,9 @@ return function(sections)
         local hrp = character:WaitForChild("HumanoidRootPart")
         local RunService = game:GetService("RunService")
         local TweenService = game:GetService("TweenService")
-        local UserInputService = game:GetService("UserInputService")
         local camera = workspace.CurrentCamera
 
-        -- Giao diện bật tắt
+        -- 🧩 Nút bật/tắt
         local toggleFarm = Instance.new("TextButton", HomeFrame)
         toggleFarm.Size = UDim2.new(0, 90, 0, 30)
         toggleFarm.Position = UDim2.new(0, 240, 0, 160)
@@ -1439,32 +1438,8 @@ return function(sections)
 
         local running = false
         local farmCenter = nil
-        local zoom = 75
-        local rotation = Vector2.new(30, 0)
-
-        local dragging = false
-
-        -- 🎯 Giữ góc xoay từ chuột
-        UserInputService.InputBegan:Connect(function(input, processed)
-            if processed then return end
-            if input.UserInputType == Enum.UserInputType.MouseButton2 then
-                dragging = true
-            end
-        end)
-        UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton2 then
-                dragging = false
-            end
-        end)
-        UserInputService.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-                local delta = input.Delta
-                rotation = rotation + Vector2.new(-delta.Y * 0.25, -delta.X * 0.25)
-                rotation = Vector2.new(math.clamp(rotation.X, -80, 80), rotation.Y)
-            elseif input.UserInputType == Enum.UserInputType.MouseWheel then
-                zoom = math.clamp(zoom - input.Position.Z * 5, 15, 200)
-            end
-        end)
+        local fixedY = nil
+        local lastUpdate = 0
 
         -- 🧭 Tween tiện ích
         local function tweenTo(pos)
@@ -1495,51 +1470,49 @@ return function(sections)
             return nearest
         end
 
-        -- 🧠 Theo dõi enemy với điểm neo camera cố định
+        -- 🧠 Theo dõi enemy với điểm neo camera cố định Y
         local function followEnemy(enemy)
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
 
-            -- Tạo tọa độ cố định riêng (neo camera)
-            local fixedPoint = hrpEnemy.Position + Vector3.new(0, 25, 0)
-            local smoothness = 0.25
-            camera.CameraType = Enum.CameraType.Scriptable
+            -- Nếu chưa có Y hoặc đã 2s trôi qua -> cập nhật lại
+            if not fixedY or (tick() - lastUpdate) > 2 then
+                fixedY = hrpEnemy.Position.Y + 25
+                lastUpdate = tick()
+            end
+
+            local smoothness = 0.15
+            camera.CameraType = Enum.CameraType.Custom -- Giữ tự do xoay, zoom
 
             local dist = (hrp.Position - hrpEnemy.Position).Magnitude
             if dist > 200 then
-                tweenTo(fixedPoint + Vector3.new(0, 5, 0))
+                tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
             else
                 while humanoid.Health > 0 and running do
-                    -- Giữ nhân vật ở vị trí an toàn, không rơi
-                    hrp.CFrame = CFrame.new(fixedPoint)
+                    -- Giữ vị trí nhân vật
+                    local lockPos = Vector3.new(hrpEnemy.Position.X, fixedY, hrpEnemy.Position.Z)
+                    hrp.CFrame = CFrame.new(lockPos)
 
-                    -- Cập nhật camera dựa trên góc xoay hiện tại
-                    local rotCFrame = CFrame.Angles(math.rad(rotation.X), math.rad(rotation.Y), 0)
-                    local camPos = fixedPoint + (rotCFrame.LookVector * -zoom)
-                    local camCF = CFrame.new(camPos, fixedPoint)
-
-                    camera.CFrame = camera.CFrame:Lerp(camCF, smoothness)
-
+                    -- Camera mặc định tự do, không chỉnh trực tiếp
+                    -- Chỉ giữ vị trí nhân vật ổn định, không ảnh hưởng tới camera
                     RunService.RenderStepped:Wait()
                 end
             end
-
-            camera.CameraType = Enum.CameraType.Custom
         end
 
-        -- 🧩 Khi chết
+        -- 🧩 Reset khi chết
         player.CharacterAdded:Connect(function(newChar)
             character = newChar
             hrp = newChar:WaitForChild("HumanoidRootPart")
             running = false
-            farmCenter = nil
+            fixedY = nil
             toggleFarm.Text = "OFF"
             toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
             camera.CameraType = Enum.CameraType.Custom
         end)
 
-        -- 🔘 Nút bật tắt
+        -- 🔘 Nút bật/tắt
         toggleFarm.MouseButton1Click:Connect(function()
             running = not running
             toggleFarm.Text = running and "ON" or "OFF"
