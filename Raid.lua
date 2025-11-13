@@ -8,24 +8,19 @@ return function(sections)
         local hrp = character:WaitForChild("HumanoidRootPart")
         local TweenService = game:GetService("TweenService")
         local RunService = game:GetService("RunService")
-        local camera = workspace.CurrentCamera
+        local VirtualInputManager = game:GetService("VirtualInputManager")
 
-        -- 🧩 Nút bật/tắt Auto RAID
+        -- Nút bật/tắt Auto RAID
         local toggleRaid = Instance.new("TextButton", HomeFrame)
         toggleRaid.Size = UDim2.new(0, 90, 0, 30)
         toggleRaid.Position = UDim2.new(0, 240, 0, 10)
         toggleRaid.Text = "OFF"
         toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         toggleRaid.TextColor3 = Color3.new(1, 1, 1)
-        toggleRaid.Font = Enum.Font.SourceSansBold
+    	toggleRaid.Font = Enum.Font.SourceSansBold
         toggleRaid.TextScaled = true
 
-        local running = false
         local anchor = nil
-        local anchorY = nil
-        local lastUpdate = 0
-
-        -- 🧱 Tạo anchor neo camera (vị trí người chơi)
         local function ensureAnchor()
             if not anchor or not anchor.Parent then
                 anchor = Instance.new("Part")
@@ -33,36 +28,67 @@ return function(sections)
                 anchor.CanCollide = false
                 anchor.Transparency = 1
                 anchor.Size = Vector3.new(1, 1, 1)
-                anchor.Name = "RaidCameraAnchor"
-
-                if hrp and hrp:IsDescendantOf(workspace) then
-                    anchor.Position = hrp.Position
-                else
-                    anchor.Position = Vector3.new(0, 10, 0)
-                end
-
+                anchor.CFrame = hrp.CFrame
                 anchor.Parent = workspace
             end
             return anchor
         end
 
-        -- 🧭 Tween tiện ích
+        -- Trạng thái RAID
+        local running = false
+        local autoClicking = false
+
+        -- Auto click remote
+        spawn(function()
+            while true do
+                task.wait(0.4)
+                if running then
+                    pcall(function()
+                        local args = {
+                            0.4000000059604645
+                        }
+                        game:GetService("ReplicatedStorage")
+                            :WaitForChild("Modules")
+                            :WaitForChild("Net")
+                            :WaitForChild("RE/RegisterAttack")
+                            :FireServer(unpack(args))
+                    end)
+                end
+            end
+        end)
+
+        -- Cập nhật giao diện về OFF
+        local function resetRaidButton()
+            running = false
+            autoClicking = false
+            toggleRaid.Text = "OFF"
+            toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        end
+
+        -- Bật/tắt RAID khi bấm nút
+        toggleRaid.MouseButton1Click:Connect(function()
+            running = not running
+            autoClicking = running
+            toggleRaid.Text = running and "ON" or "OFF"
+            toggleRaid.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+        end)
+
+        -- Tween đến vị trí
         local function tweenTo(pos)
-            if not hrp then return end
-            local dist = (hrp.Position - pos).Magnitude
-            if dist > 10000 then return end
-            local tweenTime = math.clamp(dist / 300, 0.5, 5)
+            local distance = (hrp.Position - pos).Magnitude
+            if distance > 5000 then return end
+            local tweenTime = math.clamp(distance / 300, 0.5, 5)
             local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
             tween:Play()
             tween.Completed:Wait()
         end
 
-        -- 🏝️ Tìm đảo RAID ưu tiên cao nhất
+        -- Tìm đảo có độ ưu tiên cao nhất
         local function getHighestPriorityIsland()
-            local map = workspace:FindFirstChild("Map")
-            if map and map:FindFirstChild("RaidMap") then
+            local island = workspace:FindFirstChild("Map")
+            if island and island:FindFirstChild("RaidMap") then
                 for i = 5, 1, -1 do
-                    local model = map.RaidMap:FindFirstChild("RaidIsland" .. i)
+                    local model = island.RaidMap:FindFirstChild("RaidIsland"..i)
                     if model and model:IsA("Model") then
                         return model
                     end
@@ -71,7 +97,7 @@ return function(sections)
             return nil
         end
 
-        -- 👿 Lấy danh sách quái gần
+        -- Lấy quái gần
         local function getEnemiesNear(origin)
             local enemies = {}
             local folder = workspace:FindFirstChild("Enemies")
@@ -87,96 +113,74 @@ return function(sections)
             return enemies
         end
 
-        -- ⚔️ Theo quái (mượt, neo camera y như script 1)
+        -- Theo dõi và đánh quái
         local function followEnemy(enemy)
+            if not enemy or not enemy.Parent then return end
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
 
             local anchor = ensureAnchor()
+            local anchorY = hrpEnemy.Position.Y + 25
+            local lastUpdate = tick()
+            local RunService = game:GetService("RunService")
 
-            if not anchorY or (tick() - lastUpdate) > 2 then
-                anchorY = hrpEnemy.Position.Y + 25
-                lastUpdate = tick()
-            end
-
+            local camera = workspace.CurrentCamera
             camera.CameraType = Enum.CameraType.Custom
             camera.CameraSubject = anchor
 
-            local dist = (hrp.Position - hrpEnemy.Position).Magnitude
-            if dist > 200 then
-                tweenTo(hrpEnemy.Position + Vector3.new(0, 10, 0))
-            else
-                while humanoid.Health > 0 and running do
-                    if not hrp or not hrpEnemy then break end
+            while humanoid.Health > 0 and running do
+                if not hrp then break end
 
-                    local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
-                    anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
-                    hrp.AssemblyLinearVelocity = Vector3.zero
-                    hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
-
-                    RunService.RenderStepped:Wait()
+                -- Cập nhật Y nếu enemy di chuyển cao/thấp
+                if (tick() - lastUpdate) > 0.5 or math.abs(anchorY - hrpEnemy.Position.Y) > 5 then
+                    anchorY = hrpEnemy.Position.Y + 25
+                    lastUpdate = tick()
                 end
+
+                -- Vị trí mục tiêu
+                local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
+
+                -- Neo camera mượt
+                anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
+
+                -- Di chuyển HRP mượt, giữ yên không trượt
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
+
+                RunService.RenderStepped:Wait()
+            end
+
+            -- Khi enemy chết hoặc raid tắt, trả camera về HRP
+            if hrp then
+                camera.CameraSubject = hrp
             end
         end
 
-        -- ♻️ Reset khi chết
+        -- Reset khi hồi sinh
         player.CharacterAdded:Connect(function(newChar)
             character = newChar
-            hrp = newChar:WaitForChild("HumanoidRootPart")
-            running = false
-            anchorY = nil
-            if anchor then anchor:Destroy() end
-            toggleRaid.Text = "OFF"
-            toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-            camera.CameraType = Enum.CameraType.Custom
-            camera.CameraSubject = hrp
+            hrp = character:WaitForChild("HumanoidRootPart")
+            resetRaidButton()
         end)
 
-        -- 🔘 Nút bật/tắt
-        toggleRaid.MouseButton1Click:Connect(function()
-            running = not running
-            toggleRaid.Text = running and "ON" or "OFF"
-            toggleRaid.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
-            if not running then
-                camera.CameraType = Enum.CameraType.Custom
-                camera.CameraSubject = hrp
-                if anchor then anchor:Destroy() end
-            end
-        end)
-
-        -- ⚙️ Auto attack (cực mượt)
-        task.spawn(function()
-            while true do
-                task.wait(0.4)
-                if running then
-                    pcall(function()
-                        game:GetService("ReplicatedStorage")
-                            :WaitForChild("Modules")
-                            :WaitForChild("Net")
-                            :WaitForChild("RE/RegisterAttack")
-                            :FireServer(0.4)
-                    end)
-                end
-            end
-        end)
-
-        -- 🔁 Vòng lặp chính Auto RAID
+        -- Vòng lặp chính Auto RAID
         task.spawn(function()
             while true do
                 RunService.Heartbeat:Wait()
                 if not running or not hrp then continue end
 
-                -- Đi tới đảo RAID
                 local island = getHighestPriorityIsland()
                 if island then
-                    local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
+                    local root = island:IsA("Model") and island:FindFirstChild("PrimaryPart") or island.PrimaryPart or island:FindFirstChild("HumanoidRootPart")
+                    if not root then
+                        root = island:FindFirstChildWhichIsA("BasePart")
+                    end
                     if root then
                         tweenTo(root.Position + Vector3.new(0, 10, 0))
                     end
                 end
 
-                -- Tìm và đánh quái
                 local enemies = getEnemiesNear(hrp)
                 if #enemies > 0 then
                     for _, enemy in ipairs(enemies) do
