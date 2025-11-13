@@ -1611,8 +1611,11 @@ return function(sections)
                 tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
             else
                 while humanoid.Health > 0 and running do
+                    anchorY = hrpEnemy.Position.Y + 25
+
                     local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
                     anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
+    
                     hrp.AssemblyLinearVelocity = Vector3.zero
                     hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
 
