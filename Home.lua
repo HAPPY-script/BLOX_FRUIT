@@ -1424,7 +1424,6 @@ return function(sections)
         local hrp = character:WaitForChild("HumanoidRootPart")
         local RunService = game:GetService("RunService")
         local TweenService = game:GetService("TweenService")
-        local UserInputService = game:GetService("UserInputService")
         local camera = workspace.CurrentCamera
 
         -- Nút bật/tắt Farm Area
@@ -1439,8 +1438,6 @@ return function(sections)
 
         local running = false
         local farmCenter = nil
-        local zoom = 75
-        local rotation = Vector2.new(45, 0)
 
         -- Tween tiện ích
         local function tweenTo(pos)
@@ -1451,35 +1448,7 @@ return function(sections)
             tween.Completed:Wait()
         end
 
-        -- Nhận góc xoay từ chuột
-        local dragging = false
-        local lastMousePos
-
-        UserInputService.InputBegan:Connect(function(input, processed)
-            if processed then return end
-            if input.UserInputType == Enum.UserInputType.MouseButton2 then
-                dragging = true
-                lastMousePos = input.Position
-            end
-        end)
-
-        UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton2 then
-                dragging = false
-            end
-        end)
-
-        UserInputService.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-                local delta = input.Delta
-                rotation = rotation + Vector2.new(-delta.Y * 0.25, -delta.X * 0.25)
-                rotation = Vector2.new(math.clamp(rotation.X, -80, 80), rotation.Y)
-            elseif input.UserInputType == Enum.UserInputType.MouseWheel then
-                zoom = math.clamp(zoom - input.Position.Z * 5, 15, 200)
-            end
-        end)
-
-        -- Tìm enemy
+        -- Tìm enemy gần nhất
         local function getNearestEnemy(centerPos)
             local folder = workspace:FindFirstChild("Enemies")
             if not folder then return nil end
@@ -1505,31 +1474,18 @@ return function(sections)
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
 
-            camera.CameraType = Enum.CameraType.Scriptable
-            local smoothness = 0.25
-
+            -- KHÔNG đổi camera type — để người chơi tự xoay zoom như mặc định
             local dist = (hrp.Position - hrpEnemy.Position).Magnitude
             if dist > 200 then
                 tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
             else
                 while humanoid.Health > 0 and running do
-                    -- Giữ vị trí nhân vật cố định tuyệt đối
+                    -- Giữ vị trí cứng tuyệt đối, không giật, không rơi
                     local lockPos = hrpEnemy.Position + Vector3.new(0, 30, 0)
-                    hrp.CFrame = CFrame.new(lockPos)
-
-                    -- Tính hướng xoay và cập nhật camera
-                    local rotationCFrame = CFrame.Angles(math.rad(rotation.X), math.rad(rotation.Y), 0)
-                    local camPos = lockPos + (rotationCFrame.LookVector * -zoom)
-
-                    -- Cập nhật camera mượt mà
-                    camera.CFrame = camera.CFrame:Lerp(CFrame.new(camPos, lockPos), smoothness)
+                    hrp.CFrame = CFrame.new(lockPos, hrpEnemy.Position)
 
                     RunService.RenderStepped:Wait()
                 end
-            end
-
-            if not running then
-                camera.CameraType = Enum.CameraType.Custom
             end
         end
 
@@ -1541,10 +1497,9 @@ return function(sections)
             farmCenter = nil
             toggleFarm.Text = "OFF"
             toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-            camera.CameraType = Enum.CameraType.Custom
         end)
 
-        -- Bật/tắt khi bấm nút
+        -- Bật/tắt
         toggleFarm.MouseButton1Click:Connect(function()
             running = not running
             toggleFarm.Text = running and "ON" or "OFF"
@@ -1554,7 +1509,6 @@ return function(sections)
                 farmCenter = hrp.Position
             else
                 farmCenter = nil
-                camera.CameraType = Enum.CameraType.Custom
             end
         end)
 
