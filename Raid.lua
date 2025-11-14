@@ -19,6 +19,8 @@ return function(sections)
         toggleRaid.TextColor3 = Color3.new(1, 1, 1)
     	toggleRaid.Font = Enum.Font.SourceSansBold
         toggleRaid.TextScaled = true
+        local currentHighlight = nil
+        local highlightTween = nil
 
         local anchor = nil
         local function ensureAnchor()
@@ -113,12 +115,67 @@ return function(sections)
             return enemies
         end
 
+        -- 🌈 Highlight theo HP
+        local function updateHighlight(enemy)
+            if not enemy then return end
+            local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+            if not humanoid then return end
+
+            -- Nếu đã có highlight cũ → xoá nó
+            if currentHighlight then
+                currentHighlight:Destroy()
+                currentHighlight = nil
+            end
+
+            -- Tạo highlight mới
+            local h = Instance.new("Highlight")
+            h.FillTransparency = 0.25
+            h.OutlineTransparency = 1
+            h.Parent = enemy
+            currentHighlight = h
+
+            -- 🧬 Hàm tween màu theo % HP
+            task.spawn(function()
+                while enemy.Parent and humanoid.Health > 0 do
+                    local percent = humanoid.Health / humanoid.MaxHealth
+
+                    -- Xanh lá → đỏ
+                    local targetColor = Color3.fromRGB(
+                        255 * (1 - percent),
+                        255 * percent,
+                        0
+                    )
+
+                    if highlightTween then
+                        highlightTween:Cancel()
+                    end
+
+                    highlightTween = TweenService:Create(
+                        h,
+                        TweenInfo.new(0.25, Enum.EasingStyle.Linear),
+                        {FillColor = targetColor}
+                    )
+                    highlightTween:Play()
+
+                    task.wait(0.1)
+                end
+
+                -- Enemy die → xoá highlight
+                if currentHighlight then
+                    currentHighlight:Destroy()
+                    currentHighlight = nil
+                end
+            end)
+        end
+
         -- Theo dõi và đánh quái
         local function followEnemy(enemy)
             if not enemy or not enemy.Parent then return end
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
+
+            updateHighlight(enemy)
 
             local anchor = ensureAnchor()
             local anchorY = hrpEnemy.Position.Y + 25
