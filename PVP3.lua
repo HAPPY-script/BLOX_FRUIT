@@ -5,18 +5,10 @@ return function(sections)
     do
         local Players = game:GetService("Players")
         local RunService = game:GetService("RunService")
+        local TweenService = game:GetService("TweenService")
         local player = Players.LocalPlayer
 
-        local followEnabled = false
-        local targetPlayer = nil
-        local teleportPoints = {
-            Vector3.new(-12463.61, 374.91, -7549.53), --mansion
-            Vector3.new(-5073.83, 314.51, -3152.52), --castle
-            Vector3.new(5661.53, 1013.04, -334.96), --women
-            Vector3.new(28286.36, 14896.56, 102.62) --on tree
-        }
-
-        -- Button bật/tắt theo dõi
+        -- UI (giữ giống cũ)
         local followButton = Instance.new("TextButton", HomeFrame)
         followButton.Size = UDim2.new(0, 90, 0, 30)
         followButton.Position = UDim2.new(0, 240, 0, 10)
@@ -26,21 +18,82 @@ return function(sections)
         followButton.Font = Enum.Font.SourceSansBold
         followButton.TextScaled = true
 
-        -- Ô nhập tên player
         local nameBox = Instance.new("TextBox", HomeFrame)
-        nameBox.Size = UDim2.new(0, 50, 0, 30)
-        nameBox.Position = UDim2.new(0, 190, 0, 10)
-        nameBox.PlaceholderText = "Enter player name"
+        nameBox.Size = UDim2.new(0, 120, 0, 30)
+        nameBox.Position = UDim2.new(0, 120, 0, 10)
+        nameBox.PlaceholderText = "Enter player name (>=3)"
         nameBox.Text = ""
         nameBox.TextScaled = true
         nameBox.Font = Enum.Font.SourceSans
 
-        local function calculateDistance(a, b)
-            return (a - b).Magnitude
+        -- Config (tinh chỉnh dễ)
+        local teleportPoints = {
+            Vector3.new(-12463.61, 374.91, -7549.53), -- mansion
+            Vector3.new(-5073.83, 314.51, -3152.52), -- castle
+            Vector3.new(5661.53, 1013.04, -334.96), -- women
+            Vector3.new(28286.36, 14896.56, 102.62) -- on tree
+        }
+
+        local FOLLOW_XZ_MAX_SPEED = 1200        -- studs/sec limit for X/Z movement (tweak)
+        local Y_MAX_SPEED = 5000                -- studs/sec permitted on Y (very large)
+        local FLEE_Y_TARGET = 10000             -- Y when fleeing
+        local TOO_FAR_DISTANCE = 2000           -- distance threshold to perform teleport preset (3A)
+        local LERP_XZ = 0.25                    -- how "soft" the XZ lerp is (0..1)
+        local LERP_HRP = 0.25                   -- how HRP lerps to targetPos (keeps smooth)
+        local ANCHOR_LERP = 0.15                -- anchor lerp smoothness
+
+        -- State
+        local followEnabled = false
+        local targetPlayer = nil
+
+        -- Helpers
+        local function getHRP(p)
+            if not p then return nil end
+            local ch = p.Character
+            return ch and ch:FindFirstChild("HumanoidRootPart")
+        end
+
+        local function calculateDistance(a, b) return (a - b).Magnitude end
+
+        -- Find nearest teleport preset to target
+        local function findNearestTeleportPoint(targetPos)
+            local closestPoint, closestDist = nil, math.huge
+            for _, tpPos in pairs(teleportPoints) do
+                local dist = (tpPos - targetPos).Magnitude
+                if dist < closestDist then
+                    closestPoint = tpPos
+                    closestDist = dist
+                end
+            end
+            local myPos = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position or Vector3.new()
+            return closestPoint, closestDist, (myPos - targetPos).Magnitude
+        end
+
+        local function performLunge(targetPos)
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            if not hrp then return end
+            local dir = (targetPos - hrp.Position)
+            if dir.Magnitude <= 1 then return end
+            dir = dir.Unit
+            local lungeSpeed = 300
+            local tpThreshold = 200
+            local t0 = tick()
+            local estimated = (targetPos - hrp.Position).Magnitude / lungeSpeed
+            while tick() - t0 < estimated do
+                local remaining = (targetPos - hrp.Position).Magnitude
+                if remaining <= tpThreshold then
+                    hrp.CFrame = CFrame.new(targetPos)
+                    break
+                end
+                local dt = RunService.Heartbeat:Wait()
+                hrp.CFrame = hrp.CFrame + dir * (lungeSpeed * dt)
+            end
         end
 
         local function teleportRepeatedly(pos, duration)
-            local hrp = player.Character:WaitForChild("HumanoidRootPart")
+            local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
             local t0 = tick()
             while tick() - t0 < duration do
                 hrp.CFrame = CFrame.new(pos)
@@ -48,93 +101,195 @@ return function(sections)
             end
         end
 
-        local function performLunge(targetPos)
-            local character = player.Character or player.CharacterAdded:Wait()
-            local hrp = character:WaitForChild("HumanoidRootPart")
-            local dir = (targetPos - hrp.Position).Unit
-            local dist = (targetPos - hrp.Position).Magnitude
-            local lungeSpeed = 300
-            local tpThreshold = 200
-            local t0 = tick()
-
-            while tick() - t0 < dist / lungeSpeed do
-                local remaining = (targetPos - hrp.Position).Magnitude
-                if remaining <= tpThreshold then
-                    hrp.CFrame = CFrame.new(targetPos)
-                    break
-                end
-                hrp.CFrame = hrp.CFrame + dir * (lungeSpeed * RunService.Heartbeat:Wait())
+        -- Create anchor part for camera
+        local camera = workspace.CurrentCamera
+        local anchor = nil
+        local function ensureAnchor()
+            if not anchor or not anchor.Parent then
+                anchor = Instance.new("Part")
+                anchor.Anchored = true
+                anchor.CanCollide = false
+                anchor.Transparency = 1
+                anchor.Size = Vector3.new(1,1,1)
+                anchor.Name = "CameraAnchor"
+                local hrp0 = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                anchor.Position = hrp0 and hrp0.Position or Vector3.new(0,10,0)
+                anchor.Parent = workspace
             end
+            return anchor
         end
 
-        local function findNearestTeleportPoint(targetPos)
-            local myPos = player.Character:WaitForChild("HumanoidRootPart").Position
-            local closestPoint, closestDist = nil, math.huge
-            for _, tpPos in pairs(teleportPoints) do
-                local dist = calculateDistance(tpPos, targetPos)
-                if dist < closestDist then
-                    closestPoint = tpPos
-                    closestDist = dist
-                end
-            end
-            return closestPoint, closestDist, calculateDistance(myPos, targetPos)
-        end
+        -- Main follow loop (runs when followEnabled)
+        local function followTargetLoop()
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
 
-        local function getHealthPercent()
-            local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if hum and hum.MaxHealth > 0 then
-                return hum.Health / hum.MaxHealth
-            end
-            return 1
-        end
+            -- ensure camera anchor
+            ensureAnchor()
 
-        local function followTarget()
             while followEnabled do
-                if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local targetPos = targetPlayer.Character.HumanoidRootPart.Position
-                    local myPos = player.Character:WaitForChild("HumanoidRootPart").Position
+                -- basic checks
+                if not targetPlayer or not targetPlayer.Character then
+                    -- no target: just wait a bit
+                    camera.CameraType = Enum.CameraType.Custom
+                    camera.CameraSubject = hrp
+                    RunService.Heartbeat:Wait()
+                    continue
+                end
 
-                    local dist = calculateDistance(myPos, targetPos)
-                    if getHealthPercent() < 0.35 then
+                local targetHRP = getHRP(targetPlayer)
+                if not targetHRP then
+                    RunService.Heartbeat:Wait()
+                    continue
+                end
+
+                -- read health
+                local myHum = char:FindFirstChildOfClass("Humanoid")
+                local myHPPercent = 1
+                if myHum and myHum.MaxHealth > 0 then myHPPercent = myHum.Health / myHum.MaxHealth end
+                local fleeing = (myHPPercent < 0.35)
+
+                -- compute desired target pos (we follow target's X,Z; Y handled separately)
+                local targetPosXZ = Vector3.new(targetHRP.Position.X, 0, targetHRP.Position.Z)
+                local myPos = hrp.Position
+                local myXZ = Vector3.new(myPos.X, 0, myPos.Z)
+
+                -- if target far -> use teleport presets (3A)
+                local distToTarget = (myPos - targetHRP.Position).Magnitude
+                if distToTarget > TOO_FAR_DISTANCE then
+                    -- use nearest teleport point to target then lunge
+                    local tpPos, tpDist, myToTargetDist = findNearestTeleportPoint(targetHRP.Position)
+                    if tpPos then
+                        -- teleport near the target (same logic as original)
+                        teleportRepeatedly(tpPos, 2)
+                        teleportRepeatedly(tpPos + Vector3.new(0,100,0), 0.3)
                         task.wait(0.1)
+                        performLunge(targetHRP.Position - (targetHRP.Position - myPos).Unit * 1)
+                        -- continue loop to recompute
+                        RunService.Heartbeat:Wait()
                         continue
                     end
-
-                    local tpPos, tpToTargetDist, playerToTargetDist = findNearestTeleportPoint(targetPos)
-
-                    if playerToTargetDist < tpToTargetDist then
-                        performLunge(targetPos)
-                    else
-                        teleportRepeatedly(tpPos, 2)
-                        teleportRepeatedly(tpPos + Vector3.new(0, 100, 0), 0.3)
-                        task.wait(0.1)
-                        performLunge(targetPos - (targetPos - myPos).Unit * 1)
-                    end
                 end
-                task.wait(0.01)
+
+                -- compute next desired position:
+                -- X/Z: move toward target X/Z but limited by FOLLOW_XZ_MAX_SPEED per second.
+                -- Y: if fleeing -> aim for FLEE_Y_TARGET; else match target Y but allow very high speed (Y_MAX_SPEED).
+                local desiredY
+                if fleeing then
+                    desiredY = FLEE_Y_TARGET
+                else
+                    desiredY = targetHRP.Position.Y
+                end
+
+                -- XZ delta: desired XZ location = target XZ
+                local desiredXZ = Vector3.new(targetHRP.Position.X, 0, targetHRP.Position.Z)
+
+                -- compute allowed XZ step this frame based on speed limit
+                local dt = RunService.Heartbeat:Wait() -- get dt from Heartbeat
+                if not dt or dt <= 0 then dt = 1/60 end
+
+                local maxStepXZ = FOLLOW_XZ_MAX_SPEED * dt
+                local toDesiredXZ = desiredXZ - myXZ
+                local distXZ = toDesiredXZ.Magnitude
+                local newXZ
+                if distXZ <= maxStepXZ then
+                    newXZ = desiredXZ
+                else
+                    newXZ = myXZ + toDesiredXZ.Unit * maxStepXZ
+                end
+
+                -- Y movement: allow large speed Y (virtually teleport like)
+                local currentY = myPos.Y
+                local deltaY = desiredY - currentY
+                local maxYStep = Y_MAX_SPEED * dt
+                local newY
+                if math.abs(deltaY) <= maxYStep then
+                    newY = desiredY
+                else
+                    newY = currentY + (deltaY > 0 and maxYStep or -maxYStep)
+                end
+
+                -- construct final targetPos for HRP
+                local finalTargetPos = Vector3.new(newXZ.X, newY, newXZ.Z)
+
+                -- move hrp smoothly on XZ using Lerp and on Y we allow large jumps (already applied)
+                -- To keep hrp stable we zero velocity and lerp CFrame
+                if hrp and hrp.Parent then
+                    hrp.AssemblyLinearVelocity = Vector3.zero
+
+                    -- create target CFrame and lerp
+                    local targetCFrame = CFrame.new(finalTargetPos)
+                    hrp.CFrame = hrp.CFrame:Lerp(targetCFrame, LERP_HRP)
+                end
+
+                -- Camera behavior:
+                -- - If fleeing: camera follows player (so player is always subject)
+                -- - Else: camera subject = anchor (anchor will be lerped to be stable near target)
+                if fleeing then
+                    -- camera follow player
+                    camera.CameraType = Enum.CameraType.Custom
+                    camera.CameraSubject = hrp
+                else
+                    local a = ensureAnchor()
+                    camera.CameraType = Enum.CameraType.Custom
+                    camera.CameraSubject = a
+                    -- anchor target pos: follow targetHRP X,Z and Y track target but smoothed
+                    local anchorTarget = Vector3.new(targetHRP.Position.X, desiredY + 25, targetHRP.Position.Z)
+                    a.Position = a.Position:Lerp(anchorTarget, ANCHOR_LERP)
+                end
+
+                -- auto-resume: if previously fleeing and now HP recovered -> automatically continue bám (we are in loop so it does)
+                -- next iteration continues...
             end
+
+            -- cleanup when turn off
+            camera.CameraType = Enum.CameraType.Custom
+            local hrpFinal = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            if hrpFinal then camera.CameraSubject = hrpFinal end
+            if anchor and anchor.Parent then anchor:Destroy() end
+            anchor = nil
         end
 
+        -- Button logic
         followButton.MouseButton1Click:Connect(function()
             if not targetPlayer then return end
             followEnabled = not followEnabled
             followButton.Text = followEnabled and "ON" or "OFF"
             followButton.BackgroundColor3 = followEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
-
             if followEnabled then
-                task.spawn(followTarget)
+                task.spawn(function()
+                    -- spawn follow loop; it will exit cleanly when followEnabled=false
+                    followTargetLoop()
+                end)
             end
         end)
 
-        nameBox.FocusLost:Connect(function()
-            local input = nameBox.Text:lower()
+        -- choose target by name (>=3 chars)
+        nameBox.FocusLost:Connect(function(enterPressed)
+            local input = (nameBox.Text or ""):lower()
             if #input >= 3 then
+                local found = nil
                 for _, p in pairs(Players:GetPlayers()) do
-                    if p ~= player and p.Name:lower():find(input) == 1 then
-                        targetPlayer = p
+                    if p ~= player and p.Name:lower():sub(1, #input) == input then
+                        found = p
                         break
                     end
                 end
+                targetPlayer = found
+                -- small feedback
+                if targetPlayer then
+                    followButton.Text = followEnabled and "ON" or "OFF"
+                end
+            end
+        end)
+
+        -- ensure camera subject resets on respawn
+        player.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            if not followEnabled then
+                camera.CameraType = Enum.CameraType.Custom
+                camera.CameraSubject = hrp
             end
         end)
     end
