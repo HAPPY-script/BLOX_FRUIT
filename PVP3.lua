@@ -2,294 +2,309 @@ return function(sections)
     local HomeFrame = sections["PVP"]
 
     --===========FOLLOW PLAYER======================================================
+    
     do
-        local Players = game:GetService("Players")
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
         local RunService = game:GetService("RunService")
         local TweenService = game:GetService("TweenService")
-        local player = Players.LocalPlayer
-
-        -- UI (giữ giống cũ)
-        local followButton = Instance.new("TextButton", HomeFrame)
-        followButton.Size = UDim2.new(0, 90, 0, 30)
-        followButton.Position = UDim2.new(0, 240, 0, 10)
-        followButton.Text = "OFF"
-        followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        followButton.TextColor3 = Color3.new(1, 1, 1)
-        followButton.Font = Enum.Font.SourceSansBold
-        followButton.TextScaled = true
-
-        local nameBox = Instance.new("TextBox", HomeFrame)
-        nameBox.Size = UDim2.new(0, 120, 0, 30)
-        nameBox.Position = UDim2.new(0, 120, 0, 10)
-        nameBox.PlaceholderText = "Enter player name (>=3)"
-        nameBox.Text = ""
-        nameBox.TextScaled = true
-        nameBox.Font = Enum.Font.SourceSans
-
-        -- Config (tinh chỉnh dễ)
-        local teleportPoints = {
-            Vector3.new(-12463.61, 374.91, -7549.53), -- mansion
-            Vector3.new(-5073.83, 314.51, -3152.52), -- castle
-            Vector3.new(5661.53, 1013.04, -334.96), -- women
-            Vector3.new(28286.36, 14896.56, 102.62) -- on tree
-        }
-
-        local FOLLOW_XZ_MAX_SPEED = 1200        -- studs/sec limit for X/Z movement (tweak)
-        local Y_MAX_SPEED = 5000                -- studs/sec permitted on Y (very large)
-        local FLEE_Y_TARGET = 10000             -- Y when fleeing
-        local TOO_FAR_DISTANCE = 2000           -- distance threshold to perform teleport preset (3A)
-        local LERP_XZ = 0.25                    -- how "soft" the XZ lerp is (0..1)
-        local LERP_HRP = 0.25                   -- how HRP lerps to targetPos (keeps smooth)
-        local ANCHOR_LERP = 0.15                -- anchor lerp smoothness
-
-        -- State
-        local followEnabled = false
-        local targetPlayer = nil
-
-        -- Helpers
-        local function getHRP(p)
-            if not p then return nil end
-            local ch = p.Character
-            return ch and ch:FindFirstChild("HumanoidRootPart")
-        end
-
-        local function calculateDistance(a, b) return (a - b).Magnitude end
-
-        -- Find nearest teleport preset to target
-        local function findNearestTeleportPoint(targetPos)
-            local closestPoint, closestDist = nil, math.huge
-            for _, tpPos in pairs(teleportPoints) do
-                local dist = (tpPos - targetPos).Magnitude
-                if dist < closestDist then
-                    closestPoint = tpPos
-                    closestDist = dist
-                end
-            end
-            local myPos = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position or Vector3.new()
-            return closestPoint, closestDist, (myPos - targetPos).Magnitude
-        end
-
-        local function performLunge(targetPos)
-            local char = player.Character or player.CharacterAdded:Wait()
-            local hrp = char:WaitForChild("HumanoidRootPart")
-            if not hrp then return end
-            local dir = (targetPos - hrp.Position)
-            if dir.Magnitude <= 1 then return end
-            dir = dir.Unit
-            local lungeSpeed = 300
-            local tpThreshold = 200
-            local t0 = tick()
-            local estimated = (targetPos - hrp.Position).Magnitude / lungeSpeed
-            while tick() - t0 < estimated do
-                local remaining = (targetPos - hrp.Position).Magnitude
-                if remaining <= tpThreshold then
-                    hrp.CFrame = CFrame.new(targetPos)
-                    break
-                end
-                local dt = RunService.Heartbeat:Wait()
-                hrp.CFrame = hrp.CFrame + dir * (lungeSpeed * dt)
-            end
-        end
-
-        local function teleportRepeatedly(pos, duration)
-            local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-            if not hrp then return end
-            local t0 = tick()
-            while tick() - t0 < duration do
-                hrp.CFrame = CFrame.new(pos)
-                RunService.Heartbeat:Wait()
-            end
-        end
-
-        -- Create anchor part for camera
         local camera = workspace.CurrentCamera
+
+        -- 🧩 Nút bật/tắt
+        local toggleFarm = Instance.new("TextButton", HomeFrame)
+        toggleFarm.Size = UDim2.new(0, 90, 0, 30)
+        toggleFarm.Position = UDim2.new(0, 240, 0, 160)
+        toggleFarm.Text = "OFF"
+        toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        toggleFarm.TextColor3 = Color3.new(1, 1, 1)
+        toggleFarm.Font = Enum.Font.SourceSansBold
+        toggleFarm.TextScaled = true
+
+        local LOW_HP_THRESHOLD = 0.35       -- < 35% sẽ kích hoạt chạy trốn
+        local MAX_Y_SPEED = 5000            -- (studs/giây) Y có thể thay đổi rất nhanh (gần teleport)
+        local XZ_SPEED = 300                -- (studs/giây) tốc độ giới hạn cho trục X/Z (tween)
+        local ESCAPE_Y_DELTA = 10000        -- số đơn vị Y muốn di chuyển lên khi chạy trốn (cộng vào Y hiện tại)
+
+
+        local running = false
+        local farmCenter = nil
         local anchor = nil
+        local anchorY = nil
+        local lastUpdate = 0
+        local anchorUpdateInterval = 1
+        local lastAnchorUpdate = 0
+        local currentHighlight = nil
+        local highlightTween = nil
+
+        local function getMyHealthPercent()
+            local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if hum and hum.MaxHealth > 0 then
+                return hum.Health / hum.MaxHealth
+            end
+            return 1
+        end
+
+        -- 🧱 Tạo part làm tâm camera
         local function ensureAnchor()
             if not anchor or not anchor.Parent then
                 anchor = Instance.new("Part")
                 anchor.Anchored = true
                 anchor.CanCollide = false
                 anchor.Transparency = 1
-                anchor.Size = Vector3.new(1,1,1)
+                anchor.Size = Vector3.new(1, 1, 1)
                 anchor.Name = "CameraAnchor"
-                local hrp0 = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-                anchor.Position = hrp0 and hrp0.Position or Vector3.new(0,10,0)
+        
+                -- 🧭 Tạo ngay tại vị trí hiện tại của người chơi
+                if hrp and hrp:IsDescendantOf(workspace) then
+                    anchor.Position = hrp.Position
+                else
+                    anchor.Position = Vector3.new(0, 10, 0)
+                end
+        
                 anchor.Parent = workspace
             end
             return anchor
         end
 
-        -- Main follow loop (runs when followEnabled)
-        local function followTargetLoop()
-            local char = player.Character or player.CharacterAdded:Wait()
-            local hrp = char:WaitForChild("HumanoidRootPart")
-
-            -- ensure camera anchor
-            ensureAnchor()
-
-            while followEnabled do
-                -- basic checks
-                if not targetPlayer or not targetPlayer.Character then
-                    -- no target: just wait a bit
-                    camera.CameraType = Enum.CameraType.Custom
-                    camera.CameraSubject = hrp
-                    RunService.Heartbeat:Wait()
-                    continue
-                end
-
-                local targetHRP = getHRP(targetPlayer)
-                if not targetHRP then
-                    RunService.Heartbeat:Wait()
-                    continue
-                end
-
-                -- read health
-                local myHum = char:FindFirstChildOfClass("Humanoid")
-                local myHPPercent = 1
-                if myHum and myHum.MaxHealth > 0 then myHPPercent = myHum.Health / myHum.MaxHealth end
-                local fleeing = (myHPPercent < 0.35)
-
-                -- compute desired target pos (we follow target's X,Z; Y handled separately)
-                local targetPosXZ = Vector3.new(targetHRP.Position.X, 0, targetHRP.Position.Z)
-                local myPos = hrp.Position
-                local myXZ = Vector3.new(myPos.X, 0, myPos.Z)
-
-                -- if target far -> use teleport presets (3A)
-                local distToTarget = (myPos - targetHRP.Position).Magnitude
-                if distToTarget > TOO_FAR_DISTANCE then
-                    -- use nearest teleport point to target then lunge
-                    local tpPos, tpDist, myToTargetDist = findNearestTeleportPoint(targetHRP.Position)
-                    if tpPos then
-                        -- teleport near the target (same logic as original)
-                        teleportRepeatedly(tpPos, 2)
-                        teleportRepeatedly(tpPos + Vector3.new(0,100,0), 0.3)
-                        task.wait(0.1)
-                        performLunge(targetHRP.Position - (targetHRP.Position - myPos).Unit * 1)
-                        -- continue loop to recompute
-                        RunService.Heartbeat:Wait()
-                        continue
-                    end
-                end
-
-                -- compute next desired position:
-                -- X/Z: move toward target X/Z but limited by FOLLOW_XZ_MAX_SPEED per second.
-                -- Y: if fleeing -> aim for FLEE_Y_TARGET; else match target Y but allow very high speed (Y_MAX_SPEED).
-                local desiredY
-                if fleeing then
-                    desiredY = FLEE_Y_TARGET
-                else
-                    desiredY = targetHRP.Position.Y
-                end
-
-                -- XZ delta: desired XZ location = target XZ
-                local desiredXZ = Vector3.new(targetHRP.Position.X, 0, targetHRP.Position.Z)
-
-                -- compute allowed XZ step this frame based on speed limit
-                local dt = RunService.Heartbeat:Wait() -- get dt from Heartbeat
-                if not dt or dt <= 0 then dt = 1/60 end
-
-                local maxStepXZ = FOLLOW_XZ_MAX_SPEED * dt
-                local toDesiredXZ = desiredXZ - myXZ
-                local distXZ = toDesiredXZ.Magnitude
-                local newXZ
-                if distXZ <= maxStepXZ then
-                    newXZ = desiredXZ
-                else
-                    newXZ = myXZ + toDesiredXZ.Unit * maxStepXZ
-                end
-
-                -- Y movement: allow large speed Y (virtually teleport like)
-                local currentY = myPos.Y
-                local deltaY = desiredY - currentY
-                local maxYStep = Y_MAX_SPEED * dt
-                local newY
-                if math.abs(deltaY) <= maxYStep then
-                    newY = desiredY
-                else
-                    newY = currentY + (deltaY > 0 and maxYStep or -maxYStep)
-                end
-
-                -- construct final targetPos for HRP
-                local finalTargetPos = Vector3.new(newXZ.X, newY, newXZ.Z)
-
-                -- move hrp smoothly on XZ using Lerp and on Y we allow large jumps (already applied)
-                -- To keep hrp stable we zero velocity and lerp CFrame
-                if hrp and hrp.Parent then
-                    hrp.AssemblyLinearVelocity = Vector3.zero
-
-                    -- create target CFrame and lerp
-                    local targetCFrame = CFrame.new(finalTargetPos)
-                    hrp.CFrame = hrp.CFrame:Lerp(targetCFrame, LERP_HRP)
-                end
-
-                -- Camera behavior:
-                -- - If fleeing: camera follows player (so player is always subject)
-                -- - Else: camera subject = anchor (anchor will be lerped to be stable near target)
-                if fleeing then
-                    -- camera follow player
-                    camera.CameraType = Enum.CameraType.Custom
-                    camera.CameraSubject = hrp
-                else
-                    local a = ensureAnchor()
-                    camera.CameraType = Enum.CameraType.Custom
-                    camera.CameraSubject = a
-                    -- anchor target pos: follow targetHRP X,Z and Y track target but smoothed
-                    local anchorTarget = Vector3.new(targetHRP.Position.X, desiredY + 25, targetHRP.Position.Z)
-                    a.Position = a.Position:Lerp(anchorTarget, ANCHOR_LERP)
-                end
-
-                -- auto-resume: if previously fleeing and now HP recovered -> automatically continue bám (we are in loop so it does)
-                -- next iteration continues...
-            end
-
-            -- cleanup when turn off
-            camera.CameraType = Enum.CameraType.Custom
-            local hrpFinal = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-            if hrpFinal then camera.CameraSubject = hrpFinal end
-            if anchor and anchor.Parent then anchor:Destroy() end
-            anchor = nil
+        -- 🧭 Tween tiện ích
+        local function tweenTo(pos)
+            local dist = (hrp.Position - pos).Magnitude
+            if dist > 10000 then return end
+            local tween = TweenService:Create(hrp, TweenInfo.new(dist / 300, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
+            tween:Play()
+            tween.Completed:Wait()
         end
 
-        -- Button logic
-        followButton.MouseButton1Click:Connect(function()
-            if not targetPlayer then return end
-            followEnabled = not followEnabled
-            followButton.Text = followEnabled and "ON" or "OFF"
-            followButton.BackgroundColor3 = followEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
-            if followEnabled then
-                task.spawn(function()
-                    -- spawn follow loop; it will exit cleanly when followEnabled=false
-                    followTargetLoop()
-                end)
-            end
-        end)
-
-        -- choose target by name (>=3 chars)
-        nameBox.FocusLost:Connect(function(enterPressed)
-            local input = (nameBox.Text or ""):lower()
-            if #input >= 3 then
-                local found = nil
-                for _, p in pairs(Players:GetPlayers()) do
-                    if p ~= player and p.Name:lower():sub(1, #input) == input then
-                        found = p
-                        break
+        -- 🔍 Tìm enemy gần nhất
+        local function getNearestEnemy(centerPos)
+            local folder = workspace:FindFirstChild("Enemies")
+            if not folder then return nil end
+            local nearest, nearestDist
+            for _, mob in ipairs(folder:GetChildren()) do
+                if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") then
+                    local hp = mob:FindFirstChildOfClass("Humanoid")
+                    if hp and hp.Health > 0 then
+                        local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
+                        if not nearestDist or dist < nearestDist then
+                            nearest = mob
+                            nearestDist = dist
+                        end
                     end
                 end
-                targetPlayer = found
-                -- small feedback
-                if targetPlayer then
-                    followButton.Text = followEnabled and "ON" or "OFF"
+            end
+            return nearest
+        end
+
+        -- 🌈 Highlight theo HP
+        local function updateHighlight(enemy)
+            if not enemy then return end
+            local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+            if not humanoid then return end
+
+            -- Nếu đổi enemy → xoá highlight cũ
+            if currentHighlight and currentHighlight.Adornee ~= enemy then
+                currentHighlight:Destroy()
+                currentHighlight = nil
+            end
+
+            -- Nếu chưa có highlight → tạo mới
+            if not currentHighlight then
+                currentHighlight = Instance.new("Highlight")
+                currentHighlight.FillTransparency = 0.2
+                currentHighlight.OutlineTransparency = 0.9
+                currentHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                currentHighlight.Parent = enemy
+                currentHighlight.Adornee = enemy
+            end
+
+            -- Cập nhật màu theo HP
+            local percent = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+
+            -- Xanh lá → Đỏ
+            local targetColor = Color3.fromRGB(
+                255 * (1 - percent), -- Red
+                255 * percent,       -- Green
+                0                    -- Blue
+            )
+
+            if highlightTween then
+                highlightTween:Cancel()
+            end
+
+            highlightTween = TweenService:Create(
+                currentHighlight,
+                TweenInfo.new(0.15, Enum.EasingStyle.Linear),
+                {FillColor = targetColor}
+            )
+            highlightTween:Play()
+
+            -- Auto remove khi enemy chết
+            task.spawn(function()
+                local thisEnemy = enemy
+                while thisEnemy.Parent and humanoid.Health > 0 and running do
+                    task.wait(0.1)
+
+                    -- Cập nhật màu liên tục
+                    local percent2 = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+                    local targetColor2 = Color3.fromRGB(
+                        255 * (1 - percent2),
+                        255 * percent2,
+                        0
+                    )
+
+                    currentHighlight.FillColor = targetColor2
+                end
+
+                -- Enemy die hoặc bị đổi enemy
+                if currentHighlight and currentHighlight.Adornee == thisEnemy then
+                    currentHighlight:Destroy()
+                    currentHighlight = nil
+                end
+            end)
+        end
+
+        -- 🧠 Theo dõi enemy với anchor camera
+        local function followEnemy(enemy)
+            if not enemy or not enemy.Parent then return end
+            local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
+            local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+            if not hrpEnemy or not humanoid then return end
+
+            -- đảm bảo highlight và anchor
+            updateHighlight(enemy)
+            local anchor = ensureAnchor()
+            local camera = workspace.CurrentCamera
+
+            -- lần đầu set anchorY nếu cần
+            if not anchorY or (tick() - lastAnchorUpdate) > anchorUpdateInterval then
+                anchorY = hrpEnemy.Position.Y + 25
+                lastAnchorUpdate = tick()
+            end
+
+            camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = anchor
+
+            local lastTick = tick()
+            -- main loop: nếu enemy sống và running thì bám theo
+            while humanoid.Health > 0 and running do
+                if not hrp or not hrp:IsDescendantOf(workspace) then break end
+
+                -- tính dt an toàn
+                local now = tick()
+                local dt = math.clamp(now - lastTick, 0, 0.1)
+                lastTick = now
+
+                -- Luôn update highlight để chính xác
+                updateHighlight(enemy)
+
+                -- nếu HP bản thân thấp => bật chế độ chạy trốn
+                if getMyHealthPercent() < LOW_HP_THRESHOLD then
+                    -- camera theo người chơi khi chạy trốn
+                    camera.CameraSubject = hrp
+
+                    -- mục tiêu XZ: theo enemy, Y: cao + large delta
+                    local targetXZ = Vector3.new(hrpEnemy.Position.X, 0, hrpEnemy.Position.Z)
+                    local currentPos = hrp.Position
+                    local desiredY = currentPos.Y + ESCAPE_Y_DELTA
+
+                    -- di chuyển XZ mượt với giới hạn speed
+                    local dirXZ = Vector3.new(targetXZ.X - currentPos.X, 0, targetXZ.Z - currentPos.Z)
+                    local distXZ = dirXZ.Magnitude
+                    local moveXZ = Vector3.new(0,0,0)
+                    if distXZ > 0.001 then
+                        local maxMove = XZ_SPEED * dt
+                        local t = math.min(1, maxMove / distXZ)
+                        moveXZ = dirXZ * t
+                    end
+
+                    -- di chuyển Y nhanh (không bị giới hạn tween chậm) nhưng vẫn giới hạn tốc độ theo MAX_Y_SPEED
+                    local dy = desiredY - currentPos.Y
+                    local maxYMove = MAX_Y_SPEED * dt
+                    local moveY = math.clamp(dy, -maxYMove, maxYMove)
+
+                    local newPos = Vector3.new(currentPos.X + moveXZ.X, currentPos.Y + moveY, currentPos.Z + moveXZ.Z)
+
+                    -- cập nhật HRP (teleport-y style nhưng X/Z mượt)
+                    hrp.AssemblyLinearVelocity = Vector3.zero
+                    hrp.CFrame = CFrame.new(newPos)
+
+                    -- chờ frame tiếp theo
+                    RunService.RenderStepped:Wait()
+                    continue
+                end
+
+                -- Nếu không ở chế độ low HP -> bình thường bám theo anchor (giữ Y cố định theo anchorY)
+                anchorY = hrpEnemy.Position.Y + 25
+                local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
+
+                -- neo camera mượt (anchor di chuyển mềm)
+                anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
+
+                -- di chuyển người chơi X/Z mượt, Y được giữ theo anchorY (hạn chế trượt)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
+
+                RunService.RenderStepped:Wait()
+            end
+
+            -- khi enemy chết hoặc vòng while kết thúc, trả camera về HRP nếu tồn tại
+            if hrp and hrp:IsDescendantOf(workspace) then
+                camera.CameraSubject = hrp
+            end
+        end
+
+        -- 🧩 Reset khi chết
+        player.CharacterAdded:Connect(function(newChar)
+            character = newChar
+            hrp = newChar:WaitForChild("HumanoidRootPart")
+            running = false
+            anchorY = nil
+            if anchor then anchor:Destroy() end
+            toggleFarm.Text = "OFF"
+            toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+            camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = hrp
+        end)
+
+        -- 🔘 Nút bật/tắt
+        toggleFarm.MouseButton1Click:Connect(function()
+            running = not running
+            toggleFarm.Text = running and "ON" or "OFF"
+            toggleFarm.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+            farmCenter = running and hrp.Position or nil
+            if not running then
+                camera.CameraType = Enum.CameraType.Custom
+                camera.CameraSubject = hrp
+                if anchor then anchor:Destroy() end
+            end
+        end)
+
+        -- ♻️ Auto farm
+        task.spawn(function()
+            while true do
+                task.wait()
+                if not running or not hrp then continue end
+                local target = getNearestEnemy(hrp.Position)
+                if target then
+                    followEnemy(target)
                 end
             end
         end)
 
-        -- ensure camera subject resets on respawn
-        player.CharacterAdded:Connect(function(char)
-            task.wait(0.5)
-            local hrp = char:WaitForChild("HumanoidRootPart")
-            if not followEnabled then
-                camera.CameraType = Enum.CameraType.Custom
-                camera.CameraSubject = hrp
+        -- ⚔️ Auto đánh
+        task.spawn(function()
+            while true do
+                task.wait(0.4)
+                if running then
+                    pcall(function()
+                        game:GetService("ReplicatedStorage")
+                            :WaitForChild("Modules")
+                            :WaitForChild("Net")
+                            :WaitForChild("RE/RegisterAttack")
+                            :FireServer(0.4)
+                    end)
+                end
             end
         end)
     end
