@@ -1537,6 +1537,8 @@ return function(sections)
         local lastUpdate = 0
         local anchorUpdateInterval = 1
         local lastAnchorUpdate = 0
+        local currentHighlight = nil
+        local highlightTween = nil
 
         -- 🧱 Tạo part làm tâm camera
         local function ensureAnchor()
@@ -1589,10 +1591,66 @@ return function(sections)
             return nearest
         end
 
+        -- 🌈 Highlight theo HP
+        local function updateHighlight(enemy)
+            if not enemy then return end
+            local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+            if not humanoid then return end
+
+            -- Nếu đã có highlight cũ → xoá nó
+            if currentHighlight then
+                currentHighlight:Destroy()
+                currentHighlight = nil
+            end
+
+            -- Tạo highlight mới
+            local h = Instance.new("Highlight")
+            h.FillTransparency = 0.25
+            h.OutlineTransparency = 1
+            h.Parent = enemy
+            currentHighlight = h
+
+            -- 🧬 Hàm tween màu theo % HP
+            task.spawn(function()
+                while enemy.Parent and humanoid.Health > 0 do
+                    local percent = humanoid.Health / humanoid.MaxHealth
+
+                    -- Xanh lá → đỏ
+                    local targetColor = Color3.fromRGB(
+                        255 * (1 - percent),
+                        255 * percent,
+                        0
+                    )
+
+                    if highlightTween then
+                        highlightTween:Cancel()
+                    end
+
+                    highlightTween = TweenService:Create(
+                        h,
+                        TweenInfo.new(0.25, Enum.EasingStyle.Linear),
+                        {FillColor = targetColor}
+                    )
+                    highlightTween:Play()
+
+                    task.wait(0.1)
+                end
+
+                -- Enemy die → xoá highlight
+                if currentHighlight then
+                    currentHighlight:Destroy()
+                    currentHighlight = nil
+                end
+            end)
+        end
+
         -- 🧠 Theo dõi enemy với anchor camera
         local function followEnemy(enemy)
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+            
+            updateHighlight(enemy)
+            
             if not hrpEnemy or not humanoid then return end
 
             local anchor = ensureAnchor()
