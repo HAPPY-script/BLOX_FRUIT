@@ -1597,47 +1597,62 @@ return function(sections)
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not humanoid then return end
 
-            -- Nếu đã có highlight cũ → xoá nó
-            if currentHighlight then
+            -- Nếu đổi enemy → xoá highlight cũ
+            if currentHighlight and currentHighlight.Adornee ~= enemy then
                 currentHighlight:Destroy()
                 currentHighlight = nil
             end
 
-            -- Tạo highlight mới
-            local h = Instance.new("Highlight")
-            h.FillTransparency = 0.25
-            h.OutlineTransparency = 1
-            h.Parent = enemy
-            currentHighlight = h
+            -- Nếu chưa có highlight → tạo mới
+            if not currentHighlight then
+                currentHighlight = Instance.new("Highlight")
+                currentHighlight.FillTransparency = 0.2
+                currentHighlight.OutlineTransparency = 0.9
+                currentHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                currentHighlight.Parent = enemy
+                currentHighlight.Adornee = enemy
+            end
 
-            -- 🧬 Hàm tween màu theo % HP
+            -- Cập nhật màu theo HP
+            local percent = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+
+            -- Xanh lá → Đỏ
+            local targetColor = Color3.fromRGB(
+                255 * (1 - percent), -- Red
+                255 * percent,       -- Green
+                0                    -- Blue
+            )
+
+            if highlightTween then
+                highlightTween:Cancel()
+            end
+
+            highlightTween = TweenService:Create(
+                currentHighlight,
+                TweenInfo.new(0.15, Enum.EasingStyle.Linear),
+                {FillColor = targetColor}
+            )
+            highlightTween:Play()
+
+            -- Auto remove khi enemy chết
             task.spawn(function()
-                while enemy.Parent and humanoid.Health > 0 do
-                    local percent = humanoid.Health / humanoid.MaxHealth
+                local thisEnemy = enemy
+                while thisEnemy.Parent and humanoid.Health > 0 and running do
+                    task.wait(0.1)
 
-                    -- Xanh lá → đỏ
-                    local targetColor = Color3.fromRGB(
-                        255 * (1 - percent),
-                        255 * percent,
+                    -- Cập nhật màu liên tục
+                    local percent2 = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+                    local targetColor2 = Color3.fromRGB(
+                        255 * (1 - percent2),
+                        255 * percent2,
                         0
                     )
 
-                    if highlightTween then
-                        highlightTween:Cancel()
-                    end
-
-                    highlightTween = TweenService:Create(
-                        h,
-                        TweenInfo.new(0.25, Enum.EasingStyle.Linear),
-                        {FillColor = targetColor}
-                    )
-                    highlightTween:Play()
-
-                    task.wait(0.1)
+                    currentHighlight.FillColor = targetColor2
                 end
 
-                -- Enemy die → xoá highlight
-                if currentHighlight then
+                -- Enemy die hoặc bị đổi enemy
+                if currentHighlight and currentHighlight.Adornee == thisEnemy then
                     currentHighlight:Destroy()
                     currentHighlight = nil
                 end
@@ -1648,32 +1663,31 @@ return function(sections)
         local function followEnemy(enemy)
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
-            
-            updateHighlight(enemy)
-            
             if not hrpEnemy or not humanoid then return end
+
+            updateHighlight(enemy)
 
             local anchor = ensureAnchor()
 
-            -- Cập nhật trục Y mỗi anchorUpdateInterval giây
             if not anchorY or (tick() - lastAnchorUpdate) > anchorUpdateInterval then
                 anchorY = hrpEnemy.Position.Y + 25
                 lastAnchorUpdate = tick()
             end
 
             camera.CameraType = Enum.CameraType.Custom
-            camera.CameraSubject = anchor -- 👈 neo camera vào part này
+            camera.CameraSubject = anchor
 
             local dist = (hrp.Position - hrpEnemy.Position).Magnitude
             if dist > 200 then
                 tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
             else
                 while humanoid.Health > 0 and running do
-                    anchorY = hrpEnemy.Position.Y + 25
+                    updateHighlight(enemy) -- LUÔN CẬP NHẬT CHUẨN
 
+                    anchorY = hrpEnemy.Position.Y + 25
                     local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
                     anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
-    
+
                     hrp.AssemblyLinearVelocity = Vector3.zero
                     hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
 
