@@ -125,13 +125,18 @@ return function(sections)
         end)
 
         -- Tween đến vị trí
-        local function tweenCloseTo(targetPos, stopDist)
+        local function tweenCloseTo(targetPos, stopDist, isEnemy)
             if not hrp then return end
             stopDist = stopDist or 40
             local currentPos = hrp.Position
 
-            -- Giữ nguyên trục Y ngang với target
-            hrp.CFrame = CFrame.new(currentPos.X, targetPos.Y, currentPos.Z)
+            -- Nếu là enemy → nâng trục Y lên +100
+            local targetY = targetPos.Y
+            if isEnemy then
+                targetY = targetPos.Y + 100
+            end
+
+            hrp.CFrame = CFrame.new(currentPos.X, targetY, currentPos.Z)
 
             local horizontalDist = (Vector2.new(currentPos.X, currentPos.Z)
                                    - Vector2.new(targetPos.X, targetPos.Z)).Magnitude
@@ -141,7 +146,7 @@ return function(sections)
                                  - Vector2.new(hrp.Position.X, hrp.Position.Z)).Unit
 
                 local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - direction * stopDist
-                local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
+                local targetPoint = Vector3.new(targetXZ.X, targetY, targetXZ.Y)
 
                 local time = horizontalDist / 300
 
@@ -318,7 +323,7 @@ return function(sections)
                         -- 🔥 Tween tới gần enemy trước (còn 100m)
                         local enemyHRP = enemy:FindFirstChild("HumanoidRootPart")
                         if enemyHRP then
-                            tweenCloseTo(enemyHRP.Position, 250)
+                            tweenCloseTo(enemyHRP.Position, 250, true)
                         end
 
                         followEnemy(enemy)
