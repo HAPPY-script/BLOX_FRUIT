@@ -94,6 +94,32 @@ return function(sections)
             end
         end
 
+        local function waitForStablePosition()
+            local lastPos = hrp.Position
+            local stableTime = 0
+
+            while stableTime < 0.3 do
+                RunService.Heartbeat:Wait()
+
+                -- nếu tốc độ còn cao → reset đếm
+                local speed = hrp.AssemblyLinearVelocity.Magnitude
+                if speed > 2 then
+                    stableTime = 0
+                    lastPos = hrp.Position
+                    continue
+                end
+
+                -- nếu vị trí thay đổi nhiều → reset đếm
+                if (hrp.Position - lastPos).Magnitude > 5 then
+                    stableTime = 0
+                    lastPos = hrp.Position
+                    continue
+                end
+
+                stableTime += RunService.Heartbeat:Wait()
+            end
+        end
+
         -- Tìm đảo có độ ưu tiên cao nhất
         local function getHighestPriorityIsland()
             local island = workspace:FindFirstChild("Map")
@@ -268,6 +294,7 @@ return function(sections)
                     if root then
 
                         -- Tween tới đảo như cũ
+                        waitForStablePosition()
                         tweenCloseTo(root.Position + Vector3.new(0, 10, 0))
 
                         -----------------------------------------
@@ -291,6 +318,7 @@ return function(sections)
                         -- 🔥 Tween tới gần enemy trước (còn 100m)
                         local enemyHRP = enemy:FindFirstChild("HumanoidRootPart")
                         if enemyHRP then
+                            waitForStablePosition()
                             tweenCloseTo(enemyHRP.Position)
                         end
 
