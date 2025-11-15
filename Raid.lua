@@ -122,8 +122,8 @@ return function(sections)
             local horizontalDist = Vector2.new(currentPos.X, currentPos.Z) - Vector2.new(targetPos.X, targetPos.Z)
             local dist = horizontalDist.Magnitude
 
-            -- Nếu khoảng cách > 70m → Tween đến còn 70m
-            if dist > 70 then
+            -- Nếu khoảng cách > 100m → Tween đến còn 100m
+            if dist > 100 then
                 local directionXZ = (Vector2.new(targetPos.X, targetPos.Z) - Vector2.new(hrp.Position.X, hrp.Position.Z)).Unit
                 local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 70
                 local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
