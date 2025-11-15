@@ -21,6 +21,7 @@ return function(sections)
         toggleRaid.TextScaled = true
         local currentHighlight = nil
         local highlightTween = nil
+        local isClearingIsland = false
 
         local anchor = nil
         local function ensureAnchor()
@@ -76,13 +77,21 @@ return function(sections)
         end)
 
         -- Tween đến vị trí
-        local function tweenTo(pos)
-            local distance = (hrp.Position - pos).Magnitude
-            if distance > 5000 then return end
-            local tweenTime = math.clamp(distance / 300, 0.5, 5)
-            local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
-            tween:Play()
-            tween.Completed:Wait()
+        local function tweenCloseTo(targetPos)
+            local dist = (hrp.Position - targetPos).Magnitude
+
+            -- Nếu khoảng cách > 100m → Tween đến còn 100m
+            if dist > 100 then
+                local direction = (targetPos - hrp.Position).Unit
+                local targetPoint = targetPos - direction * 100
+
+                local tweenTime = math.clamp((hrp.Position - targetPoint).Magnitude / 300, 0.5, 4)
+                local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {
+                    CFrame = CFrame.new(targetPoint)
+                })
+                tween:Play()
+                tween.Completed:Wait()
+            end
         end
 
         -- Tìm đảo có độ ưu tiên cao nhất
@@ -182,50 +191,40 @@ return function(sections)
         local function followEnemy(enemy)
             if not enemy or not enemy.Parent then return end
 
+            isClearingIsland = true -- 🔥 báo rằng đang đánh → KHÔNG ĐƯỢC TỚI ISLAND
+
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
 
             updateHighlight(enemy)
+            local anchor = ensureAnchor()
+            local camera = workspace.CurrentCamera
 
-            local dist = (hrp.Position - hrpEnemy.Position).Magnitude
+            camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = anchor
 
-            -----------------------------
-            -- 🟦 1. TWEEN ĐẾN CÁCH 100M
-            -----------------------------
-            if dist > 120 then
-                local direction = (hrpEnemy.Position - hrp.Position).Unit
-                local targetPos = hrpEnemy.Position - direction * 100
-                local tweenTime = math.clamp((hrp.Position - targetPos).Magnitude / 300, 0.5, 5)
+            while humanoid.Health > 0 and running do
+                if not hrp then break end
 
-                TweenService:Create(
-                    hrp,
-                    TweenInfo.new(tweenTime, Enum.EasingStyle.Linear),
-                    {CFrame = CFrame.new(targetPos)}
-                ):Play()
+                updateHighlight(enemy)
 
-                task.wait(tweenTime)
+                local anchorY = hrpEnemy.Position.Y + 25
+                local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
+
+                anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
+
+                RunService.RenderStepped:Wait()
             end
 
-            -----------------------------
-            -- 🟥 2. TELEPORT SÁT (10m)
-            -----------------------------
-            if humanoid.Health > 0 and running then
-                local direction = (hrpEnemy.Position - hrp.Position).Unit
-                local finalPos = hrpEnemy.Position - direction * 10
-                hrp.CFrame = CFrame.new(finalPos)
+            -- Enemy đã chết
+            if hrp then
+                camera.CameraSubject = hrp
             end
 
-            -----------------------------
-            -- 🟨 3. BÁM & ĐÁNH
-            -----------------------------
-            while humanoid.Health > 0 and enemy.Parent and running do
-                hrp.CFrame = hrp.CFrame:Lerp(
-                    CFrame.new(hrpEnemy.Position - hrpEnemy.CFrame.LookVector * 8),
-                    0.2
-                )
-                task.wait()
-            end
+            isClearingIsland = false -- 🔥 cho phép tới Island tiếp theo
         end
 
         -- Reset khi hồi sinh
@@ -242,21 +241,41 @@ return function(sections)
                 if not running or not hrp then continue end
 
                 local island = getHighestPriorityIsland()
-                if island then
-                    local root = island:IsA("Model") and island:FindFirstChild("PrimaryPart") or island.PrimaryPart or island:FindFirstChild("HumanoidRootPart")
-                    if not root then
-                        root = island:FindFirstChildWhichIsA("BasePart")
-                    end
+                if island and not isClearingIsland then
+
+                    -- Lấy vị trí Island
+                    local root = island:FindFirstChild("PrimaryPart") or island:FindFirstChildWhichIsA("BasePart")
                     if root then
-                        tweenTo(root.Position + Vector3.new(0, 10, 0))
+
+                        -- Tween tới đảo như cũ
+                        tweenCloseTo(root.Position + Vector3.new(0, 10, 0))
+
+                        -----------------------------------------
+                        -- ⏳ ĐỢI 3 GIÂY SAU KHI TỚI ISLAND
+                        -- (nếu đang đánh enemy thì không đếm)
+                        -----------------------------------------
+                        local timer = 0
+                        while timer < 3 do
+                            if #getEnemiesNear(hrp) > 0 then
+                                break -- có enemy → dừng đếm ngay
+                            end
+                            timer += task.wait(1)
+                        end
                     end
                 end
 
                 local enemies = getEnemiesNear(hrp)
                 if #enemies > 0 then
                     for _, enemy in ipairs(enemies) do
-                        if not running then break end
+
+                        -- 🔥 Tween tới gần enemy trước (còn 100m)
+                        local enemyHRP = enemy:FindFirstChild("HumanoidRootPart")
+                        if enemyHRP then
+                            tweenCloseTo(enemyHRP.Position)
+                        end
+
                         followEnemy(enemy)
+                        if not running then break end
                     end
                 end
             end
