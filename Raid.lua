@@ -10,6 +10,11 @@ return function(sections)
         local RunService = game:GetService("RunService")
         local VirtualInputManager = game:GetService("VirtualInputManager")
 
+        local PhysicsService = game:GetService("PhysicsService")
+        pcall(function() PhysicsService:CreateCollisionGroup("RaidPass") end)
+        PhysicsService:CollisionGroupSetCollidable("RaidPass", "Default", false) -- pass qua các part bình thường
+
+
         -- Nút bật/tắt Auto RAID
         local toggleRaid = Instance.new("TextButton", HomeFrame)
         toggleRaid.Size = UDim2.new(0, 90, 0, 30)
@@ -130,7 +135,15 @@ return function(sections)
             stopDist = stopDist or 40
             local currentPos = hrp.Position
 
-            -- Giữ nguyên trục Y ngang với target
+            -- Tạm thời vô hiệu hoá va chạm với hầu hết part
+            hrp.Parent:WaitForChild("HumanoidRootPart").Anchored = false
+            for _, part in ipairs(hrp.Parent:GetChildren()) do
+                if part:IsA("BasePart") then
+                    PhysicsService:SetPartCollisionGroup(part, "RaidPass")
+                end
+            end
+
+            -- Giữ trục Y với target
             hrp.CFrame = CFrame.new(currentPos.X, targetPos.Y, currentPos.Z)
 
             local horizontalDist = (Vector2.new(currentPos.X, currentPos.Z)
@@ -152,6 +165,13 @@ return function(sections)
                 )
                 tween:Play()
                 tween.Completed:Wait()
+            end
+
+            -- Reset CollisionGroup về Default
+            for _, part in ipairs(hrp.Parent:GetChildren()) do
+                if part:IsA("BasePart") then
+                    PhysicsService:SetPartCollisionGroup(part, "Default")
+                end
             end
         end
 
@@ -273,7 +293,7 @@ return function(sections)
 
                 -- 🛡️ Anti Fall – cứu nhân vật khi Y < -0.20
                 if hrp.Position.Y < -0.20 then
-                    hrp.CFrame = hrp.CFrame + Vector3.new(0, 25, 0)
+                    hrp.CFrame = hrp.CFrame + Vector3.new(0, 120, 0)
                 end
 
                 -- 🔹 Kiểm tra nếu đang bật nhưng không còn đảo → tự tắt
