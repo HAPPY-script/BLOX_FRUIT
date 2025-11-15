@@ -251,11 +251,11 @@ return function(sections)
                         tweenCloseTo(root.Position + Vector3.new(0, 10, 0))
 
                         -----------------------------------------
-                        -- ⏳ ĐỢI 3 GIÂY SAU KHI TỚI ISLAND
+                        -- ⏳ ĐỢI 2 GIÂY SAU KHI TỚI ISLAND
                         -- (nếu đang đánh enemy thì không đếm)
                         -----------------------------------------
                         local timer = 0
-                        while timer < 3 do
+                        while timer < 2 do
                             if #getEnemiesNear(hrp) > 0 then
                                 break -- có enemy → dừng đếm ngay
                             end
