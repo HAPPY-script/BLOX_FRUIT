@@ -122,10 +122,10 @@ return function(sections)
             local horizontalDist = Vector2.new(currentPos.X, currentPos.Z) - Vector2.new(targetPos.X, targetPos.Z)
             local dist = horizontalDist.Magnitude
 
-            -- Nếu khoảng cách > 100m → Tween đến còn 100m
-            if dist > 100 then
+            -- Nếu khoảng cách > 250m → Tween đến còn 250m
+            if dist > 250 then
                 local directionXZ = (Vector2.new(targetPos.X, targetPos.Z) - Vector2.new(hrp.Position.X, hrp.Position.Z)).Unit
-                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 70
+                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 250
                 local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
 
                 -- Tốc độ cố định 300 studs/giây
