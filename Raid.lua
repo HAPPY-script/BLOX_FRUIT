@@ -85,7 +85,7 @@ return function(sections)
                 local direction = (targetPos - hrp.Position).Unit
                 local targetPoint = targetPos - direction * 100
 
-                local tweenTime = math.clamp((hrp.Position - targetPoint).Magnitude / 300, 0.5, 4)
+                local tweenTime = math.clamp((hrp.Position - targetPoint).Magnitude / 250, 0.5, 4)
                 local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {
                     CFrame = CFrame.new(targetPoint)
                 })
@@ -116,7 +116,7 @@ return function(sections)
             for _, mob in ipairs(folder:GetChildren()) do
                 if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid") then
                     local dist = (origin.Position - mob.HumanoidRootPart.Position).Magnitude
-                    if dist <= 5000 and mob.Humanoid.Health > 0 then
+                    if dist <= 4500 and mob.Humanoid.Health > 0 then
                         table.insert(enemies, mob)
                     end
                 end
