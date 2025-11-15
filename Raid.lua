@@ -318,7 +318,6 @@ return function(sections)
                         -- 🔥 Tween tới gần enemy trước (còn 100m)
                         local enemyHRP = enemy:FindFirstChild("HumanoidRootPart")
                         if enemyHRP then
-                            waitForStablePosition()
                             tweenCloseTo(enemyHRP.Position)
                         end
 
