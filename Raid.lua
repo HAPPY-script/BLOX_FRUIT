@@ -113,18 +113,25 @@ return function(sections)
         local function tweenCloseTo(targetPos)
             if not hrp then return end
 
-            -- Teleport trục Y trước
             local currentPos = hrp.Position
+
+            -- Teleport trục Y ngay lập tức
             hrp.CFrame = CFrame.new(currentPos.X, targetPos.Y, currentPos.Z)
 
-            local dist = (Vector3.new(currentPos.X, targetPos.Y, currentPos.Z) - targetPos).Magnitude
+            -- Chỉ tính khoảng cách XZ
+            local horizontalDist = Vector2.new(currentPos.X, currentPos.Z) - Vector2.new(targetPos.X, targetPos.Z)
+            local dist = horizontalDist.Magnitude
 
             -- Nếu khoảng cách > 70m → Tween đến còn 70m
             if dist > 70 then
-                local direction = (targetPos - hrp.Position).Unit
-                local targetPoint = targetPos - direction * 70
+                local directionXZ = (Vector2.new(targetPos.X, targetPos.Z) - Vector2.new(hrp.Position.X, hrp.Position.Z)).Unit
+                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 70
+                local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
 
-                local tweenTime = math.clamp((hrp.Position - targetPoint).Magnitude / 300, 0.5, 4)
+                -- Tính thời gian tween dựa trên khoảng cách XZ và tốc độ cố định
+                local speed = 200  -- studs/giây, bạn có thể điều chỉnh
+                local tweenTime = math.clamp(dist / speed, 0.5, 3)
+
                 local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {
                     CFrame = CFrame.new(targetPoint)
                 })
