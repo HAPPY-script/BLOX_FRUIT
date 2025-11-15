@@ -129,7 +129,7 @@ return function(sections)
                 local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
 
                 -- Tính thời gian tween dựa trên khoảng cách XZ và tốc độ cố định
-                local speed = 300  -- studs/giây, bạn có thể điều chỉnh
+                local speed = 75  -- studs/giây, bạn có thể điều chỉnh
                 local tweenTime = math.clamp(dist / speed, 0.5, 3)
 
                 local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {
