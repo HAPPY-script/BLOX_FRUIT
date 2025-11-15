@@ -108,6 +108,26 @@ return function(sections)
             return nil
         end
 
+        local function hasIslandNearby()
+            local map = workspace:FindFirstChild("Map")
+            if not map then return false end
+            local raidMap = map:FindFirstChild("RaidMap")
+            if not raidMap then return false end
+    
+            for _, island in ipairs(raidMap:GetChildren()) do
+                if island:IsA("Model") then
+                    local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
+                    if root then
+                        if (hrp.Position - root.Position).Magnitude <= 4500 then
+                            return true
+                        end
+                    end
+                end
+            end
+
+            return false
+        end
+
         -- Lấy quái gần
         local function getEnemiesNear(origin)
             local enemies = {}
