@@ -111,7 +111,13 @@ return function(sections)
 
         -- Tween đến vị trí
         local function tweenCloseTo(targetPos)
-            local dist = (hrp.Position - targetPos).Magnitude
+            if not hrp then return end
+
+            -- Teleport trục Y trước
+            local currentPos = hrp.Position
+            hrp.CFrame = CFrame.new(currentPos.X, targetPos.Y, currentPos.Z)
+
+            local dist = (Vector3.new(currentPos.X, targetPos.Y, currentPos.Z) - targetPos).Magnitude
 
             -- Nếu khoảng cách > 70m → Tween đến còn 70m
             if dist > 70 then
