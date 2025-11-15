@@ -128,9 +128,9 @@ return function(sections)
                 local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 70
                 local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
 
-                -- Tính thời gian tween dựa trên khoảng cách XZ và tốc độ cố định
-                local speed = 75  -- studs/giây, bạn có thể điều chỉnh
-                local tweenTime = math.clamp(dist / speed, 0.5, 3)
+                -- Tốc độ cố định 250 studs/giây
+                local speed = 250
+                local tweenTime = dist / speed  -- thời gian = khoảng cách ÷ tốc độ
 
                 local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {
                     CFrame = CFrame.new(targetPoint)
