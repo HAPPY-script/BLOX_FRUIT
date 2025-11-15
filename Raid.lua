@@ -71,42 +71,6 @@ return function(sections)
         local islandPlatform = nil
         local rainbowConn = nil
 
-        local function createIslandPlatform(position)
-            -- Nếu tồn tại thì xoá để tránh trùng
-            if islandPlatform then
-                islandPlatform:Destroy()
-                islandPlatform = nil
-            end
-
-            islandPlatform = Instance.new("Part")
-            islandPlatform.Anchored = true
-            islandPlatform.CanCollide = true
-            islandPlatform.Material = Enum.Material.Neon
-            islandPlatform.Size = Vector3.new(18, 1, 18)
-            islandPlatform.Position = position - Vector3.new(0, 3, 0)   -- hạ xuống 3 studs để người chơi đứng lên mượt
-            islandPlatform.Name = "RaidIslandPlatform"
-            islandPlatform.Parent = workspace
-
-            -- 🌈 Rainbow Color mượt liên tục
-            if rainbowConn then rainbowConn:Disconnect() end
-            rainbowConn = RunService.RenderStepped:Connect(function()
-                if not islandPlatform then return end
-                local t = tick() * 0.8
-                islandPlatform.Color = Color3.fromHSV((t % 1), 1, 1)
-            end)
-        end
-
-        local function removeIslandPlatform()
-            if islandPlatform then
-                islandPlatform:Destroy()
-                islandPlatform = nil
-            end
-            if rainbowConn then
-                rainbowConn:Disconnect()
-                rainbowConn = nil
-            end
-        end
-
         local function getIslandCenter(model)
             if not model then return nil end
     
@@ -114,7 +78,7 @@ return function(sections)
             local center = cf.Position
 
             -- đúng chuẩn: đặt platform trên mặt đảo
-            center = center + Vector3.new(0, size.Y/2 + 3, 0)
+            center = center + Vector3.new(0, size.Y/2, 0)
 
             return center
         end
@@ -165,6 +129,11 @@ return function(sections)
 
         local function tweenCloseTo(targetPos)
             if not hrp then return end
+            
+            -- 🛡️ Anti Fall – nếu rơi xuống map thì kéo nhân vật lên ngay
+            if hrp.Position.Y < -0.20 then
+                hrp.CFrame = hrp.CFrame + Vector3.new(0, 25, 0)
+            end
 
             local currentPos = hrp.Position
 
@@ -300,7 +269,6 @@ return function(sections)
             character = newChar
             hrp = character:WaitForChild("HumanoidRootPart")
             resetRaidButton()
-            removeIslandPlatform()
         end)
 
         -- Vòng lặp chính Auto RAID
@@ -312,7 +280,6 @@ return function(sections)
                 -- 🔹 Kiểm tra nếu đang bật nhưng không còn đảo → tự tắt
                 if running and not hasIslandNearby() then
                     resetRaidButton()
-                    removeIslandPlatform()
                     continue
                 end
 
@@ -330,7 +297,6 @@ return function(sections)
                             
                         tweenCloseTo(islandCenter)
                         RunService.RenderStepped:Wait()
-                        createIslandPlatform(islandCenter)
 
                         -----------------------------------------
                         -- ⏳ ĐỢI 1 GIÂY SAU KHI TỚI ISLAND
