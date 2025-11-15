@@ -68,6 +68,26 @@ return function(sections)
             toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         end
 
+        local function hasIslandNearby()
+            local map = workspace:FindFirstChild("Map")
+            if not map then return false end
+            local raidMap = map:FindFirstChild("RaidMap")
+            if not raidMap then return false end
+    
+            for _, island in ipairs(raidMap:GetChildren()) do
+                if island:IsA("Model") then
+                    local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
+                    if root then
+                        if (hrp.Position - root.Position).Magnitude <= 4500 then
+                            return true
+                        end
+                    end
+                end
+            end
+
+            return false
+        end
+
         -- Bật/tắt RAID khi bấm nút
         toggleRaid.MouseButton1Click:Connect(function()
 
@@ -149,26 +169,6 @@ return function(sections)
                 end
             end
             return nil
-        end
-
-        local function hasIslandNearby()
-            local map = workspace:FindFirstChild("Map")
-            if not map then return false end
-            local raidMap = map:FindFirstChild("RaidMap")
-            if not raidMap then return false end
-    
-            for _, island in ipairs(raidMap:GetChildren()) do
-                if island:IsA("Model") then
-                    local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
-                    if root then
-                        if (hrp.Position - root.Position).Magnitude <= 4500 then
-                            return true
-                        end
-                    end
-                end
-            end
-
-            return false
         end
 
         -- Lấy quái gần
