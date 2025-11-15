@@ -1591,71 +1591,36 @@ return function(sections)
             return nearest
         end
 
-        -- 🌈 Highlight theo HP
+        -- 🌈 Highlight theo HP (phiên bản tối ưu)
         local function updateHighlight(enemy)
             if not enemy then return end
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not humanoid then return end
 
-            -- Nếu đổi enemy → xoá highlight cũ
-            if currentHighlight and currentHighlight.Adornee ~= enemy then
-                currentHighlight:Destroy()
-                currentHighlight = nil
+            -- Nếu enemy đã có highlight → dùng lại
+            if not enemy:FindFirstChild("HomeHighlight") then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "HomeHighlight"
+                highlight.FillTransparency = 0.2
+                highlight.OutlineTransparency = 0.9
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Adornee = enemy
+                highlight.Parent = enemy
             end
 
-            -- Nếu chưa có highlight → tạo mới
-            if not currentHighlight then
-                currentHighlight = Instance.new("Highlight")
-                currentHighlight.FillTransparency = 0.2
-                currentHighlight.OutlineTransparency = 0.9
-                currentHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                currentHighlight.Parent = enemy
-                currentHighlight.Adornee = enemy
-            end
+            local highlight = enemy:FindFirstChild("HomeHighlight")
 
-            -- Cập nhật màu theo HP
-            local percent = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
-
-            -- Xanh lá → Đỏ
-            local targetColor = Color3.fromRGB(
-                255 * (1 - percent), -- Red
-                255 * percent,       -- Green
-                0                    -- Blue
-            )
-
-            if highlightTween then
-                highlightTween:Cancel()
-            end
-
-            highlightTween = TweenService:Create(
-                currentHighlight,
-                TweenInfo.new(0.15, Enum.EasingStyle.Linear),
-                {FillColor = targetColor}
-            )
-            highlightTween:Play()
-
-            -- Auto remove khi enemy chết
-            task.spawn(function()
-                local thisEnemy = enemy
-                while thisEnemy.Parent and humanoid.Health > 0 and running do
-                    task.wait(0.1)
-
-                    -- Cập nhật màu liên tục
-                    local percent2 = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
-                    local targetColor2 = Color3.fromRGB(
-                        255 * (1 - percent2),
-                        255 * percent2,
-                        0
-                    )
-
-                    currentHighlight.FillColor = targetColor2
+            -- Update màu theo HP trong vòng lặp RenderStepped
+            local conn
+            conn = RunService.RenderStepped:Connect(function()
+                if not running or not humanoid.Parent or humanoid.Health <= 0 or not highlight or highlight.Parent ~= enemy then
+                    if highlight then highlight:Destroy() end
+                    conn:Disconnect()
+                    return
                 end
 
-                -- Enemy die hoặc bị đổi enemy
-                if currentHighlight and currentHighlight.Adornee == thisEnemy then
-                    currentHighlight:Destroy()
-                    currentHighlight = nil
-                end
+                local percent = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+                highlight.FillColor = Color3.fromRGB(255 * (1 - percent), 255 * percent, 0)
             end)
         end
 
