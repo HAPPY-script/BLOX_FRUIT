@@ -128,8 +128,8 @@ return function(sections)
                 local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 70
                 local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
 
-                -- Tốc độ cố định 250 studs/giây
-                local speed = 250
+                -- Tốc độ cố định 300 studs/giây
+                local speed = 300
                 local tweenTime = dist / speed  -- thời gian = khoảng cách ÷ tốc độ
 
                 local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {
