@@ -125,7 +125,7 @@ return function(sections)
             -- Nếu khoảng cách > 250m → Tween đến còn 250m
             if dist > 250 then
                 local directionXZ = (Vector2.new(targetPos.X, targetPos.Z) - Vector2.new(hrp.Position.X, hrp.Position.Z)).Unit
-                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 250
+                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 70
                 local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
 
                 -- Tốc độ cố định 300 studs/giây
