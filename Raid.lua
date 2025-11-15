@@ -108,28 +108,19 @@ return function(sections)
         end
 
         local function getIslandCenter(model)
-            local minX, minY, minZ = math.huge, math.huge, math.huge
-            local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
+            if not model then return nil end
+    
+            -- Lấy BoundingBox cực chuẩn
+            local cf, size = model:GetBoundingBox()
 
-            for _, part in ipairs(model:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    local pos = part.Position
-                    minX = math.min(minX, pos.X)
-                    minY = math.min(minY, pos.Y)
-                    minZ = math.min(minZ, pos.Z)
+            -- Tâm đảo là vị trí của CFrame lấy được
+            local center = cf.Position
 
-                    maxX = math.max(maxX, pos.X)
-                    maxY = math.max(maxY, pos.Y)
-                    maxZ = math.max(maxZ, pos.Z)
-                end
-            end
+            -- Nâng lên tránh lọt đất
+            local height = size.Y / 50
+            center = center + Vector3.new(0, height + 5, 0)
 
-            -- Tâm đảo
-            local centerX = (minX + maxX) / 2
-            local centerZ = (minZ + maxZ) / 2
-            local centerY = maxY + 22
-
-            return Vector3.new(centerX, centerY, centerZ)
+            return center
         end
 
         local function hasIslandNearby()
@@ -340,6 +331,7 @@ return function(sections)
                         -- Tween tới đảo
                         local islandCenter = getIslandCenter(island)
                         tweenCloseTo(islandCenter)
+                        task.wait(0.1)
                         createIslandPlatform(islandCenter)
 
                         -----------------------------------------
