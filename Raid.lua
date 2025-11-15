@@ -68,6 +68,45 @@ return function(sections)
             toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         end
 
+        local islandPlatform = nil
+        local rainbowConn = nil
+
+        local function createIslandPlatform(position)
+            -- Nếu tồn tại thì xoá để tránh trùng
+            if islandPlatform then
+                islandPlatform:Destroy()
+                islandPlatform = nil
+            end
+
+            islandPlatform = Instance.new("Part")
+            islandPlatform.Anchored = true
+            islandPlatform.CanCollide = true
+            islandPlatform.Material = Enum.Material.Neon
+            islandPlatform.Size = Vector3.new(18, 1, 18)
+            islandPlatform.Position = position - Vector3.new(0, 3, 0)   -- hạ xuống 3 studs để người chơi đứng lên mượt
+            islandPlatform.Name = "RaidIslandPlatform"
+            islandPlatform.Parent = workspace
+
+            -- 🌈 Rainbow Color mượt liên tục
+            if rainbowConn then rainbowConn:Disconnect() end
+            rainbowConn = RunService.RenderStepped:Connect(function()
+                if not islandPlatform then return end
+                local t = tick() * 0.8
+                islandPlatform.Color = Color3.fromHSV((t % 1), 1, 1)
+            end)
+        end
+
+        local function removeIslandPlatform()
+            if islandPlatform then
+                islandPlatform:Destroy()
+                islandPlatform = nil
+            end
+            if rainbowConn then
+                rainbowConn:Disconnect()
+                rainbowConn = nil
+            end
+        end
+
         local function getIslandCenter(model)
             local minX, minY, minZ = math.huge, math.huge, math.huge
             local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
@@ -88,7 +127,7 @@ return function(sections)
             -- Tâm đảo
             local centerX = (minX + maxX) / 2
             local centerZ = (minZ + maxZ) / 2
-            local centerY = maxY + 1
+            local centerY = maxY + 22
 
             return Vector3.new(centerX, centerY, centerZ)
         end
@@ -273,6 +312,7 @@ return function(sections)
             character = newChar
             hrp = character:WaitForChild("HumanoidRootPart")
             resetRaidButton()
+            removeIslandPlatform()
         end)
 
         -- Vòng lặp chính Auto RAID
@@ -284,6 +324,7 @@ return function(sections)
                 -- 🔹 Kiểm tra nếu đang bật nhưng không còn đảo → tự tắt
                 if running and not hasIslandNearby() then
                     resetRaidButton()
+                    removeIslandPlatform()
                     continue
                 end
 
@@ -299,6 +340,7 @@ return function(sections)
                         -- Tween tới đảo
                         local islandCenter = getIslandCenter(island)
                         tweenCloseTo(islandCenter)
+                        createIslandPlatform(islandCenter)
 
                         -----------------------------------------
                         -- ⏳ ĐỢI 1 GIÂY SAU KHI TỚI ISLAND
