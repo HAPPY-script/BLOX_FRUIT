@@ -284,7 +284,15 @@ return function(sections)
         task.spawn(function()
             while true do
                 RunService.Heartbeat:Wait()
-                if not running or not hrp then continue end
+                if not hrp then continue end
+
+                -- 🔹 Kiểm tra nếu đang bật nhưng không còn đảo → tự tắt
+                if running and not hasIslandNearby() then
+                    resetRaidButton()
+                    continue
+                end
+
+                if not running then continue end
 
                 local island = getHighestPriorityIsland()
                 if island and not isClearingIsland then
