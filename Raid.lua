@@ -113,12 +113,12 @@ return function(sections)
         local function tweenCloseTo(targetPos)
             local dist = (hrp.Position - targetPos).Magnitude
 
-            -- Nếu khoảng cách > 100m → Tween đến còn 100m
-            if dist > 100 then
+            -- Nếu khoảng cách > 70m → Tween đến còn 70m
+            if dist > 70 then
                 local direction = (targetPos - hrp.Position).Unit
-                local targetPoint = targetPos - direction * 100
+                local targetPoint = targetPos - direction * 70
 
-                local tweenTime = math.clamp((hrp.Position - targetPoint).Magnitude / 250, 0.5, 4)
+                local tweenTime = math.clamp((hrp.Position - targetPoint).Magnitude / 300, 0.5, 4)
                 local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {
                     CFrame = CFrame.new(targetPoint)
                 })
