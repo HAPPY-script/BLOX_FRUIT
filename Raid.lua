@@ -129,11 +129,6 @@ return function(sections)
 
         local function tweenCloseTo(targetPos)
             if not hrp then return end
-            
-            -- 🛡️ Anti Fall – nếu rơi xuống map thì kéo nhân vật lên ngay
-            if hrp.Position.Y < -0.20 then
-                hrp.CFrame = hrp.CFrame + Vector3.new(0, 25, 0)
-            end
 
             local currentPos = hrp.Position
 
@@ -276,6 +271,11 @@ return function(sections)
             while true do
                 RunService.Heartbeat:Wait()
                 if not hrp then continue end
+
+                -- 🛡️ Anti Fall – cứu nhân vật khi Y < -0.20
+                if hrp.Position.Y < -0.20 then
+                    hrp.CFrame = hrp.CFrame + Vector3.new(0, 25, 0)
+                end
 
                 -- 🔹 Kiểm tra nếu đang bật nhưng không còn đảo → tự tắt
                 if running and not hasIslandNearby() then
