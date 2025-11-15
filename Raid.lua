@@ -110,15 +110,11 @@ return function(sections)
         local function getIslandCenter(model)
             if not model then return nil end
     
-            -- Lấy BoundingBox cực chuẩn
             local cf, size = model:GetBoundingBox()
-
-            -- Tâm đảo là vị trí của CFrame lấy được
             local center = cf.Position
 
-            -- Nâng lên tránh lọt đất
-            local height = size.Y / 50
-            center = center + Vector3.new(0, height + 5, 0)
+            -- đúng chuẩn: đặt platform trên mặt đảo
+            center = center + Vector3.new(0, size.Y/2 + 3, 0)
 
             return center
         end
@@ -165,31 +161,32 @@ return function(sections)
         end)
 
         -- Tween đến vị trí
+        local STOP_DIST = 40
+
         local function tweenCloseTo(targetPos)
             if not hrp then return end
 
             local currentPos = hrp.Position
 
-            -- Teleport trục Y ngay lập tức
             hrp.CFrame = CFrame.new(currentPos.X, targetPos.Y, currentPos.Z)
 
-            -- Chỉ tính khoảng cách XZ
-            local horizontalDist = Vector2.new(currentPos.X, currentPos.Z) - Vector2.new(targetPos.X, targetPos.Z)
+            local horizontalDist = Vector2.new(currentPos.X, currentPos.Z) 
+                                 - Vector2.new(targetPos.X, targetPos.Z)
             local dist = horizontalDist.Magnitude
 
-            -- Nếu khoảng cách > 250m → Tween đến còn 250m
-            if dist > 250 then
-                local directionXZ = (Vector2.new(targetPos.X, targetPos.Z) - Vector2.new(hrp.Position.X, hrp.Position.Z)).Unit
-                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 250
+            if dist > STOP_DIST then
+                local direction = (Vector2.new(targetPos.X, targetPos.Z) 
+                                 - Vector2.new(hrp.Position.X, hrp.Position.Z)).Unit
+                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - direction * STOP_DIST
                 local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
 
-                -- Tốc độ cố định 300 studs/giây
-                local speed = 300
-                local tweenTime = dist / speed  -- thời gian = khoảng cách ÷ tốc độ
+                local time = dist / 300
 
-                local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {
-                    CFrame = CFrame.new(targetPoint)
-                })
+                local tween = TweenService:Create(
+                    hrp,
+                    TweenInfo.new(time, Enum.EasingStyle.Linear),
+                    { CFrame = CFrame.new(targetPoint) }
+                )
                 tween:Play()
                 tween.Completed:Wait()
             end
@@ -330,8 +327,9 @@ return function(sections)
 
                         -- Tween tới đảo
                         local islandCenter = getIslandCenter(island)
+                            
                         tweenCloseTo(islandCenter)
-                        task.wait(0.1)
+                        RunService.RenderStepped:Wait()
                         createIslandPlatform(islandCenter)
 
                         -----------------------------------------
