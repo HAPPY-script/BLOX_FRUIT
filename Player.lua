@@ -284,7 +284,7 @@ return function(sections)
         local function ToggleTeleport()
             teleportEnabled = not teleportEnabled
             TeleportPEButton.Text = teleportEnabled and "ON" or "OFF"
-            TeleportPEButton.BackgroundColor3 = teleportEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+            TeleportPEButton.BackgroundColor3 = teleportEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
 
             -- Hiện/ẩn nút tròn trên màn hình
             MobileTPButton.Visible = teleportEnabled
