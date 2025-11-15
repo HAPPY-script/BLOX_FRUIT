@@ -68,6 +68,31 @@ return function(sections)
             toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         end
 
+        local function getIslandCenter(model)
+            local minX, minY, minZ = math.huge, math.huge, math.huge
+            local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
+
+            for _, part in ipairs(model:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    local pos = part.Position
+                    minX = math.min(minX, pos.X)
+                    minY = math.min(minY, pos.Y)
+                    minZ = math.min(minZ, pos.Z)
+
+                    maxX = math.max(maxX, pos.X)
+                    maxY = math.max(maxY, pos.Y)
+                    maxZ = math.max(maxZ, pos.Z)
+                end
+            end
+
+            -- Tâm đảo
+            local centerX = (minX + maxX) / 2
+            local centerZ = (minZ + maxZ) / 2
+            local centerY = maxY + 10 -- đứng cao 10 studs để không kẹt
+
+            return Vector3.new(centerX, centerY, centerZ)
+        end
+
         local function hasIslandNearby()
             local map = workspace:FindFirstChild("Map")
             if not map then return false end
@@ -125,7 +150,7 @@ return function(sections)
             -- Nếu khoảng cách > 250m → Tween đến còn 250m
             if dist > 250 then
                 local directionXZ = (Vector2.new(targetPos.X, targetPos.Z) - Vector2.new(hrp.Position.X, hrp.Position.Z)).Unit
-                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 70
+                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - directionXZ * 250
                 local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
 
                 -- Tốc độ cố định 300 studs/giây
@@ -271,8 +296,9 @@ return function(sections)
                     local root = island:FindFirstChild("PrimaryPart") or island:FindFirstChildWhichIsA("BasePart")
                     if root then
 
-                        -- Tween tới đảo như cũ
-                        tweenCloseTo(root.Position + Vector3.new(0, 10, 0))
+                        -- Tween tới đảo
+                        local islandCenter = getIslandCenter(island)
+                        tweenCloseTo(islandCenter)
 
                         -----------------------------------------
                         -- ⏳ ĐỢI 1 GIÂY SAU KHI TỚI ISLAND
