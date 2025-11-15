@@ -272,20 +272,8 @@ return function(sections)
                 if not hrp then continue end
 
                 -- 🛡️ Anti Fall
-                local safeY = 50  -- khoảng cách an toàn trên mặt nước / part
                 if hrp.Position.Y < -0.5 then
-                    -- teleport lên vị trí an toàn (giữ X,Z cũ)
-                    hrp.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y + safeY, hrp.Position.Z)
-                end
-
-                -- 🔹 Ngoài ra, tránh bị chạm part lớn:
-                local ray = Ray.new(hrp.Position, Vector3.new(0, -100, 0))
-                local hit, hitPos = workspace:FindPartOnRayWithIgnoreList(ray, {character})
-                if hit and hit.CanCollide then
-                    local buffer = 25
-                    if hrp.Position.Y - hitPos.Y < buffer then
-                        hrp.CFrame = CFrame.new(hrp.Position.X, hitPos.Y + buffer, hrp.Position.Z)
-                    end
+                    hrp.CFrame = hrp.CFrame + Vector3.new(0, 120, 0)
                 end
 
                 -- 🔹 Kiểm tra nếu đang bật nhưng không còn đảo → tự tắt
