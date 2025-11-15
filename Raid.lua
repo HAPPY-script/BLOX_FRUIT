@@ -88,7 +88,7 @@ return function(sections)
             -- Tâm đảo
             local centerX = (minX + maxX) / 2
             local centerZ = (minZ + maxZ) / 2
-            local centerY = maxY + 10 -- đứng cao 10 studs để không kẹt
+            local centerY = maxY + 1
 
             return Vector3.new(centerX, centerY, centerZ)
         end
