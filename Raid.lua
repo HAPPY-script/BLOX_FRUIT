@@ -125,26 +125,25 @@ return function(sections)
         end)
 
         -- Tween đến vị trí
-        local STOP_DIST = 40
-
-        local function tweenCloseTo(targetPos)
+        local function tweenCloseTo(targetPos, stopDist)
             if not hrp then return end
-
+            stopDist = stopDist or 40
             local currentPos = hrp.Position
 
+            -- Giữ nguyên trục Y ngang với target
             hrp.CFrame = CFrame.new(currentPos.X, targetPos.Y, currentPos.Z)
 
-            local horizontalDist = Vector2.new(currentPos.X, currentPos.Z) 
-                                 - Vector2.new(targetPos.X, targetPos.Z)
-            local dist = horizontalDist.Magnitude
+            local horizontalDist = (Vector2.new(currentPos.X, currentPos.Z)
+                                   - Vector2.new(targetPos.X, targetPos.Z)).Magnitude
 
-            if dist > STOP_DIST then
-                local direction = (Vector2.new(targetPos.X, targetPos.Z) 
+            if horizontalDist > stopDist then
+                local direction = (Vector2.new(targetPos.X, targetPos.Z)
                                  - Vector2.new(hrp.Position.X, hrp.Position.Z)).Unit
-                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - direction * STOP_DIST
+
+                local targetXZ = Vector2.new(targetPos.X, targetPos.Z) - direction * stopDist
                 local targetPoint = Vector3.new(targetXZ.X, targetPos.Y, targetXZ.Y)
 
-                local time = dist / 300
+                local time = horizontalDist / 300
 
                 local tween = TweenService:Create(
                     hrp,
@@ -295,7 +294,7 @@ return function(sections)
                         -- Tween tới đảo
                         local islandCenter = getIslandCenter(island)
                             
-                        tweenCloseTo(islandCenter)
+                        tweenCloseTo(islandCenter, 1)
                         RunService.RenderStepped:Wait()
 
                         -----------------------------------------
@@ -319,7 +318,7 @@ return function(sections)
                         -- 🔥 Tween tới gần enemy trước (còn 100m)
                         local enemyHRP = enemy:FindFirstChild("HumanoidRootPart")
                         if enemyHRP then
-                            tweenCloseTo(enemyHRP.Position)
+                            tweenCloseTo(enemyHRP.Position, 250)
                         end
 
                         followEnemy(enemy)
