@@ -89,26 +89,22 @@ return function(sections)
         end
 
         -- Bật/tắt RAID khi bấm nút
+        local blocked = false
         toggleRaid.MouseButton1Click:Connect(function()
-
-            -- 🔥 Nếu không có Island gần → KHÔNG CHO BẬT
-            if not running then
-                if not hasIslandNearby() then
-                    -- Flash màu để báo lỗi
-                    toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
-                    toggleRaid.Text = "NO ISLAND"
-                    task.delay(0.35, function()
-                        toggleRaid.Text = "OFF"
-                        toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-                    end)
-                    return
-                end
+            if blocked then return end
+            if not running and not hasIslandNearby() then
+                blocked = true
+                toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+                toggleRaid.Text = "NO ISLAND"
+                task.delay(0.35, function()
+                    toggleRaid.Text = "OFF"
+                    toggleRaid.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+                    blocked = false
+                end)
+                return
             end
-
-            -- Nếu có Island thì cho bật đúng như bình thường
             running = not running
             autoClicking = running
-
             toggleRaid.Text = running and "ON" or "OFF"
             toggleRaid.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
         end)
