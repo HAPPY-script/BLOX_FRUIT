@@ -10,11 +10,14 @@ return function(sections)
 
         local followEnabled = false
         local targetPlayer = nil
+        local targetHumConn = nil
+        local myHumConn = nil
+
         local teleportPoints = {
-            Vector3.new(-12463.61, 374.91, -7549.53), --mansion
-            Vector3.new(-5073.83, 314.51, -3152.52), --castle
-            Vector3.new(5661.53, 1013.04, -334.96), --women
-            Vector3.new(28286.36, 14896.56, 102.62) --on tree
+            Vector3.new(-12463.61, 374.91, -7549.53),
+            Vector3.new(-5073.83, 314.51, -3152.52),
+            Vector3.new(5661.53, 1013.04, -334.96),
+            Vector3.new(28286.36, 14896.56, 102.62)
         }
 
         -- Button bật/tắt theo dõi
@@ -36,6 +39,25 @@ return function(sections)
         nameBox.TextScaled = true
         nameBox.Font = Enum.Font.SourceSans
 
+
+
+        ------------------------------------------------------------------------
+        -- ⚠️ Hàm tắt follow (dùng lại nhiều nơi)
+        ------------------------------------------------------------------------
+        local function stopFollowing()
+            followEnabled = false
+            followButton.Text = "OFF"
+            followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+
+            -- ngắt kết nối giám sát HP
+            if targetHumConn then targetHumConn:Disconnect() end
+            if myHumConn then myHumConn:Disconnect() end
+            targetHumConn = nil
+            myHumConn = nil
+        end
+
+
+
         local function calculateDistance(a, b)
             return (a - b).Magnitude
         end
@@ -43,7 +65,7 @@ return function(sections)
         local function teleportRepeatedly(pos, duration)
             local hrp = player.Character:WaitForChild("HumanoidRootPart")
             local t0 = tick()
-            while tick() - t0 < duration do
+            while tick() - t0 < duration and followEnabled do
                 hrp.CFrame = CFrame.new(pos)
                 RunService.Heartbeat:Wait()
             end
@@ -52,13 +74,15 @@ return function(sections)
         local function performLunge(targetPos)
             local character = player.Character or player.CharacterAdded:Wait()
             local hrp = character:WaitForChild("HumanoidRootPart")
+
             local dir = (targetPos - hrp.Position).Unit
             local dist = (targetPos - hrp.Position).Magnitude
+
             local lungeSpeed = 300
             local tpThreshold = 200
             local t0 = tick()
 
-            while tick() - t0 < dist / lungeSpeed do
+            while tick() - t0 < dist / lungeSpeed and followEnabled do
                 local remaining = (targetPos - hrp.Position).Magnitude
                 if remaining <= tpThreshold then
                     hrp.CFrame = CFrame.new(targetPos)
@@ -89,13 +113,20 @@ return function(sections)
             return 1
         end
 
+
+
+        ------------------------------------------------------------------------
+        -- ⚡ Follow chính
+        ------------------------------------------------------------------------
         local function followTarget()
             while followEnabled do
-                if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                if targetPlayer
+                    and targetPlayer.Character
+                    and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+                then
                     local targetPos = targetPlayer.Character.HumanoidRootPart.Position
                     local myPos = player.Character:WaitForChild("HumanoidRootPart").Position
 
-                    local dist = calculateDistance(myPos, targetPos)
                     if getHealthPercent() < 0.35 then
                         task.wait(0.1)
                         continue
@@ -109,24 +140,63 @@ return function(sections)
                         teleportRepeatedly(tpPos, 2)
                         teleportRepeatedly(tpPos + Vector3.new(0, 100, 0), 0.3)
                         task.wait(0.1)
-                        performLunge(targetPos - (targetPos - myPos).Unit * 1)
+                        performLunge(targetPos)
                     end
                 end
                 task.wait(0.01)
             end
         end
 
+
+
+        ------------------------------------------------------------------------
+        -- ⚡ Thêm giám sát chết của target và self
+        ------------------------------------------------------------------------
+        local function monitorDeath()
+            if targetPlayer and targetPlayer.Character then
+                local hum = targetPlayer.Character:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    targetHumConn = hum.Died:Connect(function()
+                        stopFollowing()
+                    end)
+                end
+            end
+
+            local myHum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if myHum then
+                myHumConn = myHum.Died:Connect(function()
+                    stopFollowing()
+                end)
+            end
+        end
+
+
+
+        ------------------------------------------------------------------------
+        -- Button click
+        ------------------------------------------------------------------------
         followButton.MouseButton1Click:Connect(function()
             if not targetPlayer then return end
+
             followEnabled = not followEnabled
             followButton.Text = followEnabled and "ON" or "OFF"
-            followButton.BackgroundColor3 = followEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+            followButton.BackgroundColor3 =
+                followEnabled and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,50,50)
 
+            -- bật follow
             if followEnabled then
+                monitorDeath()
                 task.spawn(followTarget)
+            else
+                stopFollowing()
             end
         end)
 
+
+
+        ------------------------------------------------------------------------
+        -- Tìm player theo tên
+        ------------------------------------------------------------------------
         nameBox.FocusLost:Connect(function()
             local input = nameBox.Text:lower()
             if #input >= 3 then
