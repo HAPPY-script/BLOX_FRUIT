@@ -10,7 +10,7 @@ return function(sections)
 
         local followEnabled = false
         local targetPlayer = nil
-        local followThread = nil
+        local followTask = nil
 
         local teleportPoints = {
             Vector3.new(-12463.61, 374.91, -7549.53),
@@ -20,7 +20,7 @@ return function(sections)
         }
 
         ---------------------------------------------------------
-        -- UI
+        -- UI (giữ nguyên vị trí/parent HomeFrame như script cũ)
         ---------------------------------------------------------
         local followButton = Instance.new("TextButton", HomeFrame)
         followButton.Size = UDim2.new(0, 90, 0, 30)
@@ -42,7 +42,6 @@ return function(sections)
         ---------------------------------------------------------
         -- Utility
         ---------------------------------------------------------
-
         local function safeHRP()
             local char = player.Character
             if not char then return nil end
@@ -86,34 +85,16 @@ return function(sections)
         end
 
         ---------------------------------------------------------
-        -- New Soft Lunge (Hủy được)
+        -- Movement params (tùy chỉnh ở đây)
         ---------------------------------------------------------
-        local function softLunge(targetPos)
-            local hrp = safeHRP()
-            local thrp = safeTargetHRP()
-            if not hrp or not thrp then return end
-
-            while followEnabled do
-                local newTarget = safeTargetHRP()
-                if not newTarget then return end
-
-                local targetNow = newTarget.Position
-                local myPos = hrp.Position
-                local dir = (targetNow - myPos).Unit
-                local step = dir * (250 * RunService.Heartbeat:Wait())
-
-                hrp.CFrame = CFrame.new(myPos + step)
-
-                if calculateDistance(myPos, targetNow) <= 3 then
-                    return
-                end
-
-                if getHealthPercent() < 0.35 then return end
-            end
-        end
+        local FOLLOW_SPEED = 220           -- studs/giây (tốc độ di chuyển bình thường)
+        local SOFT_STOP_DIST = 3           -- dừng khi còn bao nhiêu studs
+        local LUNGE_MAX_TIME = 1.2         -- thời gian tối đa cho 1 lần lướt/tiến nhanh
+        local HOP_DURATION_NEAR = 1.8      -- giữ từ script cũ
+        local HOP_HEIGHT = 120
 
         ---------------------------------------------------------
-        -- Hop Teleport (nhẹ, không bug)
+        -- Hop Teleport (không đổi)
         ---------------------------------------------------------
         local function hopTo(pos, duration)
             local hrp = safeHRP()
@@ -127,58 +108,122 @@ return function(sections)
         end
 
         ---------------------------------------------------------
-        -- Follow Main Loop (auto stop nếu die)
+        -- Soft approach (frame-based, cancellable, no Tween)
+        -- di chuyển từng bước nhỏ về phía target, có giới hạn thời gian
         ---------------------------------------------------------
-        local function followTarget()
-            while followEnabled do
-                local hrp = safeHRP()
-                local thrp = safeTargetHRP()
+        local function softApproach(targetHRP, stopDist, maxTime, speed)
+            stopDist = stopDist or SOFT_STOP_DIST
+            maxTime = maxTime or LUNGE_MAX_TIME
+            speed = speed or FOLLOW_SPEED
 
-                -- AUTO DISABLE nếu bản thân hoặc target chết
-                if not hrp then break end
-                if not thrp then break end
+            local hrp = safeHRP()
+            if not hrp or not targetHRP then return end
+
+            local tStart = tick()
+            while followEnabled do
+                if not hrp or not hrp.Parent then return end
+                if not targetHRP or not targetHRP.Parent then return end
+
+                local dt = RunService.Heartbeat:Wait()
+
+                -- nếu máu yếu thì dừng approach
+                if getHealthPercent() < 0.35 then return end
 
                 local myPos = hrp.Position
-                local targetPos = thrp.Position
+                local targetPos = targetHRP.Position
 
-                if getHealthPercent() < 0.35 then
-                    task.wait(0.15)
-                    continue
+                local toTarget = targetPos - myPos
+                local dist = toTarget.Magnitude
+
+                if dist <= stopDist then
+                    return
                 end
 
-                local tpPos, tpDistWhenTp, directDist = findNearestTeleportPoint(targetPos)
-                if not tpPos then break end
+                -- giới hạn bước để mượt mà và để có thể hủy ngay
+                local maxStep = math.max(5, speed * dt) -- bước tối đa theo dt
+                local step = toTarget.Unit * math.min(maxStep, dist)
 
-                -- Đi trực tiếp nếu gần
-                if directDist < tpDistWhenTp then
-                    softLunge(targetPos - (targetPos - myPos).Unit * 1)
-                else
-                    hopTo(tpPos, 1.8)
-                    hopTo(tpPos + Vector3.new(0, 120, 0), 0.25)
-                    softLunge(targetPos)
+                -- áp dụng di chuyển: đặt CFrame mới (không dùng Tween)
+                hrp.CFrame = CFrame.new(myPos + step)
+
+                -- an toàn: giới hạn thời gian lướt để tránh "dính" mãi
+                if tick() - tStart > maxTime then
+                    return
                 end
-
-                task.wait(0.02)
             end
-
-            -- Auto OFF khi loop kết thúc
-            followEnabled = false
-            followButton.Text = "OFF"
-            followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         end
 
         ---------------------------------------------------------
-        -- Button Toggle
+        -- Follow Main Loop (frame-based, can be cancelled immediately)
+        ---------------------------------------------------------
+        local function startFollowLoop()
+            if followTask then return end -- tránh spawn đôi
+            followTask = task.spawn(function()
+                while followEnabled do
+                    local hrp = safeHRP()
+                    local thrp = safeTargetHRP()
+
+                    -- AUTO DISABLE nếu bản thân hoặc target rời or chết
+                    if not hrp or not hrp.Parent then break end
+                    if not thrp or not thrp.Parent then break end
+
+                    if getHealthPercent() < 0.35 then
+                        task.wait(0.15)
+                        continue
+                    end
+
+                    local myPos = hrp.Position
+                    local targetPos = thrp.Position
+
+                    local tpPos, tpDistWhenTp, directDist = findNearestTeleportPoint(targetPos)
+                    if not tpPos then break end
+
+                    -- nếu ở gần hơn so với teleport waypoint thì đi trực tiếp
+                    if directDist < tpDistWhenTp then
+                        -- đi nhẹ nhàng tới target hiện thời
+                        softApproach(thrp, SOFT_STOP_DIST, LUNGE_MAX_TIME, FOLLOW_SPEED)
+                    else
+                        -- hop tới điểm gần mục tiêu rồi lướt
+                        hopTo(tpPos, HOP_DURATION_NEAR)
+                        hopTo(tpPos + Vector3.new(0, HOP_HEIGHT, 0), 0.25)
+                        -- sau khi hop, approach target
+                        softApproach(thrp, SOFT_STOP_DIST, LUNGE_MAX_TIME * 1.5, FOLLOW_SPEED * 1.1)
+                    end
+
+                    task.wait(0.02)
+                end
+
+                -- Auto OFF khi loop kết thúc (an toàn)
+                followEnabled = false
+                followButton.Text = "OFF"
+                followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+                followTask = nil
+            end)
+        end
+
+        ---------------------------------------------------------
+        -- Button Toggle (đảm bảo không spawn nhiều thread)
         ---------------------------------------------------------
         followButton.MouseButton1Click:Connect(function()
             if not targetPlayer then return end
 
+            -- toggle trạng thái
             followEnabled = not followEnabled
             followButton.Text = followEnabled and "ON" or "OFF"
             followButton.BackgroundColor3 = followEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
 
             if followEnabled then
-                task.spawn(followTarget)
+                -- nếu có task cũ (đang chạy) thì để nó tiếp tục; nếu không thì start
+                startFollowLoop()
+            else
+                -- khi tắt: followTask sẽ tự thoát trong vòng lặp vì followEnabled=false
+                -- để an toàn, set followTask = nil sau 0.05s nếu vẫn còn
+                task.delay(0.06, function()
+                    if followTask and not followEnabled then
+                        -- followTask sẽ tự kết thúc vì check followEnabled; phương án an toàn:
+                        followTask = nil
+                    end
+                end)
             end
         end)
 
@@ -203,6 +248,7 @@ return function(sections)
                 followEnabled = false
                 followButton.Text = "OFF"
                 followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+                targetPlayer = nil
             end
         end)
     end
