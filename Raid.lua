@@ -93,7 +93,7 @@ return function(sections)
                 if island:IsA("Model") then
                     local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
                     if root then
-                        if (hrp.Position - root.Position).Magnitude <= 4500 then
+                        if (hrp.Position - root.Position).Magnitude <= 4000 then
                             return true
                         end
                     end
