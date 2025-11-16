@@ -9,6 +9,8 @@ return function(sections)
 
         local followEnabled = false
         local targetPlayer = nil
+        local followTask = nil
+
         local teleportPoints = {
             Vector3.new(-286.99, 306.18, 597.75),
             Vector3.new(-6508.56, 83.24, -132.84),
@@ -16,7 +18,9 @@ return function(sections)
             Vector3.new(2284.91, 15.20, 905.62)
         }
 
-        -- Button bật/tắt theo dõi
+        ---------------------------------------------------------
+        -- UI (giữ nguyên vị trí/parent HomeFrame như script cũ)
+        ---------------------------------------------------------
         local followButton = Instance.new("TextButton", HomeFrame)
         followButton.Size = UDim2.new(0, 90, 0, 30)
         followButton.Position = UDim2.new(0, 240, 0, 10)
@@ -26,7 +30,6 @@ return function(sections)
         followButton.Font = Enum.Font.SourceSansBold
         followButton.TextScaled = true
 
-        -- Ô nhập tên player
         local nameBox = Instance.new("TextBox", HomeFrame)
         nameBox.Size = UDim2.new(0, 50, 0, 30)
         nameBox.Position = UDim2.new(0, 190, 0, 10)
@@ -35,49 +38,41 @@ return function(sections)
         nameBox.TextScaled = true
         nameBox.Font = Enum.Font.SourceSans
 
+        ---------------------------------------------------------
+        -- Utility
+        ---------------------------------------------------------
+        local function safeHRP()
+            local char = player.Character
+            if not char then return nil end
+            return char:FindFirstChild("HumanoidRootPart")
+        end
+
+        local function safeTargetHRP()
+            if not targetPlayer then return nil end
+            if not targetPlayer.Character then return nil end
+            return targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+        end
+
         local function calculateDistance(a, b)
             return (a - b).Magnitude
         end
 
-        local function teleportRepeatedly(pos, duration)
-            local hrp = player.Character:WaitForChild("HumanoidRootPart")
-            local t0 = tick()
-            while tick() - t0 < duration do
-                hrp.CFrame = CFrame.new(pos)
-                RunService.Heartbeat:Wait()
-            end
-        end
-
-        local function performLunge(targetPos)
-            local character = player.Character or player.CharacterAdded:Wait()
-            local hrp = character:WaitForChild("HumanoidRootPart")
-            local dir = (targetPos - hrp.Position).Unit
-            local dist = (targetPos - hrp.Position).Magnitude
-            local lungeSpeed = 300
-            local tpThreshold = 200
-            local t0 = tick()
-
-            while tick() - t0 < dist / lungeSpeed do
-                local remaining = (targetPos - hrp.Position).Magnitude
-                if remaining <= tpThreshold then
-                    hrp.CFrame = CFrame.new(targetPos)
-                    break
-                end
-                hrp.CFrame = hrp.CFrame + dir * (lungeSpeed * RunService.Heartbeat:Wait())
-            end
-        end
-
         local function findNearestTeleportPoint(targetPos)
-            local myPos = player.Character:WaitForChild("HumanoidRootPart").Position
-            local closestPoint, closestDist = nil, math.huge
+            local myHRP = safeHRP()
+            if not myHRP then return nil end
+
+            local myPos = myHRP.Position
+            local best, bestDist = nil, math.huge
+
             for _, tpPos in pairs(teleportPoints) do
-                local dist = calculateDistance(tpPos, targetPos)
-                if dist < closestDist then
-                    closestPoint = tpPos
-                    closestDist = dist
+                local d = calculateDistance(tpPos, targetPos)
+                if d < bestDist then
+                    best = tpPos
+                    bestDist = d
                 end
             end
-            return closestPoint, closestDist, calculateDistance(myPos, targetPos)
+
+            return best, bestDist, calculateDistance(myPos, targetPos)
         end
 
         local function getHealthPercent()
@@ -88,53 +83,171 @@ return function(sections)
             return 1
         end
 
-        local function followTarget()
-            while followEnabled do
-                if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local targetPos = targetPlayer.Character.HumanoidRootPart.Position
-                    local myPos = player.Character:WaitForChild("HumanoidRootPart").Position
+        ---------------------------------------------------------
+        -- Movement params (tùy chỉnh ở đây)
+        ---------------------------------------------------------
+        local FOLLOW_SPEED = 220           -- studs/giây (tốc độ di chuyển bình thường)
+        local SOFT_STOP_DIST = 3           -- dừng khi còn bao nhiêu studs
+        local LUNGE_MAX_TIME = 1.2         -- thời gian tối đa cho 1 lần lướt/tiến nhanh
+        local HOP_DURATION_NEAR = 1.8      -- giữ từ script cũ
+        local HOP_HEIGHT = 120
 
-                    local dist = calculateDistance(myPos, targetPos)
-                    if getHealthPercent() < 0.35 then
-                        task.wait(0.1)
-                        continue
-                    end
+        ---------------------------------------------------------
+        -- Hop Teleport (không đổi)
+        ---------------------------------------------------------
+        local function hopTo(pos, duration)
+            local hrp = safeHRP()
+            if not hrp then return end
 
-                    local tpPos, tpToTargetDist, playerToTargetDist = findNearestTeleportPoint(targetPos)
-
-                    if playerToTargetDist < tpToTargetDist then
-                        performLunge(targetPos)
-                    else
-                        teleportRepeatedly(tpPos, 2)
-                        teleportRepeatedly(tpPos + Vector3.new(0, 100, 0), 0.3)
-                        task.wait(0.1)
-                        performLunge(targetPos - (targetPos - myPos).Unit * 1)
-                    end
-                end
-                task.wait(0.01)
+            local t0 = tick()
+            while followEnabled and tick() - t0 < duration do
+                hrp.CFrame = CFrame.new(pos)
+                RunService.Heartbeat:Wait()
             end
         end
 
+        ---------------------------------------------------------
+        -- Soft approach (frame-based, cancellable, no Tween)
+        -- di chuyển từng bước nhỏ về phía target, có giới hạn thời gian
+        ---------------------------------------------------------
+        local function softApproach(targetHRP, stopDist, maxTime, speed)
+            stopDist = stopDist or SOFT_STOP_DIST
+            maxTime = maxTime or LUNGE_MAX_TIME
+            speed = speed or FOLLOW_SPEED
+
+            local hrp = safeHRP()
+            if not hrp or not targetHRP then return end
+
+            local tStart = tick()
+            while followEnabled do
+                if not hrp or not hrp.Parent then return end
+                if not targetHRP or not targetHRP.Parent then return end
+
+                local dt = RunService.Heartbeat:Wait()
+
+                -- nếu máu yếu thì dừng approach
+                if getHealthPercent() < 0.35 then return end
+
+                local myPos = hrp.Position
+                local targetPos = targetHRP.Position
+
+                local toTarget = targetPos - myPos
+                local dist = toTarget.Magnitude
+
+                if dist <= stopDist then
+                    return
+                end
+
+                -- giới hạn bước để mượt mà và để có thể hủy ngay
+                local maxStep = math.max(5, speed * dt) -- bước tối đa theo dt
+                local step = toTarget.Unit * math.min(maxStep, dist)
+
+                -- áp dụng di chuyển: đặt CFrame mới (không dùng Tween)
+                hrp.CFrame = CFrame.new(myPos + step)
+
+                -- an toàn: giới hạn thời gian lướt để tránh "dính" mãi
+                if tick() - tStart > maxTime then
+                    return
+                end
+            end
+        end
+
+        ---------------------------------------------------------
+        -- Follow Main Loop (frame-based, can be cancelled immediately)
+        ---------------------------------------------------------
+        local function startFollowLoop()
+            if followTask then return end -- tránh spawn đôi
+            followTask = task.spawn(function()
+                while followEnabled do
+                    local hrp = safeHRP()
+                    local thrp = safeTargetHRP()
+
+                    -- AUTO DISABLE nếu bản thân hoặc target rời or chết
+                    if not hrp or not hrp.Parent then break end
+                    if not thrp or not thrp.Parent then break end
+
+                    if getHealthPercent() < 0.35 then
+                        task.wait(0.15)
+                        continue
+                    end
+
+                    local myPos = hrp.Position
+                    local targetPos = thrp.Position
+
+                    local tpPos, tpDistWhenTp, directDist = findNearestTeleportPoint(targetPos)
+                    if not tpPos then break end
+
+                    -- nếu ở gần hơn so với teleport waypoint thì đi trực tiếp
+                    if directDist < tpDistWhenTp then
+                        -- đi nhẹ nhàng tới target hiện thời
+                        softApproach(thrp, SOFT_STOP_DIST, LUNGE_MAX_TIME, FOLLOW_SPEED)
+                    else
+                        -- hop tới điểm gần mục tiêu rồi lướt
+                        hopTo(tpPos, HOP_DURATION_NEAR)
+                        hopTo(tpPos + Vector3.new(0, HOP_HEIGHT, 0), 0.25)
+                        -- sau khi hop, approach target
+                        softApproach(thrp, SOFT_STOP_DIST, LUNGE_MAX_TIME * 1.5, FOLLOW_SPEED * 1.1)
+                    end
+
+                    task.wait(0.02)
+                end
+
+                -- Auto OFF khi loop kết thúc (an toàn)
+                followEnabled = false
+                followButton.Text = "OFF"
+                followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+                followTask = nil
+            end)
+        end
+
+        ---------------------------------------------------------
+        -- Button Toggle (đảm bảo không spawn nhiều thread)
+        ---------------------------------------------------------
         followButton.MouseButton1Click:Connect(function()
             if not targetPlayer then return end
+
+            -- toggle trạng thái
             followEnabled = not followEnabled
             followButton.Text = followEnabled and "ON" or "OFF"
             followButton.BackgroundColor3 = followEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
 
             if followEnabled then
-                task.spawn(followTarget)
+                -- nếu có task cũ (đang chạy) thì để nó tiếp tục; nếu không thì start
+                startFollowLoop()
+            else
+                -- khi tắt: followTask sẽ tự thoát trong vòng lặp vì followEnabled=false
+                -- để an toàn, set followTask = nil sau 0.05s nếu vẫn còn
+                task.delay(0.06, function()
+                    if followTask and not followEnabled then
+                        -- followTask sẽ tự kết thúc vì check followEnabled; phương án an toàn:
+                        followTask = nil
+                    end
+                end)
             end
         end)
 
+        ---------------------------------------------------------
+        -- Player Finder
+        ---------------------------------------------------------
         nameBox.FocusLost:Connect(function()
             local input = nameBox.Text:lower()
-            if #input >= 3 then
-                for _, p in pairs(Players:GetPlayers()) do
-                    if p ~= player and p.Name:lower():find(input) == 1 then
-                        targetPlayer = p
-                        break
-                    end
+            if #input < 3 then return end
+
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= player and p.Name:lower():find(input) == 1 then
+                    targetPlayer = p
+                    break
                 end
+            end
+        end)
+
+        -- Auto OFF nếu target rời game
+        Players.PlayerRemoving:Connect(function(p)
+            if p == targetPlayer then
+                followEnabled = false
+                followButton.Text = "OFF"
+                followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+                targetPlayer = nil
             end
         end)
     end
