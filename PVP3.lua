@@ -76,154 +76,156 @@ return function(sections)
             return best, bestDist, calculateDistance(myPos, targetPos)
         end
 
-        local function getHealthPercent()
+        ---------------------------------------------------------
+        -- Flight params (tùy chỉnh nhanh ở đây)
+        ---------------------------------------------------------
+        local STOP_DIST = 3                -- dừng khi còn bao nhiêu studs
+        local BASE_FLY_SPEED = 220         -- tốc độ cơ bản (studs/s)
+        local MAX_FLY_SPEED = 650          -- tốc độ tối đa
+        local DIST_SPEED_MULT = 4          -- hệ số chuyển khoảng cách -> tốc độ
+        local ORIENTATION_LERP = 0.5       -- độ mượt khi quay mặt về hướng target (0..1)
+
+        ---------------------------------------------------------
+        -- Helper: zero velocity & reset humanoid after stop
+        ---------------------------------------------------------
+        local function resetMovementState()
+            local hrp = safeHRP()
             local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if hum and hum.MaxHealth > 0 then
-                return hum.Health / hum.MaxHealth
+            if hrp then
+                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             end
-            return 1
+            if hum then
+                -- bật lại auto rotate, tắt platformstand
+                pcall(function()
+                    hum.PlatformStand = false
+                    hum.AutoRotate = true
+                end)
+            end
         end
 
         ---------------------------------------------------------
-        -- Movement params (tùy chỉnh ở đây)
+        -- Instant teleport (không Tween) - dùng khi target quá xa
         ---------------------------------------------------------
-        local FOLLOW_SPEED = 220           -- studs/giây (tốc độ di chuyển bình thường)
-        local SOFT_STOP_DIST = 3           -- dừng khi còn bao nhiêu studs
-        local LUNGE_MAX_TIME = 1.2         -- thời gian tối đa cho 1 lần lướt/tiến nhanh
-        local HOP_DURATION_NEAR = 1.8      -- giữ từ script cũ
-        local HOP_HEIGHT = 120
-
-        ---------------------------------------------------------
-        -- Hop Teleport (không đổi)
-        ---------------------------------------------------------
-        local function hopTo(pos, duration)
+        local function instantTeleportTo(pos)
             local hrp = safeHRP()
             if not hrp then return end
-
-            local t0 = tick()
-            while followEnabled and tick() - t0 < duration do
-                hrp.CFrame = CFrame.new(pos)
-                RunService.Heartbeat:Wait()
-            end
+            -- đặt cao 60 studs để tránh chui đất
+            hrp.CFrame = CFrame.new(pos + Vector3.new(0, 60, 0))
+            -- dừng mọi vận tốc cũ
+            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            RunService.Heartbeat:Wait() -- 1 frame để ổn định
         end
 
         ---------------------------------------------------------
-        -- Soft approach (frame-based, cancellable, no Tween)
-        -- di chuyển từng bước nhỏ về phía target, có giới hạn thời gian
+        -- Fly follow core (dùng AssemblyLinearVelocity)
+        -- Dừng ngay khi followEnabled = false
         ---------------------------------------------------------
-        local function softApproach(targetHRP, stopDist, maxTime, speed)
-            stopDist = stopDist or SOFT_STOP_DIST
-            maxTime = maxTime or LUNGE_MAX_TIME
-            speed = speed or FOLLOW_SPEED
-
+        local function flyFollowLoop()
             local hrp = safeHRP()
-            if not hrp or not targetHRP then return end
+            local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if not hrp then return end
 
-            local tStart = tick()
+            -- Khóa vật lý để điều khiển bay mượt: PlatformStand + tắt AutoRotate
+            if hum then
+                pcall(function()
+                    hum.PlatformStand = true
+                    hum.AutoRotate = false
+                end)
+            end
+
             while followEnabled do
-                if not hrp or not hrp.Parent then return end
-                if not targetHRP or not targetHRP.Parent then return end
+                hrp = safeHRP()
+                local thrp = safeTargetHRP()
 
-                local dt = RunService.Heartbeat:Wait()
+                if not hrp or not thrp then break end
 
-                -- nếu máu yếu thì dừng approach
-                if getHealthPercent() < 0.35 then return end
-
+                -- lấy vị trí mục tiêu (bù lên một chút để nhắm đầu)
+                local targetPos = thrp.Position + Vector3.new(0, 2, 0)
                 local myPos = hrp.Position
-                local targetPos = targetHRP.Position
-
                 local toTarget = targetPos - myPos
                 local dist = toTarget.Magnitude
 
-                if dist <= stopDist then
-                    return
+                -- nếu quá gần thì dừng, giữ vị trí
+                if dist <= STOP_DIST then
+                    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                    -- nhẹ nhàng face mục tiêu
+                    local desiredCFrame = CFrame.new(myPos, targetPos)
+                    hrp.CFrame = hrp.CFrame:Lerp(desiredCFrame, ORIENTATION_LERP)
+                    RunService.Heartbeat:Wait()
+                    -- tiếp tục vòng để check nếu target di chuyển ra khỏi stop dist
+                    continue
                 end
 
-                -- giới hạn bước để mượt mà và để có thể hủy ngay
-                local maxStep = math.max(5, speed * dt) -- bước tối đa theo dt
-                local step = toTarget.Unit * math.min(maxStep, dist)
-
-                -- áp dụng di chuyển: đặt CFrame mới (không dùng Tween)
-                hrp.CFrame = CFrame.new(myPos + step)
-
-                -- an toàn: giới hạn thời gian lướt để tránh "dính" mãi
-                if tick() - tStart > maxTime then
-                    return
+                -- Nếu target rất xa hơn so với teleport point -> teleport tức thì tới teleport point gần nhất
+                local tpPos, tpDistWhenTp, directDist = findNearestTeleportPoint(targetPos)
+                if tpPos and directDist >= tpDistWhenTp then
+                    -- teleport tức thì tới tpPos (đặt trên cao để tránh chui đất)
+                    instantTeleportTo(tpPos)
+                    -- tiếp tục vòng sau khi teleport
+                    RunService.Heartbeat:Wait()
+                    continue
                 end
+
+                -- Tính tốc độ dựa trên khoảng cách (mượt và không "đâm húc")
+                local desiredSpeed = math.clamp(dist * DIST_SPEED_MULT, BASE_FLY_SPEED, MAX_FLY_SPEED)
+
+                -- Tạo vận tốc hướng tới mục tiêu
+                local desiredVel = toTarget.Unit * desiredSpeed
+
+                -- Áp dụng velocity trực tiếp (dừng nghịch chuyển động server side)
+                hrp.AssemblyLinearVelocity = desiredVel
+
+                -- Quay mặt theo hướng bay 1 cách mềm mại
+                local lookAt = CFrame.new(myPos, myPos + desiredVel)
+                hrp.CFrame = hrp.CFrame:Lerp(lookAt, ORIENTATION_LERP)
+
+                RunService.Heartbeat:Wait()
+            end
+
+            -- khi thoát vòng lặp: reset trạng thái
+            resetMovementState()
+        end
+
+        ---------------------------------------------------------
+        -- Start/stop control (chỉ 1 task)
+        ---------------------------------------------------------
+        local function startFollowLoop()
+            if followTask then return end
+            followTask = task.spawn(function()
+                flyFollowLoop()
+                followTask = nil
+                followEnabled = false
+                followButton.Text = "OFF"
+                followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+            end)
+        end
+
+        local function stopFollow()
+            followEnabled = false
+            -- reset ngay lập tức (không phải chờ vòng lặp)
+            resetMovementState()
+            if followTask then
+                -- followTask sẽ tự thoát vì followEnabled = false; clear tham chiếu
+                followTask = nil
             end
         end
 
         ---------------------------------------------------------
-        -- Follow Main Loop (frame-based, can be cancelled immediately)
-        ---------------------------------------------------------
-        local function startFollowLoop()
-            if followTask then return end -- tránh spawn đôi
-            followTask = task.spawn(function()
-                while followEnabled do
-                    local hrp = safeHRP()
-                    local thrp = safeTargetHRP()
-
-                    -- AUTO DISABLE nếu bản thân hoặc target rời or chết
-                    if not hrp or not hrp.Parent then break end
-                    if not thrp or not thrp.Parent then break end
-
-                    if getHealthPercent() < 0.35 then
-                        task.wait(0.15)
-                        continue
-                    end
-
-                    local myPos = hrp.Position
-                    local targetPos = thrp.Position
-
-                    local tpPos, tpDistWhenTp, directDist = findNearestTeleportPoint(targetPos)
-                    if not tpPos then break end
-
-                    -- nếu ở gần hơn so với teleport waypoint thì đi trực tiếp
-                    if directDist < tpDistWhenTp then
-                        -- đi nhẹ nhàng tới target hiện thời
-                        softApproach(thrp, SOFT_STOP_DIST, LUNGE_MAX_TIME, FOLLOW_SPEED)
-                    else
-                        -- hop tới điểm gần mục tiêu rồi lướt
-                        hopTo(tpPos, HOP_DURATION_NEAR)
-                        hopTo(tpPos + Vector3.new(0, HOP_HEIGHT, 0), 0.25)
-                        -- sau khi hop, approach target
-                        softApproach(thrp, SOFT_STOP_DIST, LUNGE_MAX_TIME * 1.5, FOLLOW_SPEED * 1.1)
-                    end
-
-                    task.wait(0.02)
-                end
-
-                -- Auto OFF khi loop kết thúc (an toàn)
-                followEnabled = false
-                followButton.Text = "OFF"
-                followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-                followTask = nil
-            end)
-        end
-
-        ---------------------------------------------------------
-        -- Button Toggle (đảm bảo không spawn nhiều thread)
+        -- Button Toggle
         ---------------------------------------------------------
         followButton.MouseButton1Click:Connect(function()
             if not targetPlayer then return end
 
-            -- toggle trạng thái
             followEnabled = not followEnabled
             followButton.Text = followEnabled and "ON" or "OFF"
             followButton.BackgroundColor3 = followEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
 
             if followEnabled then
-                -- nếu có task cũ (đang chạy) thì để nó tiếp tục; nếu không thì start
                 startFollowLoop()
             else
-                -- khi tắt: followTask sẽ tự thoát trong vòng lặp vì followEnabled=false
-                -- để an toàn, set followTask = nil sau 0.05s nếu vẫn còn
-                task.delay(0.06, function()
-                    if followTask and not followEnabled then
-                        -- followTask sẽ tự kết thúc vì check followEnabled; phương án an toàn:
-                        followTask = nil
-                    end
-                end)
+                stopFollow()
             end
         end)
 
@@ -249,7 +251,13 @@ return function(sections)
                 followButton.Text = "OFF"
                 followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
                 targetPlayer = nil
+                resetMovementState()
             end
+        end)
+
+        -- Nếu respawn thì reset movement
+        player.CharacterAdded:Connect(function()
+            resetMovementState()
         end)
     end
 
