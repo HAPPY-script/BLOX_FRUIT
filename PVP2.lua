@@ -84,31 +84,6 @@ return function(sections)
             end
             return best, bestDist
         end
-        
-        ---------------------------------------------------------------------------
-        -- GhostTween: Move HRP toward a target position ignoring physics walls
-        ---------------------------------------------------------------------------
-        local function ghostMoveTo(hrp, targetPos, speed)
-            local connection
-            connection = RunService.Heartbeat:Connect(function(dt)
-                if not followEnabled then 
-                    connection:Disconnect()
-                    return 
-                end
-        
-                local pos = hrp.Position
-                local direction = (targetPos - pos)
-
-                if direction.Magnitude < 2 then
-                    connection:Disconnect()
-                    return
-                end
-
-                -- bước di chuyển mỗi frame (xuyên tường)
-                local move = direction.Unit * speed * dt
-                hrp.CFrame = CFrame.new(pos + move)
-            end)
-        end
 
         -----------------------------------------------------
         -- Movement params
@@ -150,6 +125,30 @@ return function(sections)
             hrp.AssemblyAngularVelocity = Vector3.zero
             RunService.Heartbeat:Wait()
             hrp.CFrame += Vector3.new(0,3,0)
+        end
+
+        -----------------------------------------------------
+        -- Tween xuyên tường (không bị cản)
+        -----------------------------------------------------
+        local function SmoothFlyTo(targetPos)
+            local hrp = safeHRP()
+            if not hrp then return end
+
+            local startPos = hrp.Position
+            local dist = (startPos - targetPos).Magnitude
+            local duration = dist / 320 -- tốc độ bay
+            local t = 0
+
+            while t < 1 and followEnabled do
+                local hrp = safeHRP()
+                if not hrp then break end
+
+                t += RunService.Heartbeat:Wait() / duration
+                if t > 1 then t = 1 end
+
+                local newPos = startPos:Lerp(targetPos, t)
+                hrp.CFrame = CFrame.new(newPos, targetPos)
+            end
         end
 
         -----------------------------------------------------
@@ -201,8 +200,26 @@ return function(sections)
                 -------------------------------------------------
                 local nearest, ndist = findNearestTP(targetPos)
                 if nearest and dist > ndist then
+    
+                    -- TP 1: tới waypoint
                     instantTeleport(nearest)
                     RunService.Heartbeat:Wait()
+
+                    local hrp = safeHRP()
+                    if hrp then
+                        -- TP 2: lên cao 100m
+                        hrp.CFrame = hrp.CFrame + Vector3.new(0,100,0)
+                        RunService.Heartbeat:Wait()
+
+                        -- TP 3: tiến 100m về phía mục tiêu
+                        local dir = (targetPos - hrp.Position).Unit
+                        hrp.CFrame = CFrame.new(hrp.Position + dir * 100)
+                        RunService.Heartbeat:Wait()
+                    end
+
+                    -- Sau đó dùng Tween xuyên tường
+                    SmoothFlyTo(targetPos)
+
                     continue
                 end
 
@@ -211,7 +228,7 @@ return function(sections)
                 -------------------------------------------------
                 if dist < 100 then
                     -- siêu bám sát: update CFrame liên tục
-                    while followEnabled and distance(hrp.Position, thrp.Position) < 100 do
+                    while followEnabled do
                         local hrp = safeHRP()
                         local thrp = safeTargetHRP()
                         local thum = safeTargetHumanoid()
@@ -244,20 +261,9 @@ return function(sections)
                 end
 
                 -------------------------------------------------
-                -- NORMAL FOLLOW MOVEMENT (GHOST MOVE)
+                -- NORMAL FOLLOW MOVEMENT
                 -------------------------------------------------
-                local speed = math.clamp(dist * DIST_MULT, BASE_SPEED, MAX_SPEED)
-
-                -- dịch chuyển xuyên tường
-                local dt = RunService.Heartbeat:Wait()
-                local moveDir = (targetPos - myPos).Unit * speed * dt
-                hrp.CFrame = CFrame.new(hrp.Position + moveDir)
-
-                -- xoay theo hướng bay
-                local look = CFrame.new(hrp.Position, targetPos)
-                hrp.CFrame = hrp.CFrame:Lerp(look, 0.25)
-                
-                RunService.Heartbeat:Wait()
+                SmoothFlyTo(targetPos)
             end
 
             resetMovement()
@@ -639,5 +645,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S2-v0.07 tad SUCCESS✅")
+    print("PVP_S2-v0.08 tad SUCCESS✅")
 end
