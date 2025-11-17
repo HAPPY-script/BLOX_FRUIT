@@ -128,25 +128,50 @@ return function(sections)
         end
 
         -----------------------------------------------------
-        -- Tween xuyên tường (không bị cản)
+        -- Tween
         -----------------------------------------------------
         local function SmoothFlyTo(targetPos)
             local hrp = safeHRP()
+            local myHum = safeHumanoid()
             if not hrp then return end
 
             local startPos = hrp.Position
             local dist = (startPos - targetPos).Magnitude
-            local duration = dist / 320 -- tốc độ bay
+            if dist <= STOP_DIST then return end
+
+            local duration = math.max(0.05, dist / 320) -- tránh duration = 0
             local t = 0
 
+            -- final offset: luôn dừng trước target một khoảng nhỏ và hơi lệch về phía sau mục tiêu
+            local dir = (targetPos - startPos).Unit
+            local finalOffset = 3 -- dừng cách mục tiêu 3 studs (thay đổi nếu cần)
+            local adjustedTarget = targetPos - dir * finalOffset
+            -- nếu adjustedTarget quá thấp so với mục tiêu thì đảm bảo độ cao:
+            if adjustedTarget.Y < targetPos.Y - 10 then
+                adjustedTarget = Vector3.new(adjustedTarget.X, targetPos.Y + 2, adjustedTarget.Z)
+            end
+
+            local prevDist = (hrp.Position - targetPos).Magnitude
+
             while t < 1 and followEnabled do
-                local hrp = safeHRP()
+                hrp = safeHRP()
                 if not hrp then break end
+
+                -- break sớm nếu đã gần đủ
+                local curDist = (hrp.Position - targetPos).Magnitude
+                if curDist <= STOP_DIST then break end
+
+                -- nếu khoảng cách đang tăng (overshoot / bị đẩy), thoát để tránh loop
+                if curDist > prevDist + 10 then
+                    break
+                end
+                prevDist = curDist
 
                 t += RunService.Heartbeat:Wait() / duration
                 if t > 1 then t = 1 end
 
-                local newPos = startPos:Lerp(targetPos, t)
+                local newPos = startPos:Lerp(adjustedTarget, t)
+                -- giữ hướng nhìn về target nhưng không đặt thẳng vào target
                 hrp.CFrame = CFrame.new(newPos, targetPos)
             end
         end
