@@ -84,6 +84,31 @@ return function(sections)
             end
             return best, bestDist
         end
+        
+        ---------------------------------------------------------------------------
+        -- GhostTween: Move HRP toward a target position ignoring physics walls
+        ---------------------------------------------------------------------------
+        local function ghostMoveTo(hrp, targetPos, speed)
+            local connection
+            connection = RunService.Heartbeat:Connect(function(dt)
+                if not followEnabled then 
+                    connection:Disconnect()
+                    return 
+                end
+        
+                local pos = hrp.Position
+                local direction = (targetPos - pos)
+
+                if direction.Magnitude < 2 then
+                    connection:Disconnect()
+                    return
+                end
+
+                -- bước di chuyển mỗi frame (xuyên tường)
+                local move = direction.Unit * speed * dt
+                hrp.CFrame = CFrame.new(pos + move)
+            end)
+        end
 
         -----------------------------------------------------
         -- Movement params
@@ -186,7 +211,7 @@ return function(sections)
                 -------------------------------------------------
                 if dist < 100 then
                     -- siêu bám sát: update CFrame liên tục
-                    while followEnabled do
+                    while followEnabled and distance(hrp.Position, thrp.Position) < 100 do
                         local hrp = safeHRP()
                         local thrp = safeTargetHRP()
                         local thum = safeTargetHumanoid()
@@ -219,15 +244,19 @@ return function(sections)
                 end
 
                 -------------------------------------------------
-                -- NORMAL FOLLOW MOVEMENT
+                -- NORMAL FOLLOW MOVEMENT (GHOST MOVE)
                 -------------------------------------------------
                 local speed = math.clamp(dist * DIST_MULT, BASE_SPEED, MAX_SPEED)
-                local vel = toTarget.Unit * speed
-                hrp.AssemblyLinearVelocity = vel
 
-                local look = CFrame.new(myPos, myPos + vel)
-                hrp.CFrame = hrp.CFrame:Lerp(look, 0.4)
+                -- dịch chuyển xuyên tường
+                local dt = RunService.Heartbeat:Wait()
+                local moveDir = (targetPos - myPos).Unit * speed * dt
+                hrp.CFrame = CFrame.new(hrp.Position + moveDir)
 
+                -- xoay theo hướng bay
+                local look = CFrame.new(hrp.Position, targetPos)
+                hrp.CFrame = hrp.CFrame:Lerp(look, 0.25)
+                
                 RunService.Heartbeat:Wait()
             end
 
