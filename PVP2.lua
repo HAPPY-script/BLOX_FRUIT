@@ -128,25 +128,21 @@ return function(sections)
         end
 
         -----------------------------------------------------
-        -- Đồng bộ trục Y trước khi Tween
-        -----------------------------------------------------
-        local function AlignYBeforeTween()
-            local hrp = safeHRP()
-            local thrp = safeTargetHRP()
-            if not hrp or not thrp then return end
-
-            -- Giữ nguyên X,Z, chỉ đặt lại Y để khớp mục tiêu
-            local pos = hrp.Position
-            hrp.CFrame = CFrame.new(pos.X, thrp.Position.Y, pos.Z, hrp.CFrame.LookVector.X, hrp.CFrame.LookVector.Y, hrp.CFrame.LookVector.Z)
-        end
-
-        -----------------------------------------------------
         -- Tween
         -----------------------------------------------------
         local function SmoothFlyTo(targetPos)
             local hrp = safeHRP()
             local myHum = safeHumanoid()
             if not hrp then return end
+
+            local targetHRP = safeTargetHRP()
+            if targetHRP then
+                local p = hrp.Position
+                hrp.CFrame = CFrame.new(p.X, targetHRP.Position.Y, p.Z)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
+                RunService.Heartbeat:Wait()
+            end
 
             local startPos = hrp.Position
             local dist = (startPos - targetPos).Magnitude
@@ -270,9 +266,6 @@ return function(sections)
                 -- SWITCH TO SUPER-STICK MODE (<100m)
                 -------------------------------------------------
                 if dist < 100 then
-                    
-                    AlignYBeforeTween()
-                    
                     -- siêu bám sát: update CFrame liên tục
                     while followEnabled do
                         local hrp = safeHRP()
@@ -309,7 +302,6 @@ return function(sections)
                 -------------------------------------------------
                 -- NORMAL FOLLOW MOVEMENT
                 -------------------------------------------------
-                AlignYBeforeTween()
                 SmoothFlyTo(targetPos)
             end
 
@@ -692,5 +684,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S2-v0.12 tad SUCCESS✅")
+    print("PVP_S2-v0.13 tad SUCCESS✅")
 end
