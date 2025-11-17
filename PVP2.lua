@@ -199,28 +199,33 @@ return function(sections)
                 -- NEAR TELEPORT POINT
                 -------------------------------------------------
                 local nearest, ndist = findNearestTP(targetPos)
-                if nearest and dist > ndist then
-    
-                    -- TP 1: tới waypoint
-                    instantTeleport(nearest)
-                    RunService.Heartbeat:Wait()
+                if nearest then
+                    local d_player_to_tp = distance(myPos, nearest)
+                    local d_tp_to_target = distance(nearest, targetPos)
+                    local d_direct = distance(myPos, targetPos)
 
-                    local hrp = safeHRP()
-                    if hrp then
-                        -- TP 2: lên cao 100m
-                        hrp.CFrame = hrp.CFrame + Vector3.new(0,100,0)
+                    -- chỉ teleport nếu tổng đường đi ngắn hơn bay trực tiếp
+                    if (d_player_to_tp + d_tp_to_target * 0.7) < d_direct then
+        
+                        -- TP 1: tới waypoint
+                        instantTeleport(nearest)
                         RunService.Heartbeat:Wait()
 
-                        -- TP 3: tiến 100m về phía mục tiêu
-                        local dir = (targetPos - hrp.Position).Unit
-                        hrp.CFrame = CFrame.new(hrp.Position + dir * 100)
-                        RunService.Heartbeat:Wait()
+                        local hrp = safeHRP()
+                        if hrp then
+                            -- TP 2: lên cao 100m
+                            hrp.CFrame = hrp.CFrame + Vector3.new(0,100,0)
+                            RunService.Heartbeat:Wait()
+
+                            -- TP 3: tiến 100m về phía mục tiêu
+                            local dir = (targetPos - hrp.Position).Unit
+                            hrp.CFrame = CFrame.new(hrp.Position + dir * 100)
+                            RunService.Heartbeat:Wait()
+                        end
+
+                        SmoothFlyTo(targetPos)
+                        continue
                     end
-
-                    -- Sau đó dùng Tween xuyên tường
-                    SmoothFlyTo(targetPos)
-
-                    continue
                 end
 
                 -------------------------------------------------
