@@ -130,49 +130,39 @@ return function(sections)
         -----------------------------------------------------
         -- Tween
         -----------------------------------------------------
-        local function SmoothFlyTo(targetPos)
+        local function SmoothFlyTo(targetRoot)
             local hrp = safeHRP()
-            local myHum = safeHumanoid()
             if not hrp then return end
 
-            local startPos = hrp.Position
-            local dist = (startPos - targetPos).Magnitude
-            if dist <= STOP_DIST then return end
+            local start = hrp.Position
+            local target = targetRoot.Position
 
-            local duration = math.max(0.05, dist / 320) -- tránh duration = 0
+            -- cập nhật Y theo target (trục Y không giới hạn tốc độ)
+            local targetY = target.Y + HEIGHT_OFFSET
+
+            local distXZ = (Vector3.new(start.X, 0, start.Z) - Vector3.new(target.X, 0, target.Z)).Magnitude
+            if distXZ <= STOP_DIST then return end
+
+            local duration = math.max(0.03, distXZ / 260)
             local t = 0
-
-            -- final offset: luôn dừng trước target một khoảng nhỏ và hơi lệch về phía sau mục tiêu
-            local dir = (targetPos - startPos).Unit
-            local finalOffset = 3 -- dừng cách mục tiêu 3 studs (thay đổi nếu cần)
-            local adjustedTarget = targetPos - dir * finalOffset
-            -- nếu adjustedTarget quá thấp so với mục tiêu thì đảm bảo độ cao:
-            if adjustedTarget.Y < targetPos.Y - 10 then
-                adjustedTarget = Vector3.new(adjustedTarget.X, targetPos.Y + 2, adjustedTarget.Z)
-            end
-
-            local prevDist = (hrp.Position - targetPos).Magnitude
 
             while t < 1 and followEnabled do
                 hrp = safeHRP()
                 if not hrp then break end
 
-                -- break sớm nếu đã gần đủ
-                local curDist = (hrp.Position - targetPos).Magnitude
-                if curDist <= STOP_DIST then break end
-
-                -- nếu khoảng cách đang tăng (overshoot / bị đẩy), thoát để tránh loop
-                if curDist > prevDist + 10 then
-                    break
-                end
-                prevDist = curDist
-
                 t += RunService.Heartbeat:Wait() / duration
                 if t > 1 then t = 1 end
 
-                local newPos = startPos:Lerp(adjustedTarget, t)
-                -- giữ hướng nhìn về target nhưng không đặt thẳng vào target
-                hrp.CFrame = CFrame.new(newPos, targetPos)
+                local lerpX = start.X + (target.X - start.X) * t
+                local lerpZ = start.Z + (target.Z - start.Z) * t
+
+                -- cập nhật Y trực tiếp từ target (tốc độ không giới hạn)
+                local currentY = targetRoot.Position.Y + HEIGHT_OFFSET
+
+                hrp.CFrame = CFrame.new(
+                    Vector3.new(lerpX, currentY, lerpZ),
+                    targetRoot.Position
+                )
             end
         end
 
@@ -215,7 +205,11 @@ return function(sections)
                 -------------------------------------------------
                 -- FOLLOW NORMAL
                 -------------------------------------------------
-                local targetPos = thrp.Position + Vector3.new(0,HEIGHT_OFFSET,0)
+                local targetPos = Vector3.new(
+                    thrp.Position.X,
+                    thrp.Position.Y + HEIGHT_OFFSET,
+                    thrp.Position.Z
+                )
                 local myPos = hrp.Position
                 local dist = distance(myPos, targetPos)
                 local toTarget = targetPos - myPos
@@ -280,8 +274,12 @@ return function(sections)
 
                         if thum.Health <= 0 then break end
 
-                        -- CFrame bám sát (1 stud sau mục tiêu)
-                        hrp.CFrame = thrp.CFrame * CFrame.new(0,0,1)
+                        -- CFrame bám sát nhưng Y luôn cập nhật theo target
+                        hrp.CFrame = CFrame.new(
+                            thrp.Position.X,
+                            thrp.Position.Y + HEIGHT_OFFSET,
+                            thrp.Position.Z
+                        ) * CFrame.new(0, 0, 1)
 
                         RunService.Heartbeat:Wait()
                     end
@@ -675,5 +673,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S2-v0.10 tad SUCCESS✅")
+    print("PVP_S2-v0.11 tad SUCCESS✅")
 end
