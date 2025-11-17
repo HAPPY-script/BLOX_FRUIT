@@ -9,10 +9,11 @@ return function(sections)
 
         local followEnabled = false
         local targetPlayer = nil
-        local followTask = nil
         local disabledDueLowHP = false
 
-        -- TELEPORT WAYPOINT
+        -----------------------------------------------------
+        -- TELEPORT POINTS
+        -----------------------------------------------------
         local teleportPoints = {
             Vector3.new(-286.99, 306.18, 597.75),
             Vector3.new(-6508.56, 83.24, -132.84),
@@ -21,7 +22,7 @@ return function(sections)
         }
 
         -----------------------------------------------------
-        -- UI
+        -- UI (giữ nguyên)
         -----------------------------------------------------
         local followButton = Instance.new("TextButton", HomeFrame)
         followButton.Size = UDim2.new(0, 90, 0, 30)
@@ -48,7 +49,6 @@ return function(sections)
             if not char then return end
             return char:FindFirstChild("HumanoidRootPart")
         end
-
         local function safeHumanoid()
             local char = player.Character
             if not char then return end
@@ -61,7 +61,6 @@ return function(sections)
             if not char then return end
             return char:FindFirstChild("HumanoidRootPart")
         end
-
         local function safeTargetHumanoid()
             if not targetPlayer then return end
             local char = targetPlayer.Character
@@ -90,13 +89,13 @@ return function(sections)
         -- Movement params
         -----------------------------------------------------
         local STOP_DIST = 4
-        local BASE_SPEED = 200
-        local MAX_SPEED = 650
+        local BASE_SPEED = 240
+        local MAX_SPEED = 700
         local DIST_MULT = 4
-        local HEIGHT_OFFSET = 6         -- luôn bay cao hơn mục tiêu để tránh va
+        local HEIGHT_OFFSET = 6
 
         -----------------------------------------------------
-        -- Reset movement (stop flying)
+        -- Reset movement
         -----------------------------------------------------
         local function resetMovement()
             local hrp = safeHRP()
@@ -116,24 +115,20 @@ return function(sections)
         end
 
         -----------------------------------------------------
-        -- Instant teleport + auto resume
+        -- Instant teleport
         -----------------------------------------------------
         local function instantTeleport(pos)
             local hrp = safeHRP()
             if not hrp then return end
-
             hrp.CFrame = CFrame.new(pos + Vector3.new(0,60,0))
             hrp.AssemblyLinearVelocity = Vector3.zero
             hrp.AssemblyAngularVelocity = Vector3.zero
-
-            -- bay nhẹ lên để không đứng im
             RunService.Heartbeat:Wait()
-            hrp.CFrame = hrp.CFrame + Vector3.new(0,3,0)
-            RunService.Heartbeat:Wait()
+            hrp.CFrame += Vector3.new(0,3,0)
         end
 
         -----------------------------------------------------
-        -- Follow Loop (simplified, no anti-stuck)
+        -- FOLLOW LOOP (đã sửa mạnh)
         -----------------------------------------------------
         local function followLoop()
             local hum = safeHumanoid()
@@ -148,82 +143,86 @@ return function(sections)
                 local thum = safeTargetHumanoid()
                 local myHum = safeHumanoid()
 
-                -- nếu HRP hoặc target mất -> dừng
-                if not hrp or not thrp or not thum then
+                if not hrp or not thrp or not thum then break end
+
+                -------------------------------------------------
+                -- CHECK HP (ưu tiên nhất)
+                -------------------------------------------------
+                if myHum and myHum.Health / myHum.MaxHealth * 100 < 20 then
+                    local cur = hrp.Position
+                    instantTeleport(Vector3.new(cur.X, cur.Y + 5000, cur.Z))
+
+                    followEnabled = false
+                    disabledDueLowHP = true
+
+                    followButton.Text = "OFF"
+                    followButton.BackgroundColor3 = Color3.fromRGB(255,50,50)
+
                     break
                 end
 
-                -- kiểm tra máu bản thân
-                if myHum and myHum.Health and myHum.MaxHealth and myHum.MaxHealth > 0 then
-                    local pct = myHum.Health / myHum.MaxHealth * 100
-                    if pct < 20 then
-                        -- teleport lên cao + disable hệ thống
-                        local cur = hrp.Position
-                        instantTeleport(Vector3.new(cur.X, cur.Y + 5000, cur.Z))
-                        followEnabled = false
-                        disabledDueLowHP = true
-                        break
-                    end
-                end
+                if thum.Health <= 0 then break end
 
-                -- nếu target chết -> dừng
-                if thum.Health <= 0 then
-                    break
-                end
-
-                local targetPos = thrp.Position + Vector3.new(0, HEIGHT_OFFSET, 0)
+                -------------------------------------------------
+                -- FOLLOW NORMAL
+                -------------------------------------------------
+                local targetPos = thrp.Position + Vector3.new(0,HEIGHT_OFFSET,0)
                 local myPos = hrp.Position
                 local dist = distance(myPos, targetPos)
                 local toTarget = targetPos - myPos
 
-                -- TELEPORT NẾU XA HƠN WAYPOINT GẦN
-                local tpPos, tpDist = findNearestTP(targetPos)
-                if tpPos and dist > tpDist then
-                    instantTeleport(tpPos)
+                -------------------------------------------------
+                -- NEAR TELEPORT POINT
+                -------------------------------------------------
+                local nearest, ndist = findNearestTP(targetPos)
+                if nearest and dist > ndist then
+                    instantTeleport(nearest)
                     RunService.Heartbeat:Wait()
                     continue
                 end
 
-                -- DỪNG GẦN MỤC TIÊU -> chuyển sang "bám sát siêu sát"
-                if dist < STOP_DIST then
-                    -- bám sát: cập nhật CFrame mỗi Heartbeat (siêu sát, gần sát mục tiêu)
-                    -- đặt offset nhỏ phía sau (hoặc 0) để tránh chèn vào target
+                -------------------------------------------------
+                -- SWITCH TO SUPER-STICK MODE (<100m)
+                -------------------------------------------------
+                if dist < 100 then
+                    -- siêu bám sát: update CFrame liên tục
                     while followEnabled do
-                        thrp = safeTargetHRP()
-                        thum = safeTargetHumanoid()
-                        hrp = safeHRP()
-                        myHum = safeHumanoid()
+                        local hrp = safeHRP()
+                        local thrp = safeTargetHRP()
+                        local thum = safeTargetHumanoid()
+                        local myHum = safeHumanoid()
                         if not hrp or not thrp or not thum or not myHum then break end
 
-                        -- kiểm tra máu bản thân trong vòng bám
-                        if myHum.Health / math.max(1, myHum.MaxHealth) * 100 < 20 then
-                            local cur = hrp.Position
-                            instantTeleport(Vector3.new(cur.X, cur.Y + 5000, cur.Z))
+                        -- check HP
+                        if myHum.Health / myHum.MaxHealth * 100 < 20 then
+                            local c = hrp.Position
+                            instantTeleport(Vector3.new(c.X, c.Y+5000, c.Z))
                             followEnabled = false
                             disabledDueLowHP = true
+
+                            followButton.Text = "OFF"
+                            followButton.BackgroundColor3 = Color3.fromRGB(255,50,50)
+
                             break
                         end
 
                         if thum.Health <= 0 then break end
 
-                        -- siêu sát: đặt CFrame sát vào target (1 stud sau target trên trục Z local)
-                        local targetCFrame = thrp.CFrame
-                        -- giữ ở phía sau mục tiêu 1 stud (để không chèn quá trung tâm)
-                        local offset = CFrame.new(0, 0, 1)
-                        hrp.CFrame = targetCFrame * offset
+                        -- CFrame bám sát (1 stud sau mục tiêu)
+                        hrp.CFrame = thrp.CFrame * CFrame.new(0,0,1)
 
                         RunService.Heartbeat:Wait()
                     end
 
-                    -- thoát vòng bám và tiếp tục vòng follow chính
                     RunService.Heartbeat:Wait()
                     continue
                 end
 
-                -- Tính tốc độ bay thông minh (dùng AssemblyLinearVelocity để di chuyển mượt)
+                -------------------------------------------------
+                -- NORMAL FOLLOW MOVEMENT
+                -------------------------------------------------
                 local speed = math.clamp(dist * DIST_MULT, BASE_SPEED, MAX_SPEED)
                 local vel = toTarget.Unit * speed
-
                 hrp.AssemblyLinearVelocity = vel
 
                 local look = CFrame.new(myPos, myPos + vel)
@@ -236,89 +235,60 @@ return function(sections)
         end
 
         -----------------------------------------------------
-        -- Helper: pick target player from nameBox text
+        -- PICK TARGET
         -----------------------------------------------------
         local function pickTargetFromName(txt)
             if not txt or txt == "" then return nil end
-            local lower = txt:lower()
-            local best = nil
+            local k = txt:lower()
             for _,pl in pairs(Players:GetPlayers()) do
-                if pl ~= player then
-                    local n = pl.Name:lower()
-                    if n:find(lower, 1, true) then
-                        best = pl
-                        break
-                    end
+                if pl ~= player and pl.Name:lower():find(k,1,true) then
+                    return pl
                 end
             end
-            return best
         end
 
         -----------------------------------------------------
-        -- followButton behavior
+        -- BUTTON CONTROL (đã fix auto OFF)
         -----------------------------------------------------
         followButton.MouseButton1Click:Connect(function()
-            -- nếu đang disabled do low HP thì không cho bật
-            if disabledDueLowHP then
-                -- optional: show feedback (bạn có thể thêm thông báo GUI ở đây)
-                return
-            end
+            if disabledDueLowHP then return end
 
-            -- toggle
             if followEnabled then
                 followEnabled = false
                 followButton.Text = "OFF"
                 followButton.BackgroundColor3 = Color3.fromRGB(255,50,50)
                 targetPlayer = nil
-            else
-                -- bật: kiểm tra máu trước khi bật
-                local myHum = safeHumanoid()
-                if myHum and myHum.MaxHealth and myHum.MaxHealth > 0 then
-                    local pct = myHum.Health / myHum.MaxHealth * 100
-                    if pct < 20 then
-                        disabledDueLowHP = true
-                        return
-                    end
-                end
-
-                -- chọn target từ nameBox
-                local txt = tostring(nameBox.Text or "")
-                if #txt >= 3 then
-                    local picked = pickTargetFromName(txt)
-                    if picked then
-                        targetPlayer = picked
-                    else
-                        -- không tìm thấy -> không bật
-                        return
-                    end
-                else
-                    -- nếu không nhập tên (hoặc <3 ký tự) -> không bật
-                    return
-                end
-
-                followEnabled = true
-                followButton.Text = "ON"
-                followButton.BackgroundColor3 = Color3.fromRGB(50,255,50)
-
-                -- nếu có followTask đang chạy thì nó sẽ tự dừng vì followEnabled đã true và targetPlayer set mới
-                -- start follow loop in a new thread
-                coroutine.wrap(function()
-                    followLoop()
-                end)()
+                return
             end
+
+            -- try enabling
+            local hum = safeHumanoid()
+            if hum and hum.Health / hum.MaxHealth * 100 < 20 then
+                disabledDueLowHP = true
+                return
+            end
+
+            if #nameBox.Text < 3 then return end
+
+            local t = pickTargetFromName(nameBox.Text)
+            if not t then return end
+
+            targetPlayer = t
+            followEnabled = true
+            followButton.Text = "ON"
+            followButton.BackgroundColor3 = Color3.fromRGB(50,255,50)
+
+            coroutine.wrap(followLoop)()
         end)
 
         -----------------------------------------------------
-        -- Auto re-enable possibility: nếu đã disabled do low HP và máu phục hồi >20%,
-        -- người chơi phải bấm lại nút để bật (theo yêu cầu). Ở đây ta chỉ clear flag khi máu hồi.
+        -- CLEAR LOW-HP LOCK WHEN HEALED
         -----------------------------------------------------
-        -- Giám sát máu để tự clear disabledDueLowHP khi chữa lành (không tự bật)
         spawn(function()
             while true do
-                local myHum = safeHumanoid()
-                if myHum and myHum.MaxHealth and myHum.MaxHealth > 0 then
-                    local pct = myHum.Health / myHum.MaxHealth * 100
-                    if disabledDueLowHP and pct >= 20 then
+                local hum = safeHumanoid()
+                if hum and disabledDueLowHP then
+                    if hum.Health / hum.MaxHealth * 100 >= 20 then
                         disabledDueLowHP = false
                     end
                 end
@@ -640,5 +610,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S2-v0.05 tad SUCCESS✅")
+    print("PVP_S2-v0.06 tad SUCCESS✅")
 end
