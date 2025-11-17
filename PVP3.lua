@@ -2,7 +2,6 @@ return function(sections)
     local HomeFrame = sections["PVP"]
 
     --===========FOLLOW PLAYER======================================================
-    
     do
         local Players = game:GetService("Players")
         local RunService = game:GetService("RunService")
@@ -10,8 +9,11 @@ return function(sections)
 
         local followEnabled = false
         local targetPlayer = nil
-        local followTask = nil
+        local disabledDueLowHP = false
 
+        -----------------------------------------------------
+        -- TELEPORT POINTS
+        -----------------------------------------------------
         local teleportPoints = {
             Vector3.new(-12463.61, 374.91, -7549.53),
             Vector3.new(-5073.83, 314.51, -3152.52),
@@ -19,9 +21,9 @@ return function(sections)
             Vector3.new(28286.36, 14896.56, 102.62)
         }
 
-        ---------------------------------------------------------
-        -- UI (giữ nguyên vị trí/parent HomeFrame như script cũ)
-        ---------------------------------------------------------
+        -----------------------------------------------------
+        -- UI (giữ nguyên)
+        -----------------------------------------------------
         local followButton = Instance.new("TextButton", HomeFrame)
         followButton.Size = UDim2.new(0, 90, 0, 30)
         followButton.Position = UDim2.new(0, 240, 0, 10)
@@ -39,64 +41,72 @@ return function(sections)
         nameBox.TextScaled = true
         nameBox.Font = Enum.Font.SourceSans
 
-        ---------------------------------------------------------
+        -----------------------------------------------------
         -- Utility
-        ---------------------------------------------------------
+        -----------------------------------------------------
         local function safeHRP()
             local char = player.Character
-            if not char then return nil end
+            if not char then return end
             return char:FindFirstChild("HumanoidRootPart")
+        end
+        local function safeHumanoid()
+            local char = player.Character
+            if not char then return end
+            return char:FindFirstChildOfClass("Humanoid")
         end
 
         local function safeTargetHRP()
-            if not targetPlayer then return nil end
-            if not targetPlayer.Character then return nil end
-            return targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not targetPlayer then return end
+            local char = targetPlayer.Character
+            if not char then return end
+            return char:FindFirstChild("HumanoidRootPart")
+        end
+        local function safeTargetHumanoid()
+            if not targetPlayer then return end
+            local char = targetPlayer.Character
+            if not char then return end
+            return char:FindFirstChildOfClass("Humanoid")
         end
 
-        local function calculateDistance(a, b)
-            return (a - b).Magnitude
+        local function distance(a,b)
+            return (a-b).Magnitude
         end
 
-        local function findNearestTeleportPoint(targetPos)
-            local myHRP = safeHRP()
-            if not myHRP then return nil end
-
-            local myPos = myHRP.Position
-            local best, bestDist = nil, math.huge
-
-            for _, tpPos in pairs(teleportPoints) do
-                local d = calculateDistance(tpPos, targetPos)
+        local function findNearestTP(targetPos)
+            local best = nil
+            local bestDist = math.huge
+            for _,p in pairs(teleportPoints) do
+                local d = distance(p, targetPos)
                 if d < bestDist then
-                    best = tpPos
                     bestDist = d
+                    best = p
                 end
             end
-
-            return best, bestDist, calculateDistance(myPos, targetPos)
+            return best, bestDist
         end
 
-        ---------------------------------------------------------
-        -- Flight params (tùy chỉnh nhanh ở đây)
-        ---------------------------------------------------------
-        local STOP_DIST = 3                -- dừng khi còn bao nhiêu studs
-        local BASE_FLY_SPEED = 220         -- tốc độ cơ bản (studs/s)
-        local MAX_FLY_SPEED = 650          -- tốc độ tối đa
-        local DIST_SPEED_MULT = 4          -- hệ số chuyển khoảng cách -> tốc độ
-        local ORIENTATION_LERP = 0.5       -- độ mượt khi quay mặt về hướng target (0..1)
+        -----------------------------------------------------
+        -- Movement params
+        -----------------------------------------------------
+        local STOP_DIST = 4
+        local BASE_SPEED = 240
+        local MAX_SPEED = 700
+        local DIST_MULT = 4
+        local HEIGHT_OFFSET = 6
 
-        ---------------------------------------------------------
-        -- Helper: zero velocity & reset humanoid after stop
-        ---------------------------------------------------------
-        local function resetMovementState()
+        -----------------------------------------------------
+        -- Reset movement
+        -----------------------------------------------------
+        local function resetMovement()
             local hrp = safeHRP()
-            local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            local hum = safeHumanoid()
+
             if hrp then
-                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
             end
+
             if hum then
-                -- bật lại auto rotate, tắt platformstand
                 pcall(function()
                     hum.PlatformStand = false
                     hum.AutoRotate = true
@@ -104,160 +114,251 @@ return function(sections)
             end
         end
 
-        ---------------------------------------------------------
-        -- Instant teleport (không Tween) - dùng khi target quá xa
-        ---------------------------------------------------------
-        local function instantTeleportTo(pos)
+        -----------------------------------------------------
+        -- Instant teleport
+        -----------------------------------------------------
+        local function instantTeleport(pos)
             local hrp = safeHRP()
             if not hrp then return end
-            -- đặt cao 60 studs để tránh chui đất
-            hrp.CFrame = CFrame.new(pos + Vector3.new(0, 60, 0))
-            -- dừng mọi vận tốc cũ
-            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-            RunService.Heartbeat:Wait() -- 1 frame để ổn định
+            hrp.CFrame = CFrame.new(pos + Vector3.new(0,60,0))
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+            RunService.Heartbeat:Wait()
+            hrp.CFrame += Vector3.new(0,3,0)
         end
 
-        ---------------------------------------------------------
-        -- Fly follow core (dùng AssemblyLinearVelocity)
-        -- Dừng ngay khi followEnabled = false
-        ---------------------------------------------------------
-        local function flyFollowLoop()
+        -----------------------------------------------------
+        -- Tween
+        -----------------------------------------------------
+        local function SmoothFlyTo(targetPos)
             local hrp = safeHRP()
-            local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            local myHum = safeHumanoid()
             if not hrp then return end
 
-            -- Khóa vật lý để điều khiển bay mượt: PlatformStand + tắt AutoRotate
+            local startPos = hrp.Position
+            local dist = (startPos - targetPos).Magnitude
+            if dist <= STOP_DIST then return end
+
+            local duration = math.max(0.05, dist / 320) -- tránh duration = 0
+            local t = 0
+
+            -- final offset: luôn dừng trước target một khoảng nhỏ và hơi lệch về phía sau mục tiêu
+            local dir = (targetPos - startPos).Unit
+            local finalOffset = 3 -- dừng cách mục tiêu 3 studs (thay đổi nếu cần)
+            local adjustedTarget = targetPos - dir * finalOffset
+            -- nếu adjustedTarget quá thấp so với mục tiêu thì đảm bảo độ cao:
+            if adjustedTarget.Y < targetPos.Y - 10 then
+                adjustedTarget = Vector3.new(adjustedTarget.X, targetPos.Y + 2, adjustedTarget.Z)
+            end
+
+            local prevDist = (hrp.Position - targetPos).Magnitude
+
+            while t < 1 and followEnabled do
+                hrp = safeHRP()
+                if not hrp then break end
+
+                -- break sớm nếu đã gần đủ
+                local curDist = (hrp.Position - targetPos).Magnitude
+                if curDist <= STOP_DIST then break end
+
+                -- nếu khoảng cách đang tăng (overshoot / bị đẩy), thoát để tránh loop
+                if curDist > prevDist + 10 then
+                    break
+                end
+                prevDist = curDist
+
+                t += RunService.Heartbeat:Wait() / duration
+                if t > 1 then t = 1 end
+
+                local newPos = startPos:Lerp(adjustedTarget, t)
+                -- giữ hướng nhìn về target nhưng không đặt thẳng vào target
+                hrp.CFrame = CFrame.new(newPos, targetPos)
+            end
+        end
+
+        -----------------------------------------------------
+        -- FOLLOW LOOP (đã sửa mạnh)
+        -----------------------------------------------------
+        local function followLoop()
+            local hum = safeHumanoid()
             if hum then
-                pcall(function()
-                    hum.PlatformStand = true
-                    hum.AutoRotate = false
-                end)
+                hum.PlatformStand = true
+                hum.AutoRotate = false
             end
 
             while followEnabled do
-                hrp = safeHRP()
+                local hrp = safeHRP()
                 local thrp = safeTargetHRP()
+                local thum = safeTargetHumanoid()
+                local myHum = safeHumanoid()
 
-                if not hrp or not thrp then break end
+                if not hrp or not thrp or not thum then break end
 
-                -- lấy vị trí mục tiêu (bù lên một chút để nhắm đầu)
-                local targetPos = thrp.Position + Vector3.new(0, 2, 0)
-                local myPos = hrp.Position
-                local toTarget = targetPos - myPos
-                local dist = toTarget.Magnitude
+                -------------------------------------------------
+                -- CHECK HP (ưu tiên nhất)
+                -------------------------------------------------
+                if myHum and myHum.Health / myHum.MaxHealth * 100 < 25 then
+                    local cur = hrp.Position
+                    instantTeleport(Vector3.new(cur.X, cur.Y + 5000, cur.Z))
 
-                -- nếu quá gần thì dừng, giữ vị trí
-                if dist <= STOP_DIST then
-                    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    -- nhẹ nhàng face mục tiêu
-                    local desiredCFrame = CFrame.new(myPos, targetPos)
-                    hrp.CFrame = hrp.CFrame:Lerp(desiredCFrame, ORIENTATION_LERP)
-                    RunService.Heartbeat:Wait()
-                    -- tiếp tục vòng để check nếu target di chuyển ra khỏi stop dist
-                    continue
-                end
+                    followEnabled = false
+                    disabledDueLowHP = true
 
-                -- Nếu target rất xa hơn so với teleport point -> teleport tức thì tới teleport point gần nhất
-                local tpPos, tpDistWhenTp, directDist = findNearestTeleportPoint(targetPos)
-                if tpPos and directDist >= tpDistWhenTp then
-                    -- teleport tức thì tới tpPos (đặt trên cao để tránh chui đất)
-                    instantTeleportTo(tpPos)
-                    -- tiếp tục vòng sau khi teleport
-                    RunService.Heartbeat:Wait()
-                    continue
-                end
+                    followButton.Text = "OFF"
+                    followButton.BackgroundColor3 = Color3.fromRGB(255,50,50)
 
-                -- Tính tốc độ dựa trên khoảng cách (mượt và không "đâm húc")
-                local desiredSpeed = math.clamp(dist * DIST_SPEED_MULT, BASE_FLY_SPEED, MAX_FLY_SPEED)
-
-                -- Tạo vận tốc hướng tới mục tiêu
-                local desiredVel = toTarget.Unit * desiredSpeed
-
-                -- Áp dụng velocity trực tiếp (dừng nghịch chuyển động server side)
-                hrp.AssemblyLinearVelocity = desiredVel
-
-                -- Quay mặt theo hướng bay 1 cách mềm mại
-                local lookAt = CFrame.new(myPos, myPos + desiredVel)
-                hrp.CFrame = hrp.CFrame:Lerp(lookAt, ORIENTATION_LERP)
-
-                RunService.Heartbeat:Wait()
-            end
-
-            -- khi thoát vòng lặp: reset trạng thái
-            resetMovementState()
-        end
-
-        ---------------------------------------------------------
-        -- Start/stop control (chỉ 1 task)
-        ---------------------------------------------------------
-        local function startFollowLoop()
-            if followTask then return end
-            followTask = task.spawn(function()
-                flyFollowLoop()
-                followTask = nil
-                followEnabled = false
-                followButton.Text = "OFF"
-                followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-            end)
-        end
-
-        local function stopFollow()
-            followEnabled = false
-            -- reset ngay lập tức (không phải chờ vòng lặp)
-            resetMovementState()
-            if followTask then
-                -- followTask sẽ tự thoát vì followEnabled = false; clear tham chiếu
-                followTask = nil
-            end
-        end
-
-        ---------------------------------------------------------
-        -- Button Toggle
-        ---------------------------------------------------------
-        followButton.MouseButton1Click:Connect(function()
-            if not targetPlayer then return end
-
-            followEnabled = not followEnabled
-            followButton.Text = followEnabled and "ON" or "OFF"
-            followButton.BackgroundColor3 = followEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
-
-            if followEnabled then
-                startFollowLoop()
-            else
-                stopFollow()
-            end
-        end)
-
-        ---------------------------------------------------------
-        -- Player Finder
-        ---------------------------------------------------------
-        nameBox.FocusLost:Connect(function()
-            local input = nameBox.Text:lower()
-            if #input < 3 then return end
-
-            for _, p in pairs(Players:GetPlayers()) do
-                if p ~= player and p.Name:lower():find(input) == 1 then
-                    targetPlayer = p
                     break
                 end
-            end
-        end)
 
-        -- Auto OFF nếu target rời game
-        Players.PlayerRemoving:Connect(function(p)
-            if p == targetPlayer then
+                if thum.Health <= 0 then break end
+
+                -------------------------------------------------
+                -- FOLLOW NORMAL
+                -------------------------------------------------
+                local targetPos = thrp.Position + Vector3.new(0,HEIGHT_OFFSET,0)
+                local myPos = hrp.Position
+                local dist = distance(myPos, targetPos)
+                local toTarget = targetPos - myPos
+
+                -------------------------------------------------
+                -- NEAR TELEPORT POINT
+                -------------------------------------------------
+                local nearest, ndist = findNearestTP(targetPos)
+                if nearest then
+                    local d_player_to_tp = distance(myPos, nearest)
+                    local d_tp_to_target = distance(nearest, targetPos)
+                    local d_direct = distance(myPos, targetPos)
+
+                    -- chỉ teleport nếu tổng đường đi ngắn hơn bay trực tiếp
+                    if (d_player_to_tp + d_tp_to_target * 0.7) < d_direct then
+        
+                        -- TP 1: tới waypoint
+                        instantTeleport(nearest)
+                        RunService.Heartbeat:Wait()
+
+                        local hrp = safeHRP()
+                        if hrp then
+                            -- TP 2: lên cao 100m
+                            hrp.CFrame = hrp.CFrame + Vector3.new(0,100,0)
+                            RunService.Heartbeat:Wait()
+
+                            -- TP 3: tiến 100m về phía mục tiêu
+                            local dir = (targetPos - hrp.Position).Unit
+                            hrp.CFrame = CFrame.new(hrp.Position + dir * 100)
+                            RunService.Heartbeat:Wait()
+                        end
+
+                        SmoothFlyTo(targetPos)
+                        continue
+                    end
+                end
+
+                -------------------------------------------------
+                -- SWITCH TO SUPER-STICK MODE (<100m)
+                -------------------------------------------------
+                if dist < 100 then
+                    -- siêu bám sát: update CFrame liên tục
+                    while followEnabled do
+                        local hrp = safeHRP()
+                        local thrp = safeTargetHRP()
+                        local thum = safeTargetHumanoid()
+                        local myHum = safeHumanoid()
+                        if not hrp or not thrp or not thum or not myHum then break end
+
+                        -- check HP
+                        if myHum.Health / myHum.MaxHealth * 100 < 20 then
+                            local c = hrp.Position
+                            instantTeleport(Vector3.new(c.X, c.Y+5000, c.Z))
+                            followEnabled = false
+                            disabledDueLowHP = true
+
+                            followButton.Text = "OFF"
+                            followButton.BackgroundColor3 = Color3.fromRGB(255,50,50)
+
+                            break
+                        end
+
+                        if thum.Health <= 0 then break end
+
+                        -- CFrame bám sát (1 stud sau mục tiêu)
+                        hrp.CFrame = thrp.CFrame * CFrame.new(0,0,1)
+
+                        RunService.Heartbeat:Wait()
+                    end
+
+                    RunService.Heartbeat:Wait()
+                    continue
+                end
+
+                -------------------------------------------------
+                -- NORMAL FOLLOW MOVEMENT
+                -------------------------------------------------
+                SmoothFlyTo(targetPos)
+            end
+
+            resetMovement()
+        end
+
+        -----------------------------------------------------
+        -- PICK TARGET
+        -----------------------------------------------------
+        local function pickTargetFromName(txt)
+            if not txt or txt == "" then return nil end
+            local k = txt:lower()
+            for _,pl in pairs(Players:GetPlayers()) do
+                if pl ~= player and pl.Name:lower():find(k,1,true) then
+                    return pl
+                end
+            end
+        end
+
+        -----------------------------------------------------
+        -- BUTTON CONTROL (đã fix auto OFF)
+        -----------------------------------------------------
+        followButton.MouseButton1Click:Connect(function()
+            if disabledDueLowHP then return end
+
+            if followEnabled then
                 followEnabled = false
                 followButton.Text = "OFF"
-                followButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+                followButton.BackgroundColor3 = Color3.fromRGB(255,50,50)
                 targetPlayer = nil
-                resetMovementState()
+                return
             end
+
+            -- try enabling
+            local hum = safeHumanoid()
+            if hum and hum.Health / hum.MaxHealth * 100 < 20 then
+                disabledDueLowHP = true
+                return
+            end
+
+            if #nameBox.Text < 3 then return end
+
+            local t = pickTargetFromName(nameBox.Text)
+            if not t then return end
+
+            targetPlayer = t
+            followEnabled = true
+            followButton.Text = "ON"
+            followButton.BackgroundColor3 = Color3.fromRGB(50,255,50)
+
+            coroutine.wrap(followLoop)()
         end)
 
-        -- Nếu respawn thì reset movement
-        player.CharacterAdded:Connect(function()
-            resetMovementState()
+        -----------------------------------------------------
+        -- CLEAR LOW-HP LOCK WHEN HEALED
+        -----------------------------------------------------
+        spawn(function()
+            while true do
+                local hum = safeHumanoid()
+                if hum and disabledDueLowHP then
+                    if hum.Health / hum.MaxHealth * 100 >= 20 then
+                        disabledDueLowHP = false
+                    end
+                end
+                wait(1)
+            end
         end)
     end
 
