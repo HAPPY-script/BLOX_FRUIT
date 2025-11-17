@@ -197,7 +197,7 @@ return function(sections)
                 -------------------------------------------------
                 -- CHECK HP (ưu tiên nhất)
                 -------------------------------------------------
-                if myHum and myHum.Health / myHum.MaxHealth * 100 < 20 then
+                if myHum and myHum.Health / myHum.MaxHealth * 100 < 25 then
                     local cur = hrp.Position
                     instantTeleport(Vector3.new(cur.X, cur.Y + 5000, cur.Z))
 
