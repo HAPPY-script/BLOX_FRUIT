@@ -277,7 +277,7 @@ return function(sections)
                 if not hrp then continue end
 
                 -- 🛡️ Anti Fall
-                if hrp.Position.Y < -1 then
+                if running and hrp.Position.Y < -1 then
                     hrp.CFrame = hrp.CFrame + Vector3.new(0, 200, 0)
                 end
 
