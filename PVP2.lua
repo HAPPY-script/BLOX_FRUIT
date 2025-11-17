@@ -117,18 +117,38 @@ return function(sections)
         -----------------------------------------------------
         -- Instant teleport
         -----------------------------------------------------
-        local function teleportSmart(targetPos)
+        local function instantTeleport(pos)
+            local hrp = safeHRP()
+            if not hrp then return end
+            hrp.CFrame = CFrame.new(pos + Vector3.new(0,60,0))
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+            RunService.Heartbeat:Wait()
+            hrp.CFrame += Vector3.new(0,3,0)
+        end
+
+        -----------------------------------------------------
+        -- Tween xuyên tường (không bị cản)
+        -----------------------------------------------------
+        local function SmoothFlyTo(targetPos)
             local hrp = safeHRP()
             if not hrp then return end
 
-            -- bước 1: lên cao 100m
-            hrp.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 100, 0))
-            RunService.Heartbeat:Wait()
+            local startPos = hrp.Position
+            local dist = (startPos - targetPos).Magnitude
+            local duration = dist / 320 -- tốc độ bay
+            local t = 0
 
-            -- bước 2: tiến thêm 100m về phía target
-            local dir = (targetPos - hrp.Position).Unit
-            hrp.CFrame = CFrame.new(hrp.Position + dir * 100)
-            RunService.Heartbeat:Wait()
+            while t < 1 and followEnabled do
+                local hrp = safeHRP()
+                if not hrp then break end
+
+                t += RunService.Heartbeat:Wait() / duration
+                if t > 1 then t = 1 end
+
+                local newPos = startPos:Lerp(targetPos, t)
+                hrp.CFrame = CFrame.new(newPos, targetPos)
+            end
         end
 
         -----------------------------------------------------
@@ -176,53 +196,30 @@ return function(sections)
                 local toTarget = targetPos - myPos
 
                 -------------------------------------------------
-                -- smoothFly
-                -------------------------------------------------
-                local function smoothFlyTo(hrp, targetPos, maxSpeed)
-                    if not hrp then return end
-
-                    -- Xoá body cũ nếu có
-                    for _,v in ipairs(hrp:GetChildren()) do
-                        if v:IsA("BodyVelocity") or v:IsA("BodyGyro") then
-                            v:Destroy()
-                        end
-                    end
-
-                    -- Giữ hướng bay
-                    local gyro = Instance.new("BodyGyro")
-                    gyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
-                    gyro.P = 5000
-                    gyro.CFrame = CFrame.new(hrp.Position, targetPos)
-                    gyro.Parent = hrp
-
-                    -- Tốc độ bay mượt, không bị chặn
-                    local vel = Instance.new("BodyVelocity")
-                    vel.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-                    vel.Parent = hrp
-
-                    -- Loop cập nhật hướng + vận tốc
-                    coroutine.wrap(function()
-                        while followEnabled and hrp and hrp.Parent do
-                            local dir = (targetPos - hrp.Position)
-                            if dir.Magnitude < STOP_DIST then break end
-                            vel.Velocity = dir.Unit * maxSpeed
-                            gyro.CFrame = CFrame.new(hrp.Position, targetPos)
-                            RunService.Heartbeat:Wait()
-                        end
-
-                        vel:Destroy()
-                        gyro:Destroy()
-                        hrp.AssemblyLinearVelocity = Vector3.zero
-                    end)()
-                end
-
-                -------------------------------------------------
                 -- NEAR TELEPORT POINT
                 -------------------------------------------------
                 local nearest, ndist = findNearestTP(targetPos)
                 if nearest and dist > ndist then
-                    teleportSmart(nearest)
+    
+                    -- TP 1: tới waypoint
+                    instantTeleport(nearest)
                     RunService.Heartbeat:Wait()
+
+                    local hrp = safeHRP()
+                    if hrp then
+                        -- TP 2: lên cao 100m
+                        hrp.CFrame = hrp.CFrame + Vector3.new(0,100,0)
+                        RunService.Heartbeat:Wait()
+
+                        -- TP 3: tiến 100m về phía mục tiêu
+                        local dir = (targetPos - hrp.Position).Unit
+                        hrp.CFrame = CFrame.new(hrp.Position + dir * 100)
+                        RunService.Heartbeat:Wait()
+                    end
+
+                    -- Sau đó dùng Tween xuyên tường
+                    SmoothFlyTo(targetPos)
+
                     continue
                 end
 
@@ -266,11 +263,7 @@ return function(sections)
                 -------------------------------------------------
                 -- NORMAL FOLLOW MOVEMENT
                 -------------------------------------------------
-                local speed = math.clamp(dist * DIST_MULT, BASE_SPEED, MAX_SPEED)
-                local vel = toTarget.Unit * speed
-                smoothFlyTo(hrp, targetPos, math.clamp(dist * DIST_MULT, BASE_SPEED, MAX_SPEED))
-
-                RunService.Heartbeat:Wait()
+                SmoothFlyTo(targetPos)
             end
 
             resetMovement()
@@ -652,5 +645,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S2-v0.09 tad SUCCESS✅")
+    print("PVP_S2-v0.08 tad SUCCESS✅")
 end
