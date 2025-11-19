@@ -182,7 +182,7 @@ return function(sections)
             for _, mob in ipairs(folder:GetChildren()) do
                 if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid") then
                     local dist = (origin.Position - mob.HumanoidRootPart.Position).Magnitude
-                    if dist <= 4500 and mob.Humanoid.Health > 0 then
+                    if dist <= 2500 and mob.Humanoid.Health > 0 then
                         table.insert(enemies, mob)
                     end
                 end
