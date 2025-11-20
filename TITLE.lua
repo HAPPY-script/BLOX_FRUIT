@@ -268,7 +268,7 @@ return function(sections)
         TitleButton.BorderColor3 = Color3.new(255, 255, 255)
 
         local TitleButton = Instance.new("TextLabel", HomeFrame)
-        TitleButton.Size = UDim2.new(0, 220, 0, 30)
+        TitleButton.Size = UDim2.new(0, 170, 0, 30)
         TitleButton.Position = UDim2.new(0, 10, 0, 260)
         TitleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleButton.TextColor3 = Color3.new(1, 1, 1)
