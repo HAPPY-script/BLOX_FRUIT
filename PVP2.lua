@@ -699,7 +699,7 @@ return function(sections)
         -----------------------------------------------------
         local escapeButton = Instance.new("TextButton", HomeFrame)
         escapeButton.Size = UDim2.new(0, 90, 0, 30)
-        escapeButton.Position = UDim2.new(0, 240, 0, 210)
+        escapeButton.Position = UDim2.new(0, 240, 0, 260)
         escapeButton.Text = "OFF"
         escapeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         escapeButton.TextColor3 = Color3.new(1, 1, 1)
@@ -708,7 +708,7 @@ return function(sections)
 
         local thresholdBox = Instance.new("TextBox", HomeFrame)
         thresholdBox.Size = UDim2.new(0, 50, 0, 30)
-        thresholdBox.Position = UDim2.new(0, 190, 0, 210)
+        thresholdBox.Position = UDim2.new(0, 190, 0, 260)
         thresholdBox.PlaceholderText = "%"
         thresholdBox.Text = ""
         thresholdBox.TextScaled = true
@@ -802,5 +802,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S2-v0.14 tad SUCCESS✅")
+    print("PVP_S2-v0.15 tad SUCCESS✅")
 end
