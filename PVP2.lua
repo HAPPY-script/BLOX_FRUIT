@@ -682,7 +682,125 @@ return function(sections)
         end)()
     end
 
+    -- AUTO ESCAPE===============================================================================================================
+
+    do
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local player = Players.LocalPlayer
+
+        local autoEscapeEnabled = false
+        local escapeThreshold = 30
+        local isEscaping = false
+        local safeTimer = 0
+
+        -----------------------------------------------------
+        -- UI
+        -----------------------------------------------------
+        local escapeButton = Instance.new("TextButton", HomeFrame)
+        escapeButton.Size = UDim2.new(0, 90, 0, 30)
+        escapeButton.Position = UDim2.new(0, 240, 0, 210)
+        escapeButton.Text = "OFF"
+        escapeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        escapeButton.TextColor3 = Color3.new(1, 1, 1)
+        escapeButton.Font = Enum.Font.SourceSansBold
+        escapeButton.TextScaled = true
+
+        local thresholdBox = Instance.new("TextBox", HomeFrame)
+        thresholdBox.Size = UDim2.new(0, 50, 0, 30)
+        thresholdBox.Position = UDim2.new(0, 190, 0, 210)
+        thresholdBox.PlaceholderText = "%"
+        thresholdBox.Text = ""
+        thresholdBox.TextScaled = true
+        thresholdBox.Font = Enum.Font.SourceSans
+        thresholdBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        thresholdBox.TextColor3 = Color3.new(1,1,1)
+
+        -----------------------------------------------------
+        -- BUTTON ON/OFF
+        -----------------------------------------------------
+        escapeButton.MouseButton1Click:Connect(function()
+            autoEscapeEnabled = not autoEscapeEnabled
+
+            escapeButton.Text = autoEscapeEnabled and "ON" or "OFF"
+            escapeButton.BackgroundColor3 =
+                autoEscapeEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+
+            if not autoEscapeEnabled then
+                isEscaping = false
+                safeTimer = 0
+            end
+        end)
+
+        -----------------------------------------------------
+        -- XỬ LÝ NHẬP %
+        -----------------------------------------------------
+        thresholdBox.FocusLost:Connect(function()
+            local val = tonumber(thresholdBox.Text)
+
+            if val then
+                val = math.clamp(val, 0.1, 100)
+                val = math.floor(val * 10 + 0.5) / 10
+                escapeThreshold = val
+                thresholdBox.Text = tostring(val)
+            else
+                thresholdBox.Text = tostring(escapeThreshold)
+            end
+        end)
+
+        -----------------------------------------------------
+        -- AUTO ESCAPE LOGIC (ĐÃ THÊM KHÁNG BUG CHẾT)
+        -----------------------------------------------------
+        RunService.Heartbeat:Connect(function(dt)
+            if not autoEscapeEnabled then return end
+
+            local char = player.Character
+            if not char then return end
+
+            local humanoid = char:FindFirstChild("Humanoid")
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if not humanoid or not root then return end
+
+            local maxHP = humanoid.MaxHealth
+            local hp = humanoid.Health
+            local percent = (hp / maxHP) * 100
+
+            if hp <= 0 then
+                isEscaping = false
+                safeTimer = 0
+                return
+            end
+
+            --------------------------------------
+            -- BẮT ĐẦU ESCAPE KHI HP THẤP
+            --------------------------------------
+            if percent < escapeThreshold then
+                isEscaping = true
+                safeTimer = 0
+            end
+
+            --------------------------------------
+            -- ĐANG ESCAPE
+            --------------------------------------
+            if isEscaping then
+                root.CFrame = root.CFrame + Vector3.new(0, 100, 0)
+
+                -- Đếm thời gian HP cao
+                if percent >= escapeThreshold then
+                    safeTimer += dt
+                    if safeTimer >= 3 then
+                        isEscaping = false
+                    end
+                else
+                    safeTimer = 0
+                end
+
+                task.wait(0.1)
+            end
+        end)
+    end
+
     wait(0.2)
 
-    print("PVP_S2-v0.13 tad SUCCESS✅")
+    print("PVP_S2-v0.14 tad SUCCESS✅")
 end
