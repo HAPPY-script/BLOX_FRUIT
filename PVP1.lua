@@ -135,6 +135,15 @@ return function(sections)
             local myHum = safeHumanoid()
             if not hrp then return end
 
+            local targetHRP = safeTargetHRP()
+            if targetHRP then
+                local p = hrp.Position
+                hrp.CFrame = CFrame.new(p.X, targetHRP.Position.Y, p.Z)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
+                RunService.Heartbeat:Wait()
+            end
+
             local startPos = hrp.Position
             local dist = (startPos - targetPos).Magnitude
             if dist <= STOP_DIST then return end
@@ -361,6 +370,7 @@ return function(sections)
             end
         end)
     end
+    
         --AIMBOT KEY PC======================================================================================================
     do
         local player = game.Players.LocalPlayer
@@ -674,5 +684,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S1-v0.10 tad SUCCESS✅")
+    print("PVP_S1-v0.13 tad SUCCESS✅")
 end
