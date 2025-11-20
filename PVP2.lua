@@ -696,6 +696,9 @@ return function(sections)
         -- Lưu trục Y ban đầu
         local initialY = 0
 
+        -- Biến để tránh spam ESCAPING!
+        local returnCooldown = false
+
         -----------------------------------------------------
         -- UI
         -----------------------------------------------------
@@ -722,21 +725,44 @@ return function(sections)
         -- NÚT QUAY VỀ TRỤC Y BAN ĐẦU
         -----------------------------------------------------
         local returnButton = Instance.new("TextButton", HomeFrame)
-        returnButton.Size = UDim2.new(0, 50, 0, 30)
-        returnButton.Position = UDim2.new(0, 190, 0, 310)
+        returnButton.Size = UDim2.new(0, 90, 0, 30)
+        returnButton.Position = UDim2.new(0, 240, 0, 310)
         returnButton.Text = "Y = ?"
         returnButton.TextScaled = true
         returnButton.Font = Enum.Font.SourceSansBold
         returnButton.BackgroundColor3 = Color3.fromRGB(80, 80, 180)
         returnButton.TextColor3 = Color3.new(1,1,1)
 
-        -- Action: Teleport về Y ban đầu
+        -----------------------------------------------------
+        -- BUTTON RETURN — KHÔNG CHO BẤM KHI ESCAPING
+        -----------------------------------------------------
         returnButton.MouseButton1Click:Connect(function()
+            -- Nếu đang ESCAPE → cảnh báo, không teleport
+            if isEscaping then
+                if returnCooldown then return end
+                returnCooldown = true
+
+                local oldColor = returnButton.BackgroundColor3
+                local oldText = returnButton.Text
+
+                returnButton.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+                returnButton.Text = "ESCAPING!"
+
+                task.delay(1.5, function()
+                    returnButton.BackgroundColor3 = oldColor
+                    returnButton.Text = oldText
+                    returnCooldown = false
+                end)
+
+                return
+            end
+
+            -- Bình thường → Teleport về Y ban đầu
             local char = player.Character
             if not char then return end
             local root = char:FindFirstChild("HumanoidRootPart")
             if not root then return end
-        
+
             root.CFrame = CFrame.new(root.Position.X, initialY, root.Position.Z)
         end)
 
@@ -773,7 +799,7 @@ return function(sections)
         end)
 
         -----------------------------------------------------
-        -- AUTO ESCAPE LOGIC (CÓ KHÁNG BUG CHẾT + LƯU TRỤC Y)
+        -- AUTO ESCAPE LOGIC
         -----------------------------------------------------
         RunService.Heartbeat:Connect(function(dt)
             if not autoEscapeEnabled then return end
@@ -797,7 +823,7 @@ return function(sections)
             end
 
             -----------------------------------------------------
-            -- GHI NHỚ TRỤC Y BAN ĐẦU LÚC BẮT ĐẦU ESCAPE
+            -- LƯU TRỤC Y KHI BẮT ĐẦU ESCAPE
             -----------------------------------------------------
             if percent < escapeThreshold then
                 if not isEscaping then
@@ -831,5 +857,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S2-v0.16 tad SUCCESS✅")
+    print("PVP_S2-v0.17 tad SUCCESS✅")
 end
