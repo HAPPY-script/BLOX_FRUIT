@@ -198,18 +198,24 @@ return function(sections)
 
         -- Chức năng dịch chuyển
         local function teleportToMouse()
-        	if teleportEnabled and selectedKey then
-        		local character = player.Character
-        		local mouse = player:GetMouse()
-        		if character and character:FindFirstChild("HumanoidRootPart") then
-        			local pos = mouse.Hit.Position
-        			local root = character.HumanoidRootPart
-        			local distance = (root.Position - pos).Magnitude
-        			if distance <= 250 then
-        				root.CFrame = CFrame.new(pos)
-        			end
-        		end
-        	end
+            if teleportEnabled and selectedKey then
+                local character = player.Character
+                local mouse = player:GetMouse()
+                if character and character:FindFirstChild("HumanoidRootPart") then
+                    local pos = mouse.Hit.Position
+                    local root = character.HumanoidRootPart
+            
+                    -- Tính khoảng cách theo XZ
+                    local dx = root.Position.X - pos.X
+                    local dz = root.Position.Z - pos.Z
+                    local distanceXZ = math.sqrt(dx*dx + dz*dz)
+
+                    -- Chỉ giới hạn XZ, không giới hạn Y
+                    if distanceXZ <= 275 then
+                        root.CFrame = CFrame.new(pos)
+                    end
+                end
+            end
         end
 
         -- Bật/Tắt chức năng
@@ -465,5 +471,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Player tad SUCCESS✅")
+    print("Player_v0.02 tad SUCCESS✅")
 end
