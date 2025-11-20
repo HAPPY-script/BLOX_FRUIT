@@ -683,7 +683,6 @@ return function(sections)
     end
 
     -- AUTO ESCAPE===============================================================================================================
-
     do
         local Players = game:GetService("Players")
         local RunService = game:GetService("RunService")
@@ -693,6 +692,9 @@ return function(sections)
         local escapeThreshold = 30
         local isEscaping = false
         local safeTimer = 0
+
+        -- Lưu trục Y ban đầu
+        local initialY = 0
 
         -----------------------------------------------------
         -- UI
@@ -710,11 +712,33 @@ return function(sections)
         thresholdBox.Size = UDim2.new(0, 50, 0, 30)
         thresholdBox.Position = UDim2.new(0, 190, 0, 260)
         thresholdBox.PlaceholderText = "%"
-        thresholdBox.Text = ""
+        thresholdBox.Text = "30"
         thresholdBox.TextScaled = true
         thresholdBox.Font = Enum.Font.SourceSans
         thresholdBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         thresholdBox.TextColor3 = Color3.new(1,1,1)
+
+        -----------------------------------------------------
+        -- NÚT QUAY VỀ TRỤC Y BAN ĐẦU
+        -----------------------------------------------------
+        local returnButton = Instance.new("TextButton", HomeFrame)
+        returnButton.Size = UDim2.new(0, 50, 0, 30)
+        returnButton.Position = UDim2.new(0, 190, 0, 310)
+        returnButton.Text = "Y = ?"
+        returnButton.TextScaled = true
+        returnButton.Font = Enum.Font.SourceSansBold
+        returnButton.BackgroundColor3 = Color3.fromRGB(80, 80, 180)
+        returnButton.TextColor3 = Color3.new(1,1,1)
+
+        -- Action: Teleport về Y ban đầu
+        returnButton.MouseButton1Click:Connect(function()
+            local char = player.Character
+            if not char then return end
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+        
+            root.CFrame = CFrame.new(root.Position.X, initialY, root.Position.Z)
+        end)
 
         -----------------------------------------------------
         -- BUTTON ON/OFF
@@ -749,7 +773,7 @@ return function(sections)
         end)
 
         -----------------------------------------------------
-        -- AUTO ESCAPE LOGIC (ĐÃ THÊM KHÁNG BUG CHẾT)
+        -- AUTO ESCAPE LOGIC (CÓ KHÁNG BUG CHẾT + LƯU TRỤC Y)
         -----------------------------------------------------
         RunService.Heartbeat:Connect(function(dt)
             if not autoEscapeEnabled then return end
@@ -765,30 +789,35 @@ return function(sections)
             local hp = humanoid.Health
             local percent = (hp / maxHP) * 100
 
+            -- Kháng bug chết
             if hp <= 0 then
                 isEscaping = false
                 safeTimer = 0
                 return
             end
 
-            --------------------------------------
-            -- BẮT ĐẦU ESCAPE KHI HP THẤP
-            --------------------------------------
+            -----------------------------------------------------
+            -- GHI NHỚ TRỤC Y BAN ĐẦU LÚC BẮT ĐẦU ESCAPE
+            -----------------------------------------------------
             if percent < escapeThreshold then
+                if not isEscaping then
+                    initialY = root.Position.Y
+                    returnButton.Text = "Y = " .. tostring(math.floor(initialY))
+                end
+
                 isEscaping = true
                 safeTimer = 0
             end
 
-            --------------------------------------
-            -- ĐANG ESCAPE
-            --------------------------------------
+            -----------------------------------------------------
+            -- ESCAPING
+            -----------------------------------------------------
             if isEscaping then
                 root.CFrame = root.CFrame + Vector3.new(0, 100, 0)
 
-                -- Đếm thời gian HP cao
                 if percent >= escapeThreshold then
                     safeTimer += dt
-                    if safeTimer >= 3 then
+                    if safeTimer >= 1 then
                         isEscaping = false
                     end
                 else
@@ -802,5 +831,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S2-v0.15 tad SUCCESS✅")
+    print("PVP_S2-v0.16 tad SUCCESS✅")
 end
