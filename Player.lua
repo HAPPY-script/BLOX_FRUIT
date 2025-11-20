@@ -211,7 +211,7 @@ return function(sections)
                     local distanceXZ = math.sqrt(dx*dx + dz*dz)
 
                     -- Chỉ giới hạn XZ, không giới hạn Y
-                    if distanceXZ <= 275 then
+                    if distanceXZ <= 250 then
                         root.CFrame = CFrame.new(pos)
                     end
                 end
