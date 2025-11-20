@@ -22,7 +22,7 @@ return function(sections)
         }
 
         -----------------------------------------------------
-        -- UI (giữ nguyên)
+        -- UI
         -----------------------------------------------------
         local followButton = Instance.new("TextButton", HomeFrame)
         followButton.Size = UDim2.new(0, 90, 0, 30)
@@ -186,7 +186,7 @@ return function(sections)
         end
 
         -----------------------------------------------------
-        -- FOLLOW LOOP (đã sửa mạnh)
+        -- FOLLOW LOOP
         -----------------------------------------------------
         local function followLoop()
             local hum = safeHumanoid()
