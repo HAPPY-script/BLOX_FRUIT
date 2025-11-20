@@ -745,10 +745,10 @@ return function(sections)
                 local oldColor = returnButton.BackgroundColor3
                 local oldText = returnButton.Text
 
-                returnButton.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-                returnButton.Text = "ESCAPING!"
+                returnButton.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+                returnButton.Text = "ESCAPING !"
 
-                task.delay(1.5, function()
+                task.delay(1, function()
                     returnButton.BackgroundColor3 = oldColor
                     returnButton.Text = oldText
                     returnCooldown = false
