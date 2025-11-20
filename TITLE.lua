@@ -234,38 +234,49 @@ return function(sections)
         TitleTPKey.BorderSizePixel = 2
         TitleTPKey.BorderColor3 = Color3.new(255, 255, 255)
 
-        local TitleTPButton = Instance.new("TextLabel", HomeFrame)
-        TitleTPButton.Size = UDim2.new(0, 220, 0, 30)
-        TitleTPButton.Position = UDim2.new(0, 10, 0, 110)
-        TitleTPButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        TitleTPButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleTPButton.Text = "AIMBOT PE🎯📱"
-        TitleTPButton.TextScaled = true
-        TitleTPButton.Font = Enum.Font.SourceSansBold
-        TitleTPButton.BorderSizePixel = 2
-        TitleTPButton.BorderColor3 = Color3.new(255, 255, 255)
+        local TitleButton = Instance.new("TextLabel", HomeFrame)
+        TitleButton.Size = UDim2.new(0, 220, 0, 30)
+        TitleButton.Position = UDim2.new(0, 10, 0, 110)
+        TitleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleButton.TextColor3 = Color3.new(1, 1, 1)
+        TitleButton.Text = "AIMBOT PE🎯📱"
+        TitleButton.TextScaled = true
+        TitleButton.Font = Enum.Font.SourceSansBold
+        TitleButton.BorderSizePixel = 2
+        TitleButton.BorderColor3 = Color3.new(255, 255, 255)
 
-        local TitleTPButton = Instance.new("TextLabel", HomeFrame)
-        TitleTPButton.Size = UDim2.new(0, 220, 0, 30)
-        TitleTPButton.Position = UDim2.new(0, 10, 0, 160)
-        TitleTPButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        TitleTPButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleTPButton.Text = "⚡Fast Attack Enemy🧟"
-        TitleTPButton.TextScaled = true
-        TitleTPButton.Font = Enum.Font.SourceSansBold
-        TitleTPButton.BorderSizePixel = 2
-        TitleTPButton.BorderColor3 = Color3.new(255, 255, 255)
+        local TitleButton = Instance.new("TextLabel", HomeFrame)
+        TitleButton.Size = UDim2.new(0, 220, 0, 30)
+        TitleButton.Position = UDim2.new(0, 10, 0, 160)
+        TitleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleButton.TextColor3 = Color3.new(1, 1, 1)
+        TitleButton.Text = "⚡Fast Attack Enemy🧟"
+        TitleButton.TextScaled = true
+        TitleButton.Font = Enum.Font.SourceSansBold
+        TitleButton.BorderSizePixel = 2
+        TitleButton.BorderColor3 = Color3.new(255, 255, 255)
 
-        local TitleTPButton = Instance.new("TextLabel", HomeFrame)
-        TitleTPButton.Size = UDim2.new(0, 220, 0, 30)
-        TitleTPButton.Position = UDim2.new(0, 10, 0, 210)
-        TitleTPButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        TitleTPButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleTPButton.Text = "⚡Fast Attack Player🧍"
-        TitleTPButton.TextScaled = true
-        TitleTPButton.Font = Enum.Font.SourceSansBold
-        TitleTPButton.BorderSizePixel = 2
-        TitleTPButton.BorderColor3 = Color3.new(255, 255, 255)
+        local TitleButton = Instance.new("TextLabel", HomeFrame)
+        TitleButton.Size = UDim2.new(0, 220, 0, 30)
+        TitleButton.Position = UDim2.new(0, 10, 0, 210)
+        TitleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleButton.TextColor3 = Color3.new(1, 1, 1)
+        TitleButton.Text = "⚡Fast Attack Player🧍"
+        TitleButton.TextScaled = true
+        TitleButton.Font = Enum.Font.SourceSansBold
+        TitleButton.BorderSizePixel = 2
+        TitleButton.BorderColor3 = Color3.new(255, 255, 255)
+
+        local TitleButton = Instance.new("TextLabel", HomeFrame)
+        TitleButton.Size = UDim2.new(0, 220, 0, 30)
+        TitleButton.Position = UDim2.new(0, 10, 0, 260)
+        TitleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleButton.TextColor3 = Color3.new(1, 1, 1)
+        TitleButton.Text = "Auto Escape💨"
+        TitleButton.TextScaled = true
+        TitleButton.Font = Enum.Font.SourceSansBold
+        TitleButton.BorderSizePixel = 2
+        TitleButton.BorderColor3 = Color3.new(255, 255, 255)
     end
 
     wait(0.2)
