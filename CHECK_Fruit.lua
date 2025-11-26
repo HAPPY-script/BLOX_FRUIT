@@ -11,10 +11,10 @@ return function(sections)
     if placeId == sea1ID then
         local FruitPage1 = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Fruit1.lua"))()
         FruitPage1(sections)
-    elseif placeId == sea2ID or sea2ID2 then
+    elseif placeId == sea2ID or placeId == sea2ID2 then
         local FruitPage2 = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Fruit2.lua"))()
         FruitPage2(sections)
-    elseif placeId == sea3ID or sea3ID2 then
+    elseif placeId == sea3ID or placeId == sea3ID2 then
         local FruitPage3 = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/Fruit3.lua"))()
         FruitPage3(sections)
     else
