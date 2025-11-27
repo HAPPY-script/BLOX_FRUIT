@@ -234,29 +234,19 @@ return function(sections)
                 -------------------------------------------------
                 local nearest, ndist = findNearestTP(targetPos)
                 if nearest then
-                    local d_player_to_tp = distance(myPos, nearest)
                     local d_tp_to_target = distance(nearest, targetPos)
                     local d_direct = distance(myPos, targetPos)
 
-                    -- chỉ teleport nếu tổng đường đi ngắn hơn bay trực tiếp
-                    if (d_player_to_tp + d_tp_to_target * 0.7) < d_direct then
-        
-                        -- TP 1: tới waypoint
+                    -- Nếu TP point rút ngắn đường → dùng
+                    if d_tp_to_target < d_direct then
                         instantTeleport(nearest)
                         RunService.Heartbeat:Wait()
-
+                        -- tăng cao 1 chút để tránh chạm đất
                         local hrp = safeHRP()
                         if hrp then
-                            -- TP 2: lên cao 100m
-                            hrp.CFrame = hrp.CFrame + Vector3.new(0,100,0)
-                            RunService.Heartbeat:Wait()
-
-                            -- TP 3: tiến 100m về phía mục tiêu
-                            local dir = (targetPos - hrp.Position).Unit
-                            hrp.CFrame = CFrame.new(hrp.Position + dir * 100)
+                            hrp.CFrame = hrp.CFrame + Vector3.new(0, 60, 0)
                             RunService.Heartbeat:Wait()
                         end
-
                         SmoothFlyTo(targetPos)
                         continue
                     end
@@ -857,5 +847,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S1-v0.17 tad SUCCESS✅")
+    print("PVP_S1-v0.18 tad SUCCESS✅")
 end
