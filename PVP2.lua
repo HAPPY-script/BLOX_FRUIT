@@ -239,14 +239,22 @@ return function(sections)
 
                     -- Nếu TP point rút ngắn đường → dùng
                     if d_tp_to_target < d_direct then
-                        instantTeleport(nearest)
-                        RunService.Heartbeat:Wait()
-                        -- tăng cao 1 chút để tránh chạm đất
                         local hrp = safeHRP()
                         if hrp then
-                            hrp.CFrame = hrp.CFrame + Vector3.new(0, 60, 0)
+                            -- Lặp teleport 20 lần trong 2s
+                            for i = 1, 20 do
+                                hrp.CFrame = CFrame.new(nearest + Vector3.new(0,60,0))
+                                hrp.AssemblyLinearVelocity = Vector3.zero
+                                hrp.AssemblyAngularVelocity = Vector3.zero
+                                RunService.Heartbeat:Wait()
+                            end
+
+                            -- tăng cao 1 chút để tránh chạm đất
+                            hrp.CFrame = hrp.CFrame + Vector3.new(0, 100, 0)
                             RunService.Heartbeat:Wait()
                         end
+
+                        -- tiếp tục bay mượt đến mục tiêu
                         SmoothFlyTo(targetPos)
                         continue
                     end
@@ -847,5 +855,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S2-v0.18 tad SUCCESS✅")
+    print("PVP_S2-v0.19 tad SUCCESS✅")
 end
