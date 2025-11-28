@@ -291,6 +291,16 @@ return function(sections)
 
                 local island = getHighestPriorityIsland()
                 if island and not isClearingIsland then
+    
+                    -- Lọc đảo quá xa (> 5000 stud)
+                    local root = island:FindFirstChild("PrimaryPart") or island:FindFirstChildWhichIsA("BasePart")
+                    if root then
+                        local dist = (hrp.Position - root.Position).Magnitude
+                        if dist > 5000 then
+                            -- BỎ QUA đảo này, chuyển sang vòng lặp tiếp theo
+                            continue
+                        end
+                    end
 
                     -- Lấy vị trí Island
                     local root = island:FindFirstChild("PrimaryPart") or island:FindFirstChildWhichIsA("BasePart")
