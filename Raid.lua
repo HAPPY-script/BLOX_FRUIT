@@ -160,18 +160,26 @@ return function(sections)
             end
         end
 
-        -- Tìm đảo có độ ưu tiên cao nhất
+        -- Tìm đảo có độ ưu tiên cao nhất, nhưng loại bỏ đảo quá xa
         local function getHighestPriorityIsland()
-            local island = workspace:FindFirstChild("Map")
-            if island and island:FindFirstChild("RaidMap") then
+            local map = workspace:FindFirstChild("Map")
+            if map and map:FindFirstChild("RaidMap") then
                 for i = 5, 1, -1 do
-                    local model = island.RaidMap:FindFirstChild("RaidIsland"..i)
-                    if model and model:IsA("Model") then
-                        return model
+                    local island = map.RaidMap:FindFirstChild("RaidIsland"..i)
+                    if island and island:IsA("Model") then
+                        local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
+                        if root then
+                            local distance = (hrp.Position - root.Position).Magnitude
+                            if distance <= 3500 then
+                                -- đảo gần hơn 3500 → ưu tiên bình thường
+                                return island
+                            end
+                            -- đảo xa hơn 3500 → coi như Island0, không trả về
+                        end
                     end
                 end
             end
-            return nil
+            return nil -- không có đảo hợp lệ gần
         end
 
         -- Lấy quái gần
@@ -291,16 +299,6 @@ return function(sections)
 
                 local island = getHighestPriorityIsland()
                 if island and not isClearingIsland then
-    
-                    --[[ Lọc đảo quá xa (> 5000 stud)
-                    local root = island:FindFirstChild("PrimaryPart") or island:FindFirstChildWhichIsA("BasePart")
-                    if root then
-                        local dist = (hrp.Position - root.Position).Magnitude
-                        if dist > 5000 then
-                            -- BỎ QUA đảo này, chuyển sang vòng lặp tiếp theo
-                            continue
-                        end
-                    end ]]
 
                     -- Lấy vị trí Island
                     local root = island:FindFirstChild("PrimaryPart") or island:FindFirstChildWhichIsA("BasePart")
