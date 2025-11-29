@@ -163,34 +163,39 @@ return function(sections)
         -- Tìm đảo có độ ưu tiên cao nhất, nhưng loại bỏ đảo quá xa
         local function getHighestPriorityIsland()
             local map = workspace:FindFirstChild("Map")
-            if not map or not map:FindFirstChild("RaidMap") then return nil end
+            if not map then return nil end
 
-            local validIslands = {}   -- đảo gần hơn 3500
-            local farIslands = {}     -- đảo xa hơn 3500 (Island0)
+            local raidMap = map:FindFirstChild("RaidMap")
+            if not raidMap then return nil end
 
-            for i = 5, 1, -1 do
-                local island = map.RaidMap:FindFirstChild("RaidIsland"..i)
-                if island and island:IsA("Model") then
-                    local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
-                    if root then
-                        local distance = (hrp.Position - root.Position).Magnitude
-                        if distance <= 2500 then
-                            table.insert(validIslands, island)
-                        else
-                            table.insert(farIslands, island) -- đảo tạm
+            local bestIsland = nil
+            local bestPriority = -1
+
+            for _, island in ipairs(raidMap:GetChildren()) do
+                if island:IsA("Model") then
+
+                    -- Detect island index (RaidIsland1 → 1 ... RaidIsland5 → 5)
+                    local index = tonumber(island.Name:match("RaidIsland(%d+)"))
+                    if index then
+
+                        local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
+                        if root then
+                            local dist = (hrp.Position - root.Position).Magnitude
+
+                            -- Chỉ nhận island trong 3500m
+                            if dist <= 3500 then
+                                -- Chọn island có index cao nhất (5 → 1)
+                                if index > bestPriority then
+                                    bestPriority = index
+                                    bestIsland = island
+                                end
+                            end
                         end
                     end
                 end
             end
 
-            -- Ưu tiên đảo gần
-            if #validIslands > 0 then
-                return validIslands[1] -- đảo cấp cao nhất trong vùng
-            elseif #farIslands > 0 then
-                return farIslands[1] -- đảo xa nhất tạm thời (Island0)
-            else
-                return nil
-            end
+            return bestIsland -- nếu không có island gần → trả nil
         end
 
         -- Lấy quái gần
