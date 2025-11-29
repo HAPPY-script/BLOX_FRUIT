@@ -163,62 +163,34 @@ return function(sections)
         -- Tìm đảo có độ ưu tiên cao nhất, nhưng loại bỏ đảo quá xa
         local function getHighestPriorityIsland()
             local map = workspace:FindFirstChild("Map")
-            if not map then return nil end
-            local raidMap = map:FindFirstChild("RaidMap")
-            if not raidMap then return nil end
+            if not map or not map:FindFirstChild("RaidMap") then return nil end
 
-            local bestIsland = nil
-            local bestLevel = -1
-            local bestDist = math.huge
+            local validIslands = {}   -- đảo gần hơn 3500
+            local farIslands = {}     -- đảo xa hơn 3500 (Island0)
 
-            -- Tìm tất cả đảo hợp lệ (<3500)
-            for i = 1, 5 do  -- không duyệt từ 5→1 nữa
-                local island = raidMap:FindFirstChild("RaidIsland"..i)
+            for i = 5, 1, -1 do
+                local island = map.RaidMap:FindFirstChild("RaidIsland"..i)
                 if island and island:IsA("Model") then
                     local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
                     if root then
-                        local dist = (hrp.Position - root.Position).Magnitude
-
-                        -- đảo trong vùng ưu tiên nhất
-                        if dist <= 3500 then
-                            -- chọn đảo LEVEL CAO NHẤT, nếu level bằng nhau → chọn cái gần nhất
-                            if i > bestLevel or (i == bestLevel and dist < bestDist) then
-                                bestIsland = island
-                                bestLevel = i
-                                bestDist = dist
-                            end
+                        local distance = (hrp.Position - root.Position).Magnitude
+                        if distance <= 2500 then
+                            table.insert(validIslands, island)
+                        else
+                            table.insert(farIslands, island) -- đảo tạm
                         end
                     end
                 end
             end
 
-            -- Nếu có đảo gần → return ngay
-            if bestIsland then
-                return bestIsland
+            -- Ưu tiên đảo gần
+            if #validIslands > 0 then
+                return validIslands[1] -- đảo cấp cao nhất trong vùng
+            elseif #farIslands > 0 then
+                return farIslands[1] -- đảo xa nhất tạm thời (Island0)
+            else
+                return nil
             end
-
-            ------------------------------------------
-            -- Không có đảo nào gần → tìm đảo <4500
-            -- tránh nhận đảo của người chơi khác
-            ------------------------------------------
-            local fallback = nil
-            local fallbackDist = 4500
-
-            for i = 1, 5 do
-                local island = raidMap:FindFirstChild("RaidIsland"..i)
-                if island then
-                    local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
-                    if root then
-                        local dist = (hrp.Position - root.Position).Magnitude
-                        if dist < fallbackDist then
-                            fallback = island
-                            fallbackDist = dist
-                        end
-                    end
-                end
-            end
-
-            return fallback
         end
 
         -- Lấy quái gần
@@ -229,7 +201,7 @@ return function(sections)
             for _, mob in ipairs(folder:GetChildren()) do
                 if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChildOfClass("Humanoid") then
                     local dist = (origin.Position - mob.HumanoidRootPart.Position).Magnitude
-                    if dist <= 1000 and mob.Humanoid.Health > 0 then
+                    if dist <= 2500 and mob.Humanoid.Health > 0 then
                         table.insert(enemies, mob)
                     end
                 end
