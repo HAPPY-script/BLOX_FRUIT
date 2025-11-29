@@ -174,7 +174,7 @@ return function(sections)
                     local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
                     if root then
                         local distance = (hrp.Position - root.Position).Magnitude
-                        if distance <= 3500 then
+                        if distance <= 2500 then
                             table.insert(validIslands, island)
                         else
                             table.insert(farIslands, island) -- đảo tạm
