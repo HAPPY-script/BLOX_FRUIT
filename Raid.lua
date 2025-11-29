@@ -163,23 +163,34 @@ return function(sections)
         -- Tìm đảo có độ ưu tiên cao nhất, nhưng loại bỏ đảo quá xa
         local function getHighestPriorityIsland()
             local map = workspace:FindFirstChild("Map")
-            if map and map:FindFirstChild("RaidMap") then
-                for i = 5, 1, -1 do
-                    local island = map.RaidMap:FindFirstChild("RaidIsland"..i)
-                    if island and island:IsA("Model") then
-                        local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
-                        if root then
-                            local distance = (hrp.Position - root.Position).Magnitude
-                            if distance <= 3500 then
-                                -- đảo gần hơn 3500 → ưu tiên bình thường
-                                return island
-                            end
-                            -- đảo xa hơn 3500 → coi như Island0, không trả về
+            if not map or not map:FindFirstChild("RaidMap") then return nil end
+
+            local validIslands = {}   -- đảo gần hơn 3500
+            local farIslands = {}     -- đảo xa hơn 3500 (Island0)
+
+            for i = 5, 1, -1 do
+                local island = map.RaidMap:FindFirstChild("RaidIsland"..i)
+                if island and island:IsA("Model") then
+                    local root = island.PrimaryPart or island:FindFirstChildWhichIsA("BasePart")
+                    if root then
+                        local distance = (hrp.Position - root.Position).Magnitude
+                        if distance <= 3500 then
+                            table.insert(validIslands, island)
+                        else
+                            table.insert(farIslands, island) -- đảo tạm
                         end
                     end
                 end
             end
-            return nil -- không có đảo hợp lệ gần
+
+            -- Ưu tiên đảo gần
+            if #validIslands > 0 then
+                return validIslands[1] -- đảo cấp cao nhất trong vùng
+            elseif #farIslands > 0 then
+                return farIslands[1] -- đảo xa nhất tạm thời (Island0)
+            else
+                return nil
+            end
         end
 
         -- Lấy quái gần
