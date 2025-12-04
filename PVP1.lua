@@ -837,7 +837,7 @@ return function(sections)
             -- ESCAPING
             -----------------------------------------------------
             if isEscaping then
-                root.CFrame = root.CFrame + Vector3.new(0, 100, 0)
+                root.CFrame = root.CFrame + Vector3.new(0, 200, 0)
 
                 if percent >= escapeThreshold then
                     safeTimer += dt
