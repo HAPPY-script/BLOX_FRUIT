@@ -7,7 +7,7 @@ HPEspaceScreen.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 local Frame = Instance.new("Frame")
 Frame.Name = "Frame"
 Frame.Position = UDim2.new(0.5, 0, -0, 0)
-Frame.Size = UDim2.new(0.2, 0, 0.15, 0)
+Frame.Size = UDim2.new(0.15, 0, 0.15, 0)
 Frame.BackgroundColor3 = Color3.new(0.117647, 0, 0.223529)
 Frame.BorderSizePixel = 0
 Frame.BorderColor3 = Color3.new(0, 0, 0)
@@ -17,7 +17,7 @@ Frame.Parent = HPEspaceScreen
 
 local UIAspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
 UIAspectRatioConstraint.Name = "UIAspectRatioConstraint"
-UIAspectRatioConstraint.AspectRatio = 3
+UIAspectRatioConstraint.AspectRatio = 4
 UIAspectRatioConstraint.Parent = Frame
 
 local UIStroke = Instance.new("UIStroke")
