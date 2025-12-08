@@ -1,3 +1,75 @@
+local HPEspaceScreen = Instance.new("ScreenGui")
+HPEspaceScreen.Name = "HPEspaceScreen"
+HPEspaceScreen.ResetOnSpawn = false
+HPEspaceScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+HPEspaceScreen.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local Frame = Instance.new("Frame")
+Frame.Name = "Frame"
+Frame.Position = UDim2.new(0.5, 0, -0, 0)
+Frame.Size = UDim2.new(0.2, 0, 0.15, 0)
+Frame.BackgroundColor3 = Color3.new(0.117647, 0, 0.223529)
+Frame.BorderSizePixel = 0
+Frame.BorderColor3 = Color3.new(0, 0, 0)
+Frame.Visible = false
+Frame.AnchorPoint = Vector2.new(0.5, 0)
+Frame.Parent = HPEspaceScreen
+
+local UIAspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint.Name = "UIAspectRatioConstraint"
+UIAspectRatioConstraint.AspectRatio = 3
+UIAspectRatioConstraint.Parent = Frame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Name = "UIStroke"
+UIStroke.Color = Color3.new(0.8, 0, 1)
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Parent = Frame
+
+local a = Instance.new("TextLabel")
+a.Name = "%"
+a.Position = UDim2.new(0.875, 0, 0.5, 0)
+a.Size = UDim2.new(0.25, 0, 0.55, 0)
+a.BackgroundColor3 = Color3.new(1, 1, 1)
+a.BackgroundTransparency = 1
+a.BorderSizePixel = 0
+a.BorderColor3 = Color3.new(0, 0, 0)
+a.AnchorPoint = Vector2.new(0.5, 0.5)
+a.TextTransparency = 0
+a.Text = "100%"
+a.TextColor3 = Color3.new(1, 0, 1)
+a.TextSize = 14
+a.FontFace = Font.new("rbxasset://fonts/families/Oswald.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+a.TextScaled = true
+a.TextWrapped = true
+a.Parent = Frame
+
+local HPFrame = Instance.new("Frame")
+HPFrame.Name = "HPFrame"
+HPFrame.Position = UDim2.new(0.375, 0, 0.54, 0)
+HPFrame.Size = UDim2.new(0.675, 0, 0.3, 0)
+HPFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+HPFrame.BackgroundTransparency = 0.5
+HPFrame.BorderSizePixel = 0
+HPFrame.BorderColor3 = Color3.new(0, 0, 0)
+HPFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+HPFrame.Transparency = 0.5
+HPFrame.Parent = Frame
+
+local UIStroke2 = Instance.new("UIStroke")
+UIStroke2.Name = "UIStroke"
+UIStroke2.Color = Color3.new(1, 1, 1)
+UIStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke2.Parent = HPFrame
+
+local Load = Instance.new("Frame")
+Load.Name = "Load"
+Load.Size = UDim2.new(1, 0, 1, 0)
+Load.BackgroundColor3 = Color3.new(0.196078, 1, 0.196078)
+Load.BorderSizePixel = 0
+Load.BorderColor3 = Color3.new(0, 0, 0)
+Load.Parent = HPFrame
+
 return function(sections)
     local HomeFrame = sections["PVP"]
 
@@ -698,6 +770,45 @@ return function(sections)
         local returnCooldown = false
 
         -----------------------------------------------------
+        -- UI HP ESCAPE PROGRESS
+        -----------------------------------------------------
+        local gui = player:WaitForChild("PlayerGui"):WaitForChild("HPEspaceScreen")
+        local hpFrame = gui.Frame
+        local hpFill = hpFrame.HPFrame.Load
+        local hpText = hpFrame["%"]
+
+        -- Tọa độ mở / đóng
+        local OPEN_POS = UDim2.new(0.5, 0, 0, 0)
+        local CLOSE_POS = UDim2.new(0.5, 0, -0.5, 0)
+
+        -- ban đầu đóng
+        hpFrame.Position = CLOSE_POS
+        hpFrame.Visible = false
+
+        local TweenService = game:GetService("TweenService")
+
+        local function OpenHPFrame()
+            hpFrame.Visible = true
+            TweenService:Create(hpFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                Position = OPEN_POS
+            }):Play()
+        end
+
+        local function CloseHPFrame()
+            TweenService:Create(hpFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                Position = CLOSE_POS
+            }):Play()
+            task.delay(0.3, function()
+                hpFrame.Visible = false
+            end)
+        end
+
+        local function UpdateHPBar(ratio)
+            hpFill.Size = UDim2.new(ratio, 0, 1, 0)
+            hpText.Text = tostring(math.floor(ratio * 100)) .. "%"
+        end
+
+        -----------------------------------------------------
         -- UI
         -----------------------------------------------------
         local escapeButton = Instance.new("TextButton", HomeFrame)
@@ -775,6 +886,8 @@ return function(sections)
                 autoEscapeEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
 
             if not autoEscapeEnabled then
+                CloseHPFrame()
+                UpdateHPBar(0)
                 isEscaping = false
                 safeTimer = 0
             end
@@ -824,6 +937,7 @@ return function(sections)
             -- LƯU TRỤC Y KHI BẮT ĐẦU ESCAPE
             -----------------------------------------------------
             if percent < escapeThreshold then
+                OpenHPFrame()
                 if not isEscaping then
                     initialY = root.Position.Y
                     returnButton.Text = "Y = " .. tostring(math.floor(initialY))
@@ -837,12 +951,23 @@ return function(sections)
             -- ESCAPING
             -----------------------------------------------------
             if isEscaping then
+
+                -- cập nhật phần trăm HP so với ngưỡng escape
+                local ratio = percent / escapeThreshold
+                ratio = math.clamp(ratio, 0, 1)
+                UpdateHPBar(ratio)
+
                 root.CFrame = root.CFrame + Vector3.new(0, 200, 0)
 
                 if percent >= escapeThreshold then
+                    UpdateHPBar(1)
                     safeTimer += dt
                     if safeTimer >= 1 then
                         isEscaping = false
+                    end
+                    
+                    if not isEscaping then
+                        CloseHPFrame()
                     end
                 else
                     safeTimer = 0
@@ -855,5 +980,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S1-v0.19 tad SUCCESS✅")
+    print("PVP_S1-v0.2 tad SUCCESS✅")
 end
