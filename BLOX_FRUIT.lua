@@ -364,6 +364,7 @@ print("✅✅Blox Fruit hub SUCCESS✅✅")
 
 -- se
 local BLOX_FRUITS_GAME_ID = 85211729168715
+local BLOX_FRUITS_GAME_ID2 = 2753915549
 
 local SECOND_SEA_GAME_ID = 79091703265657
 local SECOND_SEA_GAME_ID2 = 4442272183
@@ -372,7 +373,7 @@ local THIRD_SEA_GAME_ID = 7449423635
 local THIRD_SEA_GAME_ID2 = 100117331123089
 
 local currentGameId = game.PlaceId
-if currentGameId == BLOX_FRUITS_GAME_ID or currentGameId == SECOND_SEA_GAME_ID or currentGameId == SECOND_SEA_GAME_ID2 or currentGameId == THIRD_SEA_GAME_ID or currentGameId == THIRD_SEA_GAME_ID2 then
+if currentGameId == BLOX_FRUITS_GAME_ID or BLOX_FRUITS_GAME_ID2 or currentGameId == SECOND_SEA_GAME_ID or currentGameId == SECOND_SEA_GAME_ID2 or currentGameId == THIRD_SEA_GAME_ID or currentGameId == THIRD_SEA_GAME_ID2 then
 
     local RunService = game:GetService("RunService")
     local player = game.Players.LocalPlayer
