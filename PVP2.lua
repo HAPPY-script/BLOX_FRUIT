@@ -980,5 +980,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S2-v0.19 tad SUCCESS✅")
+    print("PVP_S2-v0.2 tad SUCCESS✅")
 end
