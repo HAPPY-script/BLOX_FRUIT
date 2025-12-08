@@ -1,4 +1,5 @@
 local sea1ID = 85211729168715
+local sea1ID2 = 2753915549
 
 local sea2ID = 79091703265657
 local sea2ID2 = 4442272183
@@ -8,7 +9,7 @@ local sea3ID2 = 100117331123089
 
 return function(sections)
     local placeId = game.PlaceId
-    if placeId == sea1ID then
+    if placeId == sea1ID or placeId == sea1ID2 then
         local PVPPage1 = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/PVP1.lua"))()
         PVPPage1(sections)
     elseif placeId == sea2ID or placeId == sea2ID2 then
