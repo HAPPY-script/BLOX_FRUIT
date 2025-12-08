@@ -1,5 +1,5 @@
 local HPEspaceScreen = Instance.new("ScreenGui")
-HPEspaceScreen.Name = "HPEspaceScreen2"
+HPEspaceScreen.Name = "HPEspaceScreen"
 HPEspaceScreen.ResetOnSpawn = false
 HPEspaceScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 HPEspaceScreen.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -7,7 +7,7 @@ HPEspaceScreen.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 local Frame = Instance.new("Frame")
 Frame.Name = "Frame"
 Frame.Position = UDim2.new(0.5, 0, -0, 0)
-Frame.Size = UDim2.new(0.125, 0, 0.125, 0)
+Frame.Size = UDim2.new(0.13, 0, 0.13, 0)
 Frame.BackgroundColor3 = Color3.new(0.117647, 0, 0.223529)
 Frame.BorderSizePixel = 0
 Frame.BorderColor3 = Color3.new(0, 0, 0)
@@ -772,7 +772,7 @@ return function(sections)
         -----------------------------------------------------
         -- UI HP ESCAPE PROGRESS
         -----------------------------------------------------
-        local gui = player:WaitForChild("PlayerGui"):WaitForChild("HPEspaceScreen2")
+        local gui = player:WaitForChild("PlayerGui"):WaitForChild("HPEspaceScreen")
         local hpFrame = gui.Frame
         local hpFill = hpFrame.HPFrame.Load
         local hpText = hpFrame["%"]
