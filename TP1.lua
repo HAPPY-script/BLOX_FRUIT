@@ -56,7 +56,7 @@ return function(sections)
         btnFOUNTAIN.Position = UDim2.new(0, 10, 0, 110) -- Đặt nút đầu tiên ở vị trí đầu tiên
         btnFOUNTAIN.Text = "FOUNTAIN"
         btnFOUNTAIN.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        btnFOUNTAIN.TextColor3 = Color3.new(1, 1, 1)
+        btnFOUNTAIN.TextColor3 = Color3.fromRGB(0, 0, 0)
         btnFOUNTAIN.Font = Enum.Font.SourceSansBold
         btnFOUNTAIN.TextSize = 20
 
@@ -148,7 +148,7 @@ return function(sections)
         btnMONKEY.Position = UDim2.new(0, 10, 0, 310) -- Vị trí của nút MONKEY
         btnMONKEY.Text = "MONKEY"
         btnMONKEY.BackgroundColor3 = Color3.fromRGB(255, 223, 0)
-        btnMONKEY.TextColor3 = Color3.new(1, 1, 1)
+        btnMONKEY.TextColor3 = Color3.fromRGB(0, 0, 0)
         btnMONKEY.Font = Enum.Font.SourceSansBold
         btnMONKEY.TextSize = 20
 
@@ -171,7 +171,7 @@ return function(sections)
         btnVILLAGE.Position = UDim2.new(0, 10, 0, 360) -- Vị trí của nút VILLAGE
         btnVILLAGE.Text = "VILLAGE"
         btnVILLAGE.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-        btnVILLAGE.TextColor3 = Color3.new(1, 1, 1)
+        btnVILLAGE.TextColor3 = Color3.fromRGB(0, 0, 0)
         btnVILLAGE.Font = Enum.Font.SourceSansBold
         btnVILLAGE.TextSize = 20
 
@@ -263,7 +263,7 @@ return function(sections)
         btnDESERT.Position = UDim2.new(0, 10, 0, 560) -- Vị trí của nút DESERT
         btnDESERT.Text = "DESERT"
         btnDESERT.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-        btnDESERT.TextColor3 = Color3.new(1, 1, 1)
+        btnDESERT.TextColor3 = Color3.fromRGB(0, 0, 0)
         btnDESERT.Font = Enum.Font.SourceSansBold
         btnDESERT.TextSize = 20
 
@@ -282,7 +282,7 @@ return function(sections)
     do
         -- Tạo nút "TOWN" trong HomeFrame
         local btnTOWN = Instance.new("TextButton", HomeFrame)
-        btnTOWN.Size = UDim2.new(0, 90, 0, 40)
+        btnTOWN.Size = UDim2.new(0, 320, 0, 40)
         btnTOWN.Position = UDim2.new(0, 10, 0, 610) -- Vị trí của nút TOWN
         btnTOWN.Text = "TOWN"
         btnTOWN.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
@@ -305,7 +305,7 @@ return function(sections)
     do
         -- Tạo nút "ON_SKY" trong HomeFrame
         local btnON_SKY = Instance.new("TextButton", HomeFrame)
-        btnON_SKY.Size = UDim2.new(0, 90, 0, 40)
+        btnON_SKY.Size = UDim2.new(0, 320, 0, 40)
         btnON_SKY.Position = UDim2.new(0, 10, 0, 660) -- Vị trí của nút ON_SKY
         btnON_SKY.Text = "ON_SKY"
         btnON_SKY.BackgroundColor3 = Color3.fromRGB(135, 206, 235)
@@ -328,11 +328,11 @@ return function(sections)
     do
         -- Tạo nút "SNOW" trong HomeFrame
         local btnSNOW = Instance.new("TextButton", HomeFrame)
-        btnSNOW.Size = UDim2.new(0, 90, 0, 40)
+        btnSNOW.Size = UDim2.new(0, 320, 0, 40)
         btnSNOW.Position = UDim2.new(0, 10, 0, 710) -- Vị trí của nút SNOW
         btnSNOW.Text = "SNOW"
         btnSNOW.BackgroundColor3 = Color3.fromRGB(255, 250, 250)
-        btnSNOW.TextColor3 = Color3.new(1, 1, 1)
+        btnSNOW.TextColor3 = Color3.fromRGB(0, 0, 0)
         btnSNOW.Font = Enum.Font.SourceSansBold
         btnSNOW.TextSize = 20
 
