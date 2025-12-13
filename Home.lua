@@ -1015,15 +1015,28 @@ return function(sections)
         end
 
         -- Tween function
+        local MOVE_SPEED = 275
+
         local function tweenTo(pos)
             local char = player.Character or player.CharacterAdded:Wait()
             local hrp = char:WaitForChild("HumanoidRootPart")
 
             local distance = (hrp.Position - pos).Magnitude
-            if distance > 10000 then return end
+            if distance < 5 then return end
+            if distance > 15000 then return end -- chống teleport quá xa bất thường
 
-            local tweenTime = math.clamp(distance / 300, 0.5, 5) -- thời gian tween hợp lý
-            local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
+            local tweenTime = distance / MOVE_SPEED
+
+            local tween = TweenService:Create(
+                hrp,
+                TweenInfo.new(
+                    tweenTime,
+                    Enum.EasingStyle.Linear,
+                    Enum.EasingDirection.Out
+                ),
+                { CFrame = CFrame.new(pos) }
+            )
+
             tween:Play()
             tween.Completed:Wait()
         end
@@ -1306,15 +1319,28 @@ return function(sections)
         end
 
         -- Tween function
+        local MOVE_SPEED = 275
+
         local function tweenTo(pos)
             local char = player.Character or player.CharacterAdded:Wait()
             local hrp = char:WaitForChild("HumanoidRootPart")
 
             local distance = (hrp.Position - pos).Magnitude
-            if distance > 10000 then return end
+            if distance < 5 then return end
+            if distance > 15000 then return end -- chống teleport quá xa bất thường
 
-            local tweenTime = math.clamp(distance / 300, 0.5, 5) -- thời gian tween hợp lý
-            local tween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
+            local tweenTime = distance / MOVE_SPEED
+
+            local tween = TweenService:Create(
+                hrp,
+                TweenInfo.new(
+                    tweenTime,
+                    Enum.EasingStyle.Linear,
+                    Enum.EasingDirection.Out
+                ),
+                { CFrame = CFrame.new(pos) }
+            )
+
             tween:Play()
             tween.Completed:Wait()
         end
