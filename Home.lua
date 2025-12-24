@@ -1559,7 +1559,7 @@ return function(sections)
         -- ---------- NEW: Distance TextBox ----------
         local distBox = Instance.new("TextBox", HomeFrame)
         distBox.Size = UDim2.new(0, 100, 0, 30)
-        distBox.Position = UDim2.new(0, 340, 0, 210)
+        distBox.Position = UDim2.new(0, 240, 0, 210)
         distBox.PlaceholderText = "Distance"
         distBox.Text = "5000" -- default
         distBox.ClearTextOnFocus = false
