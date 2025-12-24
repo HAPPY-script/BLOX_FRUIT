@@ -1618,26 +1618,19 @@ return function(sections)
                 safeCancelTween(markerTween)
                 markerTween = nil
             end
-            if markerHighlight and markerHighlight.Parent then
-                pcall(function() markerHighlight:Destroy() end)
+
+            if markerHighlight then
+                markerHighlight:Destroy()
                 markerHighlight = nil
             end
-            if markerPart and markerPart.Parent then
-                pcall(function() markerPart:Destroy() end)
+
+            if markerPart then
+                markerPart:Destroy()
                 markerPart = nil
             end
+
             if markerCleanupTask then
-                if type(markerCleanupTask) == "function" then
-                    -- nothing
-                else
-                    pcall(function()
-                        if markerCleanupTask.Disconnect then
-                            markerCleanupTask:Disconnect()
-                        elseif markerCleanupTask:Disconnect then
-                            markerCleanupTask:Disconnect()
-                        end
-                    end)
-                end
+                markerCleanupTask:Disconnect()
                 markerCleanupTask = nil
             end
         end
