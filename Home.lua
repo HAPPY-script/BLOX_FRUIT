@@ -1617,9 +1617,12 @@ return function(sections)
                     local hp = mob:FindFirstChildOfClass("Humanoid")
                     if hp and hp.Health > 0 then
                         local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
-                        if not nearestDist or dist < nearestDist then
-                            nearest = mob
-                            nearestDist = dist
+                        -- CHỈ XÉT KHI NẰM TRONG distanceLimit
+                        if dist <= (distanceLimit or 0) then
+                            if not nearestDist or dist < nearestDist then
+                                nearest = mob
+                                nearestDist = dist
+                            end
                         end
                     end
                 end
