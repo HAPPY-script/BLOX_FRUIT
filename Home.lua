@@ -1546,50 +1546,69 @@ return function(sections)
         local TweenService = game:GetService("TweenService")
         local camera = workspace.CurrentCamera
 
-        -- 🧩 Nút bật/tắt
+        -- UI: Nút bật/tắt (đặt sang trái) và TextBox nhập Distance (theo yêu cầu)
         local toggleFarm = Instance.new("TextButton", HomeFrame)
         toggleFarm.Size = UDim2.new(0, 90, 0, 30)
-        toggleFarm.Position = UDim2.new(0, 240, 0, 160)
+        toggleFarm.Position = UDim2.new(0, 120, 0, 160) -- để TextBox có thể nằm ở 240 như bạn yêu cầu
         toggleFarm.Text = "OFF"
         toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         toggleFarm.TextColor3 = Color3.new(1, 1, 1)
         toggleFarm.Font = Enum.Font.SourceSansBold
         toggleFarm.TextScaled = true
 
+        local distanceBox = Instance.new("TextBox", HomeFrame)
+        distanceBox.Size = toggleFarm.Size
+        distanceBox.Position = UDim2.new(0, 240, 0, 160) -- theo đúng value bạn yêu cầu
+        distanceBox.Text = "5000"
+        distanceBox.PlaceholderText = "Distance"
+        distanceBox.ClearTextOnFocus = false
+        distanceBox.TextScaled = true
+        distanceBox.Font = Enum.Font.SourceSans
+
         local running = false
-        local farmCenter = nil
+        local farmCenter = nil -- Vector3 or nil
         local anchor = nil
         local anchorY = nil
-        local lastUpdate = 0
-        local anchorUpdateInterval = 1
         local lastAnchorUpdate = 0
+        local anchorUpdateInterval = 1
         local currentHighlight = nil
-        local highlightTween = nil
 
-        -- 🧱 Tạo part làm tâm camera
-        local function ensureAnchor()
-            if not anchor or not anchor.Parent then
-                anchor = Instance.new("Part")
-                anchor.Anchored = true
-                anchor.CanCollide = false
-                anchor.Transparency = 1
-                anchor.Size = Vector3.new(1, 1, 1)
-                anchor.Name = "CameraAnchor"
-        
-                -- 🧭 Tạo ngay tại vị trí hiện tại của người chơi
-                if hrp and hrp:IsDescendantOf(workspace) then
-                    anchor.Position = hrp.Position
-                else
-                    anchor.Position = Vector3.new(0, 10, 0)
-                end
-        
-                anchor.Parent = workspace
+        -- Khoảng cách dùng (số)
+        local Distance = 5000
+        local function parseDistance()
+            local n = tonumber(distanceBox.Text)
+            if n and n > 0 then
+                Distance = n
+            else
+                Distance = 5000
+                distanceBox.Text = "5000"
             end
+        end
+        parseDistance()
+        distanceBox.FocusLost:Connect(function(enterPressed)
+            parseDistance()
+        end)
+
+        -- Tạo hoặc đảm bảo anchor (tâm điểm cho camera) tại farmCenter
+        local function ensureAnchorAt(pos)
+            if anchor and anchor.Parent then
+                anchor.Position = pos
+                return anchor
+            end
+            anchor = Instance.new("Part")
+            anchor.Anchored = true
+            anchor.CanCollide = false
+            anchor.Transparency = 1
+            anchor.Size = Vector3.new(1, 1, 1)
+            anchor.Name = "CameraAnchor"
+            anchor.Position = pos
+            anchor.Parent = workspace
             return anchor
         end
 
-        -- 🧭 Tween tiện ích
+        -- Tween tiện ích (chỉ dùng để đưa nhân vật gần target nếu cần)
         local function tweenTo(pos)
+            if not hrp or not hrp.Parent then return end
             local dist = (hrp.Position - pos).Magnitude
             if dist > 10000 then return end
             local tween = TweenService:Create(hrp, TweenInfo.new(dist / 300, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
@@ -1597,17 +1616,18 @@ return function(sections)
             tween.Completed:Wait()
         end
 
-        -- 🔍 Tìm enemy gần nhất
-        local function getNearestEnemy(centerPos)
+        -- Tìm enemy gần nhất tính từ centerPos, trong khoảng maxDist
+        local function getNearestEnemy(centerPos, maxDist)
             local folder = workspace:FindFirstChild("Enemies")
             if not folder then return nil end
             local nearest, nearestDist
             for _, mob in ipairs(folder:GetChildren()) do
-                if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") then
-                    local hp = mob:FindFirstChildOfClass("Humanoid")
-                    if hp and hp.Health > 0 then
-                        local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
-                        if not nearestDist or dist < nearestDist then
+                if mob:IsA("Model") then
+                    local hrpEnemy = mob:FindFirstChild("HumanoidRootPart")
+                    local humanoid = mob:FindFirstChildOfClass("Humanoid")
+                    if hrpEnemy and humanoid and humanoid.Health > 0 then
+                        local dist = (centerPos - hrpEnemy.Position).Magnitude
+                        if dist <= maxDist and (not nearestDist or dist < nearestDist) then
                             nearest = mob
                             nearestDist = dist
                         end
@@ -1617,15 +1637,15 @@ return function(sections)
             return nearest
         end
 
-        -- 🌈 Highlight theo HP (phiên bản tối ưu)
+        -- Update highlight màu theo HP (gọn, tự hủy khi k cần)
         local function updateHighlight(enemy)
             if not enemy then return end
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not humanoid then return end
 
-            -- Nếu enemy đã có highlight → dùng lại
-            if not enemy:FindFirstChild("HomeHighlight") then
-                local highlight = Instance.new("Highlight")
+            local highlight = enemy:FindFirstChild("HomeHighlight")
+            if not highlight then
+                highlight = Instance.new("Highlight")
                 highlight.Name = "HomeHighlight"
                 highlight.FillTransparency = 0.2
                 highlight.OutlineTransparency = 0.9
@@ -1634,31 +1654,32 @@ return function(sections)
                 highlight.Parent = enemy
             end
 
-            local highlight = enemy:FindFirstChild("HomeHighlight")
-
-            -- Update màu theo HP trong vòng lặp RenderStepped
+            -- Kết nối RenderStepped để cập nhật màu; tự hủy khi điều kiện không còn
             local conn
             conn = RunService.RenderStepped:Connect(function()
                 if not running or not humanoid.Parent or humanoid.Health <= 0 or not highlight or highlight.Parent ~= enemy then
-                    if highlight then highlight:Destroy() end
-                    conn:Disconnect()
+                    if highlight and highlight.Parent then
+                        highlight:Destroy()
+                    end
+                    if conn then conn:Disconnect() end
                     return
                 end
-
-                local percent = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+                local percent = math.clamp(humanoid.Health / (humanoid.MaxHealth ~= 0 and humanoid.MaxHealth or 1), 0, 1)
                 highlight.FillColor = Color3.fromRGB(255 * (1 - percent), 255 * percent, 0)
             end)
         end
 
-        -- 🧠 Theo dõi enemy với anchor camera
+        -- Theo dõi enemy; dừng nếu enemy chết, running false, hoặc rời farmCenter > Distance
         local function followEnemy(enemy)
+            if not enemy then return end
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not hrpEnemy or not humanoid then return end
 
             updateHighlight(enemy)
 
-            local anchor = ensureAnchor()
+            if not farmCenter then return end
+            local localAnchor = ensureAnchorAt(farmCenter)
 
             if not anchorY or (tick() - lastAnchorUpdate) > anchorUpdateInterval then
                 anchorY = hrpEnemy.Position.Y + 25
@@ -1666,76 +1687,105 @@ return function(sections)
             end
 
             camera.CameraType = Enum.CameraType.Custom
-            camera.CameraSubject = anchor
+            camera.CameraSubject = localAnchor
 
-            local dist = (hrp.Position - hrpEnemy.Position).Magnitude
-            if dist > 200 then
+            local distToPlayer = (hrp.Position - hrpEnemy.Position).Magnitude
+            if distToPlayer > 200 then
                 tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
-            else
-                while humanoid.Health > 0 and running do
-                    updateHighlight(enemy) -- LUÔN CẬP NHẬT CHUẨN
+            end
 
-                    anchorY = hrpEnemy.Position.Y + 25
-                    local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
-                    anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
+            -- Vòng lặp theo dõi; thoát khi enemy chết / ngoài vùng / or stopped
+            while humanoid.Health > 0 and running do
+                -- Nếu enemy đã ra ngoài phạm vi farmCenter -> dừng follow
+                if farmCenter and (hrpEnemy.Position - farmCenter).Magnitude > Distance then
+                    break
+                end
 
+                anchorY = hrpEnemy.Position.Y + 25
+                local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
+                localAnchor.Position = localAnchor.Position:Lerp(targetPos, 0.15)
+
+                if hrp and hrp.Parent then
                     hrp.AssemblyLinearVelocity = Vector3.zero
                     hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
-
-                    RunService.RenderStepped:Wait()
                 end
+
+                RunService.RenderStepped:Wait()
             end
         end
 
-        -- 🧩 Reset khi chết
+        -- Reset khi chết / respawn
         player.CharacterAdded:Connect(function(newChar)
             character = newChar
             hrp = newChar:WaitForChild("HumanoidRootPart")
             running = false
+            farmCenter = nil
             anchorY = nil
-            if anchor then anchor:Destroy() end
+            if anchor then
+                anchor:Destroy()
+                anchor = nil
+            end
             toggleFarm.Text = "OFF"
             toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
             camera.CameraType = Enum.CameraType.Custom
             camera.CameraSubject = hrp
         end)
 
-        -- 🔘 Nút bật/tắt
+        -- Nút bật/tắt: khi bật => đặt farmCenter = vị trí hiện tại của hrp; tạo anchor tại farmCenter
         toggleFarm.MouseButton1Click:Connect(function()
             running = not running
             toggleFarm.Text = running and "ON" or "OFF"
             toggleFarm.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
-            farmCenter = running and hrp.Position or nil
-            if not running then
+
+            if running then
+                if not hrp or not hrp.Parent then
+                    running = false
+                    toggleFarm.Text = "OFF"
+                    toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+                    return
+                end
+                farmCenter = hrp.Position
+                ensureAnchorAt(farmCenter)
+            else
+                farmCenter = nil
+                if anchor then
+                    anchor:Destroy()
+                    anchor = nil
+                end
                 camera.CameraType = Enum.CameraType.Custom
                 camera.CameraSubject = hrp
-                if anchor then anchor:Destroy() end
             end
         end)
 
-        -- ♻️ Auto farm
+        -- Auto farm: tìm enemy gần nhất quanh farmCenter
         task.spawn(function()
             while true do
-                task.wait()
-                if not running or not hrp then continue end
-                local target = getNearestEnemy(hrp.Position)
+                task.wait(0.1)
+                if not running or not hrp or not farmCenter then continue end
+                -- cập nhật Distance từ textbox thường xuyên (phòng trường hợp người sửa mà không focuslost)
+                parseDistance()
+
+                local target = getNearestEnemy(farmCenter, Distance)
                 if target then
-                    followEnemy(target)
+                    -- đảm bảo target vẫn trong range (lặp ở trong followEnemy cũng kiểm tra)
+                    if target:FindFirstChild("HumanoidRootPart") and (target.HumanoidRootPart.Position - farmCenter).Magnitude <= Distance then
+                        pcall(function() followEnemy(target) end)
+                    end
                 end
             end
         end)
 
-        -- ⚔️ Auto đánh
+        -- Auto attack (giữ nguyên)
         task.spawn(function()
             while true do
                 task.wait(0.4)
                 if running then
                     pcall(function()
-                        game:GetService("ReplicatedStorage")
-                            :WaitForChild("Modules")
-                            :WaitForChild("Net")
-                            :WaitForChild("RE/RegisterAttack")
-                            :FireServer(0.4)
+                        local net = game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Net")
+                        local ev = net:FindFirstChild("RE/RegisterAttack") or net:FindFirstChildWhichIsA("RemoteEvent")
+                        if ev then
+                            ev:FireServer(0.4)
+                        end
                     end)
                 end
             end
