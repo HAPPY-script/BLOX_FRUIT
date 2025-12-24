@@ -7,6 +7,8 @@ local sea2ID2 = 4442272183
 local sea3ID = 7449423635
 local sea3ID2 = 100117331123089
 
+local DugeonID = 73902483975735
+
 return function(sections)
     local placeId = game.PlaceId
     if placeId == sea1ID or placeId == sea1ID2 then
@@ -15,7 +17,7 @@ return function(sections)
     elseif placeId == sea2ID or placeId == sea2ID2 then
         local PVPPage2 = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/PVP2.lua"))()
         PVPPage2(sections)
-    elseif placeId == sea3ID or placeId == sea3ID2 then
+    elseif placeId == sea3ID or placeId == sea3ID2 or placeId == DugeonID then
         local PVPPage3 = loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/PVP3.lua"))()
         PVPPage3(sections)
     else
