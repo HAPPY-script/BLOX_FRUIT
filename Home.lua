@@ -1731,7 +1731,7 @@ return function(sections)
             return nearest
         end
 
-        -- 🌈 Highlight theo HP (phiên bản tối ưu)
+        -- 🌈 Highlight theo HP
         local function updateHighlight(enemy)
             if not enemy then return end
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
@@ -1762,7 +1762,7 @@ return function(sections)
             end)
         end
 
-        -- 🧠 Theo dõi enemy với anchor camera (giữ nguyên)
+        -- 🧠 Theo dõi enemy với anchor camera
         local function followEnemy(enemy)
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
@@ -1831,7 +1831,7 @@ return function(sections)
             end
         end)
 
-        -- ♻️ Auto farm (giữ nguyên)
+        -- ♻️ Auto farm
         task.spawn(function()
             while true do
                 task.wait()
@@ -1843,7 +1843,7 @@ return function(sections)
             end
         end)
 
-        -- ⚔️ Auto đánh (giữ nguyên)
+        -- ⚔️ Auto đánh
         task.spawn(function()
             while true do
                 task.wait(0.4)
