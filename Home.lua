@@ -1546,10 +1546,6 @@ return function(sections)
         local TweenService = game:GetService("TweenService")
         local camera = workspace.CurrentCamera
 
-        -- Frame nơi đặt Button/TextBox (giữ như của bạn)
-        -- (HomeFrame phải tồn tại trong PlayerGui trước khi script chạy)
-        local HomeFrame = player:WaitForChild("PlayerGui"):WaitForChild("HomeFrame")
-
         -- 🧩 Nút bật/tắt
         local toggleFarm = Instance.new("TextButton", HomeFrame)
         toggleFarm.Size = UDim2.new(0, 90, 0, 30)
