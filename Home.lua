@@ -1557,8 +1557,8 @@ return function(sections)
         toggleFarm.TextScaled = true
 
         local distanceBox = Instance.new("TextBox", HomeFrame)
-        distanceBox.Size = toggleFarm.Size
-        distanceBox.Position = UDim2.new(0, 240, 0, 160) -- theo đúng value bạn yêu cầu
+        distanceBox.Size = UDim2.new(0, 90, 0, 30)
+        distanceBox.Position = UDim2.new(0, 240, 0, 210) -- theo đúng value bạn yêu cầu
         distanceBox.Text = "5000"
         distanceBox.PlaceholderText = "Distance"
         distanceBox.ClearTextOnFocus = false
