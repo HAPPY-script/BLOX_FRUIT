@@ -1627,7 +1627,17 @@ return function(sections)
                 markerPart = nil
             end
             if markerCleanupTask then
-                markerCleanupTask:Disconnect() -- if it's a connection
+                if type(markerCleanupTask) == "function" then
+                    -- nothing
+                else
+                    pcall(function()
+                        if markerCleanupTask.Disconnect then
+                            markerCleanupTask:Disconnect()
+                        elseif markerCleanupTask:Disconnect then
+                            markerCleanupTask:Disconnect()
+                        end
+                    end)
+                end
                 markerCleanupTask = nil
             end
         end
@@ -1643,7 +1653,7 @@ return function(sections)
         -- create marker: create a small spherical Part near player and tween to target position:
         local function createMarkerForDistance(dist)
             -- validate
-            dist = tonumber(dist) or 0
+            dist = tonumber((tostring(dist) or ""):gsub("%s+","")) or 0
             if dist <= 0 then return end
 
             -- ensure center exists (if not running, use hrp pos)
@@ -1668,7 +1678,7 @@ return function(sections)
             markerPart.Anchored = true
             markerPart.CanCollide = false
             markerPart.Material = Enum.Material.Neon
-            markerPart.BrickColor = BrickColor.new(255,0,128) -- bright pink-ish
+            markerPart.Color = Color3.fromRGB(255,0,128) -- bright pink-ish
             markerPart.Name = "IFN_DistanceMarker"
             markerPart.Parent = workspace
 
@@ -1852,7 +1862,9 @@ return function(sections)
         -- ===== TextBox behavior: when user finishes editing, spawn marker =====
         local function parseDistanceText(s)
             if not s then return nil end
-            local n = tonumber(s:gsub("%s+",""))
+            -- FIX: gsub returns multiple values, so wrap in parentheses to pass single string to tonumber
+            local cleaned = (tostring(s)):gsub("%s+","")
+            local n = tonumber(cleaned)
             if not n then return nil end
             -- clamp to sane range
             n = math.clamp(n, 1, 20000)
