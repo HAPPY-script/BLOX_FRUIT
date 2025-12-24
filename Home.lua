@@ -1549,7 +1549,7 @@ return function(sections)
         -- UI: Nút bật/tắt (đặt sang trái) và TextBox nhập Distance (theo yêu cầu)
         local toggleFarm = Instance.new("TextButton", HomeFrame)
         toggleFarm.Size = UDim2.new(0, 90, 0, 30)
-        toggleFarm.Position = UDim2.new(0, 120, 0, 160) -- để TextBox có thể nằm ở 240 như bạn yêu cầu
+        toggleFarm.Position = UDim2.new(0, 240, 0, 160)
         toggleFarm.Text = "OFF"
         toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         toggleFarm.TextColor3 = Color3.new(1, 1, 1)
@@ -1558,7 +1558,7 @@ return function(sections)
 
         local distanceBox = Instance.new("TextBox", HomeFrame)
         distanceBox.Size = UDim2.new(0, 90, 0, 30)
-        distanceBox.Position = UDim2.new(0, 240, 0, 210) -- theo đúng value bạn yêu cầu
+        distanceBox.Position = UDim2.new(0, 240, 0, 210)
         distanceBox.Text = "5000"
         distanceBox.PlaceholderText = "Distance"
         distanceBox.ClearTextOnFocus = false
