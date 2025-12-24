@@ -1556,8 +1556,22 @@ return function(sections)
         toggleFarm.Font = Enum.Font.SourceSansBold
         toggleFarm.TextScaled = true
 
+        -- ---------- NEW: Distance TextBox ----------
+        local distBox = Instance.new("TextBox", HomeFrame)
+        distBox.Size = UDim2.new(0, 100, 0, 30)
+        distBox.Position = UDim2.new(0, 340, 0, 210)
+        distBox.PlaceholderText = "Distance"
+        distBox.Text = "5000" -- default
+        distBox.ClearTextOnFocus = false
+        distBox.Font = Enum.Font.SourceSans
+        distBox.TextScaled = true
+        distBox.TextColor3 = Color3.fromRGB(255,255,255)
+        distBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
+        distBox.TextStrokeTransparency = 0.8
+
+        -- ---------- state ----------
         local running = false
-        local farmCenter = nil
+        local farmCenter = nil -- Vector3 center fixed when toggled on
         local anchor = nil
         local anchorY = nil
         local lastUpdate = 0
@@ -1566,7 +1580,13 @@ return function(sections)
         local currentHighlight = nil
         local highlightTween = nil
 
-        -- 🧱 Tạo part làm tâm camera
+        -- Marker part for visualizing distance
+        local markerPart = nil
+        local markerHighlight = nil
+        local markerTween = nil
+        local markerCleanupTask = nil
+
+        -- ---------- Helpers ----------
         local function ensureAnchor()
             if not anchor or not anchor.Parent then
                 anchor = Instance.new("Part")
@@ -1575,29 +1595,113 @@ return function(sections)
                 anchor.Transparency = 1
                 anchor.Size = Vector3.new(1, 1, 1)
                 anchor.Name = "CameraAnchor"
-        
-                -- 🧭 Tạo ngay tại vị trí hiện tại của người chơi
+
                 if hrp and hrp:IsDescendantOf(workspace) then
                     anchor.Position = hrp.Position
                 else
                     anchor.Position = Vector3.new(0, 10, 0)
                 end
-        
+
                 anchor.Parent = workspace
             end
             return anchor
         end
 
-        -- 🧭 Tween tiện ích
-        local function tweenTo(pos)
-            local dist = (hrp.Position - pos).Magnitude
-            if dist > 10000 then return end
-            local tween = TweenService:Create(hrp, TweenInfo.new(dist / 300, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
-            tween:Play()
-            tween.Completed:Wait()
+        local function safeCancelTween(tw)
+            if tw and tw.Cancel then
+                pcall(function() tw:Cancel() end)
+            end
         end
 
-        -- 🔍 Tìm enemy gần nhất
+        local function clearMarker()
+            if markerTween then
+                safeCancelTween(markerTween)
+                markerTween = nil
+            end
+            if markerHighlight and markerHighlight.Parent then
+                pcall(function() markerHighlight:Destroy() end)
+                markerHighlight = nil
+            end
+            if markerPart and markerPart.Parent then
+                pcall(function() markerPart:Destroy() end)
+                markerPart = nil
+            end
+            if markerCleanupTask then
+                markerCleanupTask:Disconnect() -- if it's a connection
+                markerCleanupTask = nil
+            end
+        end
+
+        -- compute horizontal forward vector from camera (projected to XZ plane)
+        local function horizontalForward()
+            local fv = camera and camera.CFrame and camera.CFrame.LookVector or Vector3.new(0,0,-1)
+            fv = Vector3.new(fv.X, 0, fv.Z)
+            if fv.Magnitude <= 0.001 then return Vector3.new(0,0,-1) end
+            return fv.Unit
+        end
+
+        -- create marker: create a small spherical Part near player and tween to target position:
+        local function createMarkerForDistance(dist)
+            -- validate
+            dist = tonumber(dist) or 0
+            if dist <= 0 then return end
+
+            -- ensure center exists (if not running, use hrp pos)
+            local center = farmCenter or (hrp and hrp.Position) or Vector3.new(0,0,0)
+
+            -- compute target position on horizontal plane: center + forward * dist
+            local dir = horizontalForward()
+            local targetPos = Vector3.new(center.X, center.Y + 1, center.Z) + dir * dist
+            -- put marker start slightly above hrp or above center, then tween to targetPos
+            local startPos = (hrp and hrp.Position) or center
+            startPos = Vector3.new(startPos.X, (center.Y + 2), startPos.Z)
+
+            -- remove old marker if present
+            clearMarker()
+
+            -- create sphere part
+            markerPart = Instance.new("Part")
+            markerPart.Shape = Enum.PartType.Ball
+            markerPart.Size = Vector3.new(1.2, 1.2, 1.2)
+            markerPart.Position = startPos
+            markerPart.Transparency = 0
+            markerPart.Anchored = true
+            markerPart.CanCollide = false
+            markerPart.Material = Enum.Material.Neon
+            markerPart.BrickColor = BrickColor.new(255,0,128) -- bright pink-ish
+            markerPart.Name = "IFN_DistanceMarker"
+            markerPart.Parent = workspace
+
+            -- create Highlight for clearer edge (pink)
+            markerHighlight = Instance.new("Highlight")
+            markerHighlight.Adornee = markerPart
+            markerHighlight.FillColor = Color3.fromRGB(255, 102, 179)
+            markerHighlight.OutlineTransparency = 0.9
+            markerHighlight.FillTransparency = 0.4
+            markerHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            markerHighlight.Parent = markerPart
+
+            -- tween movement: duration proportional to dist (but clamped)
+            local moveDuration = math.clamp(dist / 2000, 0.25, 1.2) -- tune: faster for short, slower for long
+            markerTween = TweenService:Create(markerPart, TweenInfo.new(moveDuration, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Position = targetPos})
+            markerTween:Play()
+
+            -- when arrive, scale up a little then hold 3s then cleanup
+            markerTween.Completed:Connect(function()
+                -- gentle scale pulse
+                local scaleUp = TweenService:Create(markerPart, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = Vector3.new(1.6,1.6,1.6)})
+                scaleUp:Play()
+                scaleUp.Completed:Wait()
+                -- then shrink back slowly
+                local scaleDown = TweenService:Create(markerPart, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = Vector3.new(1.2,1.2,1.2)})
+                scaleDown:Play()
+                -- wait 3 seconds visible then remove
+                wait(3)
+                clearMarker()
+            end)
+        end
+
+        -- ---------- Tìm enemy gần nhất ----------
         local function getNearestEnemy(centerPos)
             local folder = workspace:FindFirstChild("Enemies")
             if not folder then return nil end
@@ -1623,7 +1727,6 @@ return function(sections)
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
             if not humanoid then return end
 
-            -- Nếu enemy đã có highlight → dùng lại
             if not enemy:FindFirstChild("HomeHighlight") then
                 local highlight = Instance.new("Highlight")
                 highlight.Name = "HomeHighlight"
@@ -1636,7 +1739,6 @@ return function(sections)
 
             local highlight = enemy:FindFirstChild("HomeHighlight")
 
-            -- Update màu theo HP trong vòng lặp RenderStepped
             local conn
             conn = RunService.RenderStepped:Connect(function()
                 if not running or not humanoid.Parent or humanoid.Health <= 0 or not highlight or highlight.Parent ~= enemy then
@@ -1650,7 +1752,7 @@ return function(sections)
             end)
         end
 
-        -- 🧠 Theo dõi enemy với anchor camera
+        -- 🧠 Theo dõi enemy với anchor camera (giữ nguyên)
         local function followEnemy(enemy)
             local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
             local humanoid = enemy:FindFirstChildOfClass("Humanoid")
@@ -1673,15 +1775,12 @@ return function(sections)
                 tweenTo(hrpEnemy.Position + Vector3.new(0, 5, 0))
             else
                 while humanoid.Health > 0 and running do
-                    updateHighlight(enemy) -- LUÔN CẬP NHẬT CHUẨN
-
+                    updateHighlight(enemy)
                     anchorY = hrpEnemy.Position.Y + 25
                     local targetPos = Vector3.new(hrpEnemy.Position.X, anchorY, hrpEnemy.Position.Z)
                     anchor.Position = anchor.Position:Lerp(targetPos, 0.15)
-
                     hrp.AssemblyLinearVelocity = Vector3.zero
                     hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.25)
-
                     RunService.RenderStepped:Wait()
                 end
             end
@@ -1693,7 +1792,9 @@ return function(sections)
             hrp = newChar:WaitForChild("HumanoidRootPart")
             running = false
             anchorY = nil
+            farmCenter = nil
             if anchor then anchor:Destroy() end
+            clearMarker()
             toggleFarm.Text = "OFF"
             toggleFarm.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
             camera.CameraType = Enum.CameraType.Custom
@@ -1705,15 +1806,22 @@ return function(sections)
             running = not running
             toggleFarm.Text = running and "ON" or "OFF"
             toggleFarm.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
-            farmCenter = running and hrp.Position or nil
-            if not running then
+
+            if running then
+                -- LOCK farmCenter at current HRP position when enabling
+                farmCenter = hrp and hrp.Position or Vector3.new(0,0,0)
+                ensureAnchor()
+            else
+                -- disable: clear center and marker and anchor
+                farmCenter = nil
+                clearMarker()
+                if anchor then anchor:Destroy() anchor = nil end
                 camera.CameraType = Enum.CameraType.Custom
                 camera.CameraSubject = hrp
-                if anchor then anchor:Destroy() end
             end
         end)
 
-        -- ♻️ Auto farm
+        -- ♻️ Auto farm (giữ nguyên)
         task.spawn(function()
             while true do
                 task.wait()
@@ -1725,7 +1833,7 @@ return function(sections)
             end
         end)
 
-        -- ⚔️ Auto đánh
+        -- ⚔️ Auto đánh (giữ nguyên)
         task.spawn(function()
             while true do
                 task.wait(0.4)
@@ -1738,6 +1846,47 @@ return function(sections)
                             :FireServer(0.4)
                     end)
                 end
+            end
+        end)
+
+        -- ===== TextBox behavior: when user finishes editing, spawn marker =====
+        local function parseDistanceText(s)
+            if not s then return nil end
+            local n = tonumber(s:gsub("%s+",""))
+            if not n then return nil end
+            -- clamp to sane range
+            n = math.clamp(n, 1, 20000)
+            return n
+        end
+
+        -- On focus lost (enter or click away) -> create marker
+        distBox.FocusLost:Connect(function(enterPressed)
+            local d = parseDistanceText(distBox.Text)
+            if not d then
+                -- restore default if invalid
+                distBox.Text = "5000"
+                return
+            end
+            -- create marker from farmCenter (if running) or from current position (if not running)
+            createMarkerForDistance(d)
+        end)
+
+        -- Also handle when text changed and user presses Enter (key handling)
+        distBox.FocusLost:Connect(function(enterPressed)
+            -- same handler already above; kept for reliability
+        end)
+
+        -- OPTIONAL: quick preview as user types (debounced)
+        local debouncePreview = 0
+        distBox.Changed:Connect(function(prop)
+            if prop ~= "Text" then return end
+            local now = tick()
+            if now - debouncePreview < 0.4 then return end
+            debouncePreview = now
+            local d = parseDistanceText(distBox.Text)
+            if d then
+                -- show preview but don't auto-create many markers: create marker now (will clear old)
+                createMarkerForDistance(d)
             end
         end)
     end
