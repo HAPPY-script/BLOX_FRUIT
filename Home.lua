@@ -1163,6 +1163,10 @@ return function(sections)
             autoFarmBtn.Text = running and "ON" or "OFF"
             autoFarmBtn.BackgroundColor3 = running and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
             lastLevel = getLevel()
+
+            if running then
+                player:SetAttribute("FastAttackEnemy", true)
+            end
         end)
 
         -- Farm Loop
@@ -1467,6 +1471,10 @@ return function(sections)
             autoFarmBtn.Text = running and "ON" or "OFF"
             autoFarmBtn.BackgroundColor3 = running and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
             lastLevel = getLevel()
+
+            if running then
+                player:SetAttribute("FastAttackEnemy", true)
+            end
         end)
 
         -- Farm Loop
