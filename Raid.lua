@@ -122,6 +122,10 @@ return function(sections)
             autoClicking = running
             toggleRaid.Text = running and "ON" or "OFF"
             toggleRaid.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+
+            if running then
+                player:SetAttribute("FastAttackEnemy", true)
+            end
         end)
 
         -- Tween đến vị trí
