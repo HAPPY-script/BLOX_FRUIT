@@ -679,14 +679,6 @@ return function(sections)
         btnFastAttackEnemy.Font = Enum.Font.SourceSansBold
         btnFastAttackEnemy.TextSize = 30
 
-        local isFastAttackEnemyEnabled = false
-
-        btnFastAttackEnemy.MouseButton1Click:Connect(function()
-        	isFastAttackEnemyEnabled = not isFastAttackEnemyEnabled
-        	btnFastAttackEnemy.Text = isFastAttackEnemyEnabled and "ON" or "OFF"
-        	btnFastAttackEnemy.BackgroundColor3 = isFastAttackEnemyEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
-        end)
-
         -- Nút Attack Player
         local btnAttackPlayer = Instance.new("TextButton", HomeFrame)
         btnAttackPlayer.Size = UDim2.new(0, 90, 0, 30)
@@ -697,58 +689,131 @@ return function(sections)
         btnAttackPlayer.Font = Enum.Font.SourceSansBold
         btnAttackPlayer.TextSize = 30
 
+        -- trạng thái nội bộ (điều khiển bởi Attribute/shared/UI)
+        local isFastAttackEnemyEnabled = false
         local isAttackPlayerEnabled = false
 
-        btnAttackPlayer.MouseButton1Click:Connect(function()
-        	isAttackPlayerEnabled = not isAttackPlayerEnabled
-        	btnAttackPlayer.Text = isAttackPlayerEnabled and "ON" or "OFF"
-        	btnAttackPlayer.BackgroundColor3 = isAttackPlayerEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+        -- helper cập nhật UI theo trạng thái
+        local function updateEnemyButtonUI(state)
+            btnFastAttackEnemy.Text = state and "ON" or "OFF"
+            btnFastAttackEnemy.BackgroundColor3 = state and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,50,50)
+        end
+        local function updatePlayerButtonUI(state)
+            btnAttackPlayer.Text = state and "ON" or "OFF"
+            btnAttackPlayer.BackgroundColor3 = state and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,50,50)
+        end
+
+        -- Khi click UI: set Attribute (sẽ kích hoạt attribute listener để cập nhật biến & UI)
+        btnFastAttackEnemy.MouseButton1Click:Connect(function()
+            LocalPlayer:SetAttribute("FastAttackEnemy", not (LocalPlayer:GetAttribute("FastAttackEnemy") == true))
         end)
 
-        -- Tìm Enemy gần nhất
+        btnAttackPlayer.MouseButton1Click:Connect(function()
+            LocalPlayer:SetAttribute("FastAttackPlayer", not (LocalPlayer:GetAttribute("FastAttackPlayer") == true))
+        end)
+
+        -- Attribute listeners: khi attribute thay đổi (từ UI hoặc từ script khác), cập nhật trạng thái & UI
+        LocalPlayer:GetAttributeChangedSignal("FastAttackEnemy"):Connect(function()
+            local v = LocalPlayer:GetAttribute("FastAttackEnemy")
+            isFastAttackEnemyEnabled = (v == true)
+            updateEnemyButtonUI(isFastAttackEnemyEnabled)
+        end)
+
+        LocalPlayer:GetAttributeChangedSignal("FastAttackPlayer"):Connect(function()
+            local v = LocalPlayer:GetAttribute("FastAttackPlayer")
+            isAttackPlayerEnabled = (v == true)
+            updatePlayerButtonUI(isAttackPlayerEnabled)
+        end)
+
+        -- Khởi tạo giá trị từ Attribute nếu đã tồn tại
+        do
+            local v = LocalPlayer:GetAttribute("FastAttackEnemy")
+            if v == true then
+                isFastAttackEnemyEnabled = true
+                updateEnemyButtonUI(true)
+            end
+            local v2 = LocalPlayer:GetAttribute("FastAttackPlayer")
+            if v2 == true then
+                isAttackPlayerEnabled = true
+                updatePlayerButtonUI(true)
+            end
+        end
+
+        -- Polling nhẹ để hỗ trợ `shared.FastAttackEnemy` / `shared.FastAttackPlayer`
+        -- Nếu một script khác dùng `shared.FastAttackEnemy = true` thì polling sẽ phát hiện và push vào Attribute.
+        task.spawn(function()
+            local lastSharedEnemy = nil
+            local lastSharedPlayer = nil
+            while true do
+                task.wait(0.15)
+                local sEnemy = (shared and shared.FastAttackEnemy)
+                local sPlayer = (shared and shared.FastAttackPlayer)
+
+                if sEnemy ~= lastSharedEnemy then
+                    lastSharedEnemy = sEnemy
+                    if sEnemy ~= nil then
+                        -- push vào attribute (cách đồng bộ an toàn giữa scripts)
+                        LocalPlayer:SetAttribute("FastAttackEnemy", sEnemy == true)
+                    end
+                end
+
+                if sPlayer ~= lastSharedPlayer then
+                    lastSharedPlayer = sPlayer
+                    if sPlayer ~= nil then
+                        LocalPlayer:SetAttribute("FastAttackPlayer", sPlayer == true)
+                    end
+                end
+            end
+        end)
+
+        -- Tìm Enemy gần nhất (giữ logic như bạn)
         local function getClosestEnemy()
-        	local closest = nil
-        	local shortest = math.huge
-        	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        	if not hrp then return nil end
-        	for _, enemy in pairs(EnemiesFolder:GetChildren()) do
-        		local part = enemy:FindFirstChild("UpperTorso")
-        		if part then
-        			local dist = (part.Position - hrp.Position).Magnitude
-        			if dist < shortest then
-        				shortest = dist
-        				closest = part
-        			end
-        		end
-        	end
-        	return closest
+            local closest = nil
+            local shortest = math.huge
+            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp then return nil end
+            for _, enemy in pairs(EnemiesFolder:GetChildren()) do
+                local part = enemy:FindFirstChild("UpperTorso") or enemy:FindFirstChild("HumanoidRootPart")
+                if part then
+                    local dist = (part.Position - hrp.Position).Magnitude
+                    if dist < shortest then
+                        shortest = dist
+                        closest = part
+                    end
+                end
+            end
+            return closest
         end
 
         -- Coroutine tấn công Enemy
         coroutine.wrap(function()
-        	while true do
-        		if isFastAttackEnemyEnabled then
-        			local target = getClosestEnemy()
-        			if target then
-        				Net:WaitForChild("RE/RegisterHit"):FireServer(target, {}, "3269aee8")
-        			end
-        		end
-        		wait(0.05)
-        	end
+            while true do
+                if isFastAttackEnemyEnabled then
+                    local target = getClosestEnemy()
+                    if target then
+                        pcall(function()
+                            Net:WaitForChild("RE/RegisterHit"):FireServer(target, {}, "3269aee8")
+                        end)
+                    end
+                end
+                wait(0.05)
+            end
         end)()
 
         -- Coroutine tấn công Player (luôn chạy nếu bật)
         coroutine.wrap(function()
-        	while true do
-        		if isAttackPlayerEnabled then
-        			for _, player in pairs(Players:GetPlayers()) do
-        				if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
-        					Net:WaitForChild("RE/RegisterHit"):FireServer(player.Character.Head, {}, "326880d6")
-        				end
-        			end
-        		end
-        		wait(0.05)
-        	end
+            while true do
+                if isAttackPlayerEnabled then
+                    for _, player in pairs(Players:GetPlayers()) do
+                        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+                            pcall(function()
+                                Net:WaitForChild("RE/RegisterHit"):FireServer(player.Character.Head, {}, "326880d6")
+                            end)
+                        end
+                    end
+                end
+                wait(0.05)
+            end
         end)()
     end
 
@@ -980,5 +1045,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S3-v0.2 tad SUCCESS✅")
+    print("PVP_S3-v0.3 tad SUCCESS✅")
 end
