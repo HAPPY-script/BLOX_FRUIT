@@ -1784,6 +1784,10 @@ return function(sections)
             toggleFarm.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
 
             if running then
+
+                --Turn on FastAttack Enemy
+                player:SetAttribute("FastAttackEnemy", true)
+                
                 -- tạo farm point ở vị trí hiện tại của người chơi
                 createFarmPoint(hrp.Position)
             else
