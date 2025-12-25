@@ -211,56 +211,23 @@ return function(sections)
             if not character then return end
 
             local hrp = character:FindFirstChild("HumanoidRootPart")
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if not hrp or not humanoid then return end
+            if not hrp then return end
 
             local mouse = player:GetMouse()
-            local targetPos = mouse.Hit.Position
+            local pos = mouse.Hit.Position
 
             -- Giới hạn khoảng cách theo XZ
-            local dx = hrp.Position.X - targetPos.X
-            local dz = hrp.Position.Z - targetPos.Z
-            if (dx*dx + dz*dz)^0.5 > 250 then return end
+            local dx = hrp.Position.X - pos.X
+            local dz = hrp.Position.Z - pos.Z
+            if (dx * dx + dz * dz) ^ 0.5 > 250 then return end
 
-            local params = RaycastParams.new()
-            params.FilterType = Enum.RaycastFilterType.Blacklist
-            params.FilterDescendantsInstances = { character }
+            local yOffset = 2
 
-            -- Raycast trực tiếp theo hướng chuột
-            local cam = workspace.CurrentCamera
-            local origin = cam.CFrame.Position
-            local dir = (targetPos - origin).Unit * 500
-            local hit = workspace:Raycast(origin, dir, params)
-            if not hit then return end
-
-            local hipHeight = humanoid.HipHeight or 2
-            local footOffset = hipHeight + 0.3
-
-            local finalPos
-
-            -- KIỂM TRA MẶT ĐẤT HAY TƯỜNG
-            if hit.Normal.Y > 0.6 then
-                -- MẶT ĐẤT → raycast xuống
-                local downOrigin = hit.Position + Vector3.new(0, 50, 0)
-                local downHit = workspace:Raycast(downOrigin, Vector3.new(0, -200, 0), params)
-                if not downHit then return end
-
-                finalPos = Vector3.new(
-                    hit.Position.X,
-                    downHit.Position.Y + footOffset,
-                    hit.Position.Z
-                )
-            else
-                -- TƯỜNG → đứng sát tường, KHÔNG leo lên
-                finalPos = hit.Position + hit.Normal * (hrp.Size.Z / 2 + 0.5)
-                finalPos = Vector3.new(
-                    finalPos.X,
-                    hrp.Position.Y,
-                    finalPos.Z
-                )
-            end
-
-            hrp.CFrame = CFrame.new(finalPos)
+            hrp.CFrame = CFrame.new(
+                pos.X,
+                pos.Y + yOffset,
+                pos.Z
+            )
         end
 
         TeleportButton.MouseButton1Click:Connect(function()
