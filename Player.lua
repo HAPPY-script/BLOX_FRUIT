@@ -148,6 +148,9 @@ return function(sections)
         local selectedKey = nil
         local listeningForKey = false
 
+        -- Animation ID để phát khi teleport
+        local TP_ANIM_ID = "17555632156"
+
         -- Nút ON/OFF
         local TeleportButton = Instance.new("TextButton", HomeFrame)
         TeleportButton.Size = UDim2.new(0, 90, 0, 30)
@@ -204,6 +207,45 @@ return function(sections)
             end)
         end)
 
+        -- Hàm phát animation khi teleport (tự xử lý Animator/Humanoid)
+        local function playTpAnim(character)
+            if not character or not character.Parent then character = player.Character end
+            if not character then return end
+
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if not humanoid then return end
+
+            -- tạo Animation instance
+            local anim = Instance.new("Animation")
+            anim.Name = "TP_Anim"
+            anim.AnimationId = "rbxassetid://" .. TP_ANIM_ID
+
+            local ok, track = pcall(function()
+                local animator = humanoid:FindFirstChildOfClass("Animator")
+                if animator then
+                    return animator:LoadAnimation(anim)
+                else
+                    return humanoid:LoadAnimation(anim)
+                end
+            end)
+
+            if ok and track then
+                -- đảm bảo ưu tiên action để phát rõ
+                pcall(function() track.Priority = Enum.AnimationPriority.Action end)
+                track:Play()
+                -- cleanup: dừng track & destroy Animation object sau timeout ngắn để tránh rò rỉ
+                delay(8, function()
+                    pcall(function()
+                        if track.IsPlaying then track:Stop() end
+                        anim:Destroy()
+                    end)
+                end)
+            else
+                -- không load được -> hủy Animation object
+                pcall(function() anim:Destroy() end)
+            end
+        end
+
         local function teleportToMouse()
             if not teleportEnabled or not selectedKey then return end
 
@@ -223,11 +265,15 @@ return function(sections)
 
             local yOffset = 4
 
+            -- Thực hiện teleport
             hrp.CFrame = CFrame.new(
                 pos.X,
                 pos.Y + yOffset,
                 pos.Z
             )
+
+            -- Sau khi teleport thành công -> phát animation
+            playTpAnim(character)
         end
 
         TeleportButton.MouseButton1Click:Connect(function()
