@@ -220,28 +220,45 @@ return function(sections)
             -- Giới hạn khoảng cách theo XZ
             local dx = hrp.Position.X - targetPos.X
             local dz = hrp.Position.Z - targetPos.Z
-            if (dx * dx + dz * dz) ^ 0.5 > 250 then return end
+            if (dx*dx + dz*dz)^0.5 > 250 then return end
 
-            -- Raycast tìm mặt đất thật
             local params = RaycastParams.new()
             params.FilterType = Enum.RaycastFilterType.Blacklist
             params.FilterDescendantsInstances = { character }
 
-            local rayOrigin = targetPos + Vector3.new(0, 50, 0)
-            local rayDir = Vector3.new(0, -200, 0)
-            local result = workspace:Raycast(rayOrigin, rayDir, params)
+            -- Raycast trực tiếp theo hướng chuột
+            local cam = workspace.CurrentCamera
+            local origin = cam.CFrame.Position
+            local dir = (targetPos - origin).Unit * 500
+            local hit = workspace:Raycast(origin, dir, params)
+            if not hit then return end
 
-            if not result then return end
-
-            -- Tính offset chân
             local hipHeight = humanoid.HipHeight or 2
-            local yOffset = hipHeight + 0.3 -- +0.3 stud chống lún
+            local footOffset = hipHeight + 0.3
 
-            local finalPos = Vector3.new(
-                targetPos.X,
-                result.Position.Y + yOffset,
-                targetPos.Z
-            )
+            local finalPos
+
+            -- KIỂM TRA MẶT ĐẤT HAY TƯỜNG
+            if hit.Normal.Y > 0.6 then
+                -- MẶT ĐẤT → raycast xuống
+                local downOrigin = hit.Position + Vector3.new(0, 50, 0)
+                local downHit = workspace:Raycast(downOrigin, Vector3.new(0, -200, 0), params)
+                if not downHit then return end
+
+                finalPos = Vector3.new(
+                    hit.Position.X,
+                    downHit.Position.Y + footOffset,
+                    hit.Position.Z
+                )
+            else
+                -- TƯỜNG → đứng sát tường, KHÔNG leo lên
+                finalPos = hit.Position + hit.Normal * (hrp.Size.Z / 2 + 0.5)
+                finalPos = Vector3.new(
+                    finalPos.X,
+                    hrp.Position.Y,
+                    finalPos.Z
+                )
+            end
 
             hrp.CFrame = CFrame.new(finalPos)
         end
