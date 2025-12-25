@@ -669,9 +669,6 @@ return function(sections)
         local EnemiesFolder = workspace:WaitForChild("Enemies")
         local LocalPlayer = Players.LocalPlayer
 
-        -- HomeFrame phải tồn tại (LocalScript chạy trong PlayerGui)
-        local HomeFrame = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("HomeFrame")
-
         -- Nút Fast Attack Enemy
         local btnFastAttackEnemy = Instance.new("TextButton", HomeFrame)
         btnFastAttackEnemy.Size = UDim2.new(0, 90, 0, 30)
