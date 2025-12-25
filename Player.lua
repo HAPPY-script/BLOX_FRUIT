@@ -143,7 +143,7 @@ return function(sections)
         local player = game.Players.LocalPlayer
         local userInputService = game:GetService("UserInputService")
 
-        -- Biến trạng thái
+        -- Biến trạng thái (không reset khi respawn)
         local teleportEnabled = false
         local selectedKey = nil
         local listeningForKey = false
@@ -168,35 +168,42 @@ return function(sections)
         KeySelectBox.Font = Enum.Font.SourceSans
         KeySelectBox.TextScaled = true
 
+        -- Hiển thị ban đầu theo selectedKey (nếu đã có)
+        if selectedKey then
+            KeySelectBox.Text = selectedKey
+        end
+        -- Hiển thị ban đầu theo teleportEnabled
+        TeleportButton.Text = teleportEnabled and "ON" or "OFF"
+        TeleportButton.BackgroundColor3 = teleportEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+
         -- Xử lý chọn phím
         KeySelectBox.MouseButton1Click:Connect(function()
-        	if listeningForKey then return end
-        	listeningForKey = true
-        	KeySelectBox.Text = "Press a key..."
-	
-        	local conn
-        	conn = userInputService.InputBegan:Connect(function(input, gameProcessed)
-        		if gameProcessed then return end
-		
-        		local inputName
-        		if input.UserInputType == Enum.UserInputType.Keyboard then
-        			inputName = input.KeyCode.Name
-        		elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
-        			inputName = "MouseButton1"
-        		elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
-        			inputName = "MouseButton2"
-        		end
+            if listeningForKey then return end
+            listeningForKey = true
+            KeySelectBox.Text = "Press a key..."
 
-        		if inputName then
-        			selectedKey = inputName
-        			KeySelectBox.Text = inputName
-        			conn:Disconnect()
-        			listeningForKey = false
-        		end
-        	end)
+            local conn
+            conn = userInputService.InputBegan:Connect(function(input, gameProcessed)
+                if gameProcessed then return end
+
+                local inputName
+                if input.UserInputType == Enum.UserInputType.Keyboard then
+                    inputName = input.KeyCode.Name
+                elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    inputName = "MouseButton1"
+                elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+                    inputName = "MouseButton2"
+                end
+
+                if inputName then
+                    selectedKey = inputName
+                    KeySelectBox.Text = inputName
+                    conn:Disconnect()
+                    listeningForKey = false
+                end
+            end)
         end)
 
-        -- Chức năng dịch chuyển
         local function teleportToMouse()
             if teleportEnabled and selectedKey then
                 local character = player.Character
@@ -204,7 +211,7 @@ return function(sections)
                 if character and character:FindFirstChild("HumanoidRootPart") then
                     local pos = mouse.Hit.Position
                     local root = character.HumanoidRootPart
-            
+
                     -- Tính khoảng cách theo XZ
                     local dx = root.Position.X - pos.X
                     local dz = root.Position.Z - pos.Z
@@ -218,40 +225,39 @@ return function(sections)
             end
         end
 
-        -- Bật/Tắt chức năng
         TeleportButton.MouseButton1Click:Connect(function()
-        	teleportEnabled = not teleportEnabled
-        	TeleportButton.Text = teleportEnabled and "ON" or "OFF"
-        	TeleportButton.BackgroundColor3 = teleportEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+            teleportEnabled = not teleportEnabled
+            TeleportButton.Text = teleportEnabled and "ON" or "OFF"
+            TeleportButton.BackgroundColor3 = teleportEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
         end)
 
-        -- Bắt phím để teleport
         userInputService.InputBegan:Connect(function(input, gameProcessed)
-        	if gameProcessed or not teleportEnabled or not selectedKey then return end
+            if gameProcessed or not teleportEnabled or not selectedKey then return end
 
-        	local inputName
-        	if input.UserInputType == Enum.UserInputType.Keyboard then
-        		inputName = input.KeyCode.Name
-        	elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
-        		inputName = "MouseButton1"
-        	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
-        		inputName = "MouseButton2"
-        	end
+            local inputName
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                inputName = input.KeyCode.Name
+            elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+                inputName = "MouseButton1"
+            elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+                inputName = "MouseButton2"
+            end
 
-        	if inputName == selectedKey then
-        		teleportToMouse()
-        	end
+            if inputName == selectedKey then
+                teleportToMouse()
+            end
         end)
 
-        -- Reset khi chết
-        player.CharacterAdded:Connect(function()
-        	teleportEnabled = false
-        	selectedKey = nil
-        	TeleportButton.Text = "OFF"
-        	TeleportButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        	KeySelectBox.Text = "SELECT KEY"
+        player.CharacterAdded:Connect(function(newChar)
+            newChar:WaitForChild("HumanoidRootPart")
+            TeleportButton.Text = teleportEnabled and "ON" or "OFF"
+            TeleportButton.BackgroundColor3 = teleportEnabled and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+            if selectedKey then
+                KeySelectBox.Text = selectedKey
+            end
         end)
     end
+
         --TP BUTTON PE================================================================================================
     do
         local player = game.Players.LocalPlayer
