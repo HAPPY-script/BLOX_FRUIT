@@ -205,24 +205,45 @@ return function(sections)
         end)
 
         local function teleportToMouse()
-            if teleportEnabled and selectedKey then
-                local character = player.Character
-                local mouse = player:GetMouse()
-                if character and character:FindFirstChild("HumanoidRootPart") then
-                    local pos = mouse.Hit.Position
-                    local root = character.HumanoidRootPart
+            if not teleportEnabled or not selectedKey then return end
 
-                    -- Tính khoảng cách theo XZ
-                    local dx = root.Position.X - pos.X
-                    local dz = root.Position.Z - pos.Z
-                    local distanceXZ = math.sqrt(dx*dx + dz*dz)
+            local character = player.Character
+            if not character then return end
 
-                    -- Chỉ giới hạn XZ, không giới hạn Y
-                    if distanceXZ <= 250 then
-                        root.CFrame = CFrame.new(pos)
-                    end
-                end
-            end
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if not hrp or not humanoid then return end
+
+            local mouse = player:GetMouse()
+            local targetPos = mouse.Hit.Position
+
+            -- Giới hạn khoảng cách theo XZ
+            local dx = hrp.Position.X - targetPos.X
+            local dz = hrp.Position.Z - targetPos.Z
+            if (dx * dx + dz * dz) ^ 0.5 > 250 then return end
+
+            -- Raycast tìm mặt đất thật
+            local params = RaycastParams.new()
+            params.FilterType = Enum.RaycastFilterType.Blacklist
+            params.FilterDescendantsInstances = { character }
+
+            local rayOrigin = targetPos + Vector3.new(0, 50, 0)
+            local rayDir = Vector3.new(0, -200, 0)
+            local result = workspace:Raycast(rayOrigin, rayDir, params)
+
+            if not result then return end
+
+            -- Tính offset chân
+            local hipHeight = humanoid.HipHeight or 2
+            local yOffset = hipHeight + 0.3 -- +0.3 stud chống lún
+
+            local finalPos = Vector3.new(
+                targetPos.X,
+                result.Position.Y + yOffset,
+                targetPos.Z
+            )
+
+            hrp.CFrame = CFrame.new(finalPos)
         end
 
         TeleportButton.MouseButton1Click:Connect(function()
