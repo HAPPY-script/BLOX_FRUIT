@@ -221,7 +221,7 @@ return function(sections)
             local dz = hrp.Position.Z - pos.Z
             if (dx * dx + dz * dz) ^ 0.5 > 250 then return end
 
-            local yOffset = 3
+            local yOffset = 4
 
             hrp.CFrame = CFrame.new(
                 pos.X,
