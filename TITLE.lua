@@ -201,6 +201,17 @@ return function(sections)
         TitleTPButton.Font = Enum.Font.SourceSansBold
         TitleTPButton.BorderSizePixel = 2
         TitleTPButton.BorderColor3 = Color3.new(255, 255, 255)
+
+        local TitleTPButton = Instance.new("TextLabel", HomeFrame)
+        TitleTPButton.Size = UDim2.new(0, 220, 0, 30)
+        TitleTPButton.Position = UDim2.new(0, 10, 0, 260)
+        TitleTPButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TitleTPButton.TextColor3 = Color3.new(1, 1, 1)
+        TitleTPButton.Text = "AUTO OBSERVE👀"
+        TitleTPButton.TextScaled = true
+        TitleTPButton.Font = Enum.Font.SourceSansBold
+        TitleTPButton.BorderSizePixel = 2
+        TitleTPButton.BorderColor3 = Color3.new(255, 255, 255)
     end
 
     -- STATUS ---------------------------------------------------------
