@@ -555,12 +555,98 @@ return function(sections)
         end)
     end
 
+        --AUTO Auto Ability & Auto Awakening===============================================================================
+    do
+        local Players = game:GetService("Players")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+        local player = Players.LocalPlayer
+        local INTERVAL = 5
+
+        local autoAbility = false
+        local autoAwakening = false
+
+        -- ===== UI: Auto Ability =====
+        local abilityBtn = Instance.new("TextButton", HomeFrame)
+        abilityBtn.Size = UDim2.new(0, 90, 0, 30)
+        abilityBtn.Position = UDim2.new(0, 240, 0, 360)
+        abilityBtn.Text = "OFF"
+        abilityBtn.BackgroundColor3 = Color3.fromRGB(255,50,50)
+        abilityBtn.TextColor3 = Color3.new(1,1,1)
+        abilityBtn.Font = Enum.Font.SourceSansBold
+        abilityBtn.TextScaled = true
+
+        -- ===== UI: Auto Awakening =====
+        local awakenBtn = Instance.new("TextButton", HomeFrame)
+        awakenBtn.Size = UDim2.new(0, 90, 0, 30)
+        awakenBtn.Position = UDim2.new(0, 240, 0, 410)
+        awakenBtn.Text = "OFF"
+        awakenBtn.BackgroundColor3 = Color3.fromRGB(255,50,50)
+        awakenBtn.TextColor3 = Color3.new(1,1,1)
+        awakenBtn.Font = Enum.Font.SourceSansBold
+        awakenBtn.TextScaled = true
+
+        -- ===== Actions =====
+        local function fireAbility()
+            ReplicatedStorage.Remotes.CommE:FireServer("ActivateAbility")
+        end
+
+        local function fireAwakening()
+            local bp = player:FindFirstChild("Backpack")
+            local awak = bp and bp:FindFirstChild("Awakening")
+            local rf = awak and awak:FindFirstChild("RemoteFunction")
+            if rf then
+                rf:InvokeServer(true)
+            end
+        end
+
+        -- ===== Loops (nhẹ CPU) =====
+        task.spawn(function()
+            while true do
+                if autoAbility then
+                    fireAbility()
+                    task.wait(INTERVAL)
+                else
+                    task.wait(0.3) -- ngủ khi OFF
+                end
+            end
+        end)
+
+        task.spawn(function()
+            while true do
+                if autoAwakening then
+                    fireAwakening()
+                    task.wait(INTERVAL)
+                else
+                    task.wait(0.3) -- ngủ khi OFF
+                end
+            end
+        end)
+
+        -- ===== Toggles =====
+        abilityBtn.MouseButton1Click:Connect(function()
+            autoAbility = not autoAbility
+            abilityBtn.Text = autoAbility and "ON" or "OFF"
+            abilityBtn.BackgroundColor3 =
+                autoAbility and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
+            if autoAbility then fireAbility() end -- bật là gọi ngay
+        end)
+
+        awakenBtn.MouseButton1Click:Connect(function()
+            autoAwakening = not autoAwakening
+            awakenBtn.Text = autoAwakening and "ON" or "OFF"
+            awakenBtn.BackgroundColor3 =
+                autoAwakening and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
+            if autoAwakening then fireAwakening() end -- bật là gọi ngay
+        end)
+    end
+
         --SELECT TEAM======================================================================================================
     do
         -- Tạo frame chứa 2 nút
         local teamFrame = Instance.new("Frame", HomeFrame)
         teamFrame.Size = UDim2.new(0, 320, 0, 40)
-        teamFrame.Position = UDim2.new(0, 10, 0, 355)
+        teamFrame.Position = UDim2.new(0, 10, 0, 455)
         teamFrame.BackgroundTransparency = 1
 
         -- Marines Button
