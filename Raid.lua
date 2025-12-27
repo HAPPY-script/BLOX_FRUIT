@@ -362,61 +362,7 @@ return function(sections)
         end)
     end
 
-        --[[START RAID------------------------------------------------------------------------------------------------------------------
-    do
-        local btnStartRaid = Instance.new("TextButton", HomeFrame)
-        btnStartRaid.Size = UDim2.new(0, 320, 0, 40)
-        btnStartRaid.Position = UDim2.new(0, 10, 0, 110)
-        btnStartRaid.Text = "Start Raid▶️"
-        btnStartRaid.BackgroundColor3 = Color3.fromRGB(51, 19, 145)
-        btnStartRaid.TextColor3 = Color3.new(1, 1, 1)
-        btnStartRaid.Font = Enum.Font.SourceSansBold
-        btnStartRaid.TextSize = 20
-
-        btnStartRaid.MouseButton1Click:Connect(function()
-            local clickDetector
-
-            -- SEA 3: Boat Castle
-            local map = workspace:FindFirstChild("Map")
-            local boatCastle = map and map:FindFirstChild("Boat Castle")
-            if boatCastle then
-                local raid = boat Castle:FindFirstChild("RaidSummon2")
-                if raid then
-                    local button = raid:FindFirstChild("Button")
-                    if button then
-                        local main = button:FindFirstChild("Main")
-                        if main then
-                            clickDetector = main:FindFirstChild("ClickDetector")
-                        end
-                    end
-                end
-            end
-
-            -- SEA 2: CircleIsland
-            if not clickDetector then
-                local circleIsland = map and map:FindFirstChild("CircleIsland")
-                if circleIsland then
-                    local raid = circleIsland:FindFirstChild("RaidSummon2")
-                    if raid then
-                        local button = raid:FindFirstChild("Button")
-                        if button then
-                            local main = button:FindFirstChild("Main")
-                            if main then
-                                clickDetector = main:FindFirstChild("ClickDetector")
-                            end
-                        end
-                    end
-                end
-            end
-
-            if clickDetector then
-                fireclickdetector(clickDetector)
-            else
-                warn("❌ Không tìm thấy ClickDetector để Start Raid (không phải Sea 2 hoặc Sea 3).")
-            end
-        end)
-
-        ]]--BUY CHIP------------------------------------------------------------------------------------------------------------------
+        --BUY CHIP------------------------------------------------------------------------------------------------------------------
     do
         local selectedChip = "Flame" -- mặc định ban đầu
 
@@ -491,6 +437,249 @@ return function(sections)
                 warn("❌ Không thể mua microchip: " .. tostring(err))
             end
         end)
+    end
+
+        --DUNGEON------------------------------------------------------------------------------------------------------------------
+    do
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local TweenService = game:GetService("TweenService")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+        local player = Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:FindFirstChild("HumanoidRootPart") or character:WaitForChild("HumanoidRootPart")
+
+        local autoBtn = Instance.new("TextButton", HomeFrame)
+        autoBtn.Size = UDim2.new(0, 90, 0, 30)
+        autoBtn.Position = UDim2.new(0, 240, 0, 110)
+        autoBtn.Text = "OFF"
+        autoBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        autoBtn.TextColor3 = Color3.new(1, 1, 1)
+        autoBtn.Font = Enum.Font.SourceSansBold
+        autoBtn.TextScaled = true
+
+        -- Cấu hình
+        local DISTANCE_LIMIT = 850
+        local SCAN_INTERVAL = 0.4        -- interval chính để tìm mục tiêu (nhẹ)
+        local TELEPORT_TWEEN_SPEED = 600 -- khoảng tốc độ dùng để tính thời gian tween (distance / speed)
+
+        local autoDungeon = false
+        local pauseForExit = false       -- tạm dừng đánh khi cần bay tới Exit Root
+        local farmCenter = nil           -- sẽ là hrp.Position (always)
+        local anchor -- optional camera anchor if used in followEnemy (kept minimal)
+
+        -- helper: ensure hrp khi respawn
+        local function refreshCharacterRefs(newChar)
+            character = newChar or player.Character
+            if character then
+                hrp = character:FindFirstChild("HumanoidRootPart") or character:WaitForChild("HumanoidRootPart")
+            else
+                hrp = nil
+            end
+        end
+
+        -- hàm tween di chuyển HRP tới vị trí targetPos (an toàn, dùng CFrame)
+        local function tweenToPosition(targetPos)
+            if not hrp or not hrp.Parent then return end
+            local dist = (hrp.Position - targetPos).Magnitude
+            if dist > 10000 then return end
+            local time = math.clamp(dist / TELEPORT_TWEEN_SPEED, 0.05, 5)
+            local tween = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(targetPos)})
+            local ok, err = pcall(function()
+                tween:Play()
+                tween.Completed:Wait()
+            end)
+            pcall(function() tween:Cancel() end)
+        end
+
+        -- tìm quái gần nhất trong workspace.Enemies theo centerPos (giữ nguyên logic cũ)
+        local function getNearestEnemy(centerPos)
+            local folder = workspace:FindFirstChild("Enemies")
+            if not folder then return nil end
+            local nearest, nearestDist
+            for _, mob in ipairs(folder:GetChildren()) do
+                if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") then
+                    local hp = mob:FindFirstChildOfClass("Humanoid")
+                    if hp and hp.Health > 0 then
+                        local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
+                        if dist <= DISTANCE_LIMIT then
+                            if not nearestDist or dist < nearestDist then
+                                nearest = mob
+                                nearestDist = dist
+                            end
+                        end
+                    end
+                end
+            end
+            return nearest
+        end
+
+        -- tìm model Dungeon gần nhất trong workspace.Map.Dungeon
+        local function getNearestDungeonModel()
+            local map = workspace:FindFirstChild("Map")
+            if not map then return nil end
+            local dungeon = map:FindFirstChild("Dungeon")
+            if not dungeon then return nil end
+
+            local nearest, nearestDist
+            local myPos = (hrp and hrp.Position) or (player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position) or Vector3.new(0,0,0)
+
+            for _, mdl in ipairs(dungeon:GetChildren()) do
+                if mdl:IsA("Model") then
+                    -- try primarypart or pivot
+                    local pos
+                    if mdl.PrimaryPart then
+                        pos = mdl.PrimaryPart.Position
+                    else
+                        local ok, pivot = pcall(function() return mdl:GetPivot().Position end)
+                        pos = ok and pivot or nil
+                    end
+                    if pos then
+                        local d = (myPos - pos).Magnitude
+                        if not nearestDist or d < nearestDist then
+                            nearest = mdl
+                            nearestDist = d
+                        end
+                    end
+                end
+            end
+
+            return nearest, nearestDist
+        end
+
+        -- kiểm tra model gần nhất có ExitTeleporter -> Root -> TouchInterest không
+        local function checkDungeonExitOnModel(mdl)
+            if not mdl then return nil end
+            -- tìm ExitTeleporter trong model (có thể là con trực tiếp hoặc sâu)
+            local exit = mdl:FindFirstChild("ExitTeleporter", true) -- tìm sâu
+            if not exit then return nil end
+            local rootPart = exit:FindFirstChild("Root")
+            if not rootPart or not rootPart:IsA("BasePart") then return nil end
+            -- TouchInterest có thể là named "TouchInterest" hoặc dạng TouchTransmitter
+            local hasTouch = rootPart:FindFirstChild("TouchInterest") or rootPart:FindFirstChildOfClass("TouchTransmitter")
+            if hasTouch then
+                return rootPart
+            end
+            return nil
+        end
+
+        -- follow enemy (đơn giản: di chuyển tới enemy dùng tween / lerp giống logic cũ, nhưng ngắn gọn)
+        local function followEnemy(enemy)
+            if not enemy or not enemy.Parent or not hrp then return end
+            local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
+            local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+            if not hrpEnemy or not humanoid then return end
+
+            -- nếu xa quá, tween tới gần
+            local dist = (hrp.Position - hrpEnemy.Position).Magnitude
+            if dist > 200 then
+                tweenToPosition(hrpEnemy.Position + Vector3.new(0, 5, 0))
+                return
+            end
+
+            -- theo sau đơn giản: lerp đến vị trí mục tiêu trên mỗi RenderStepped cho tới khi mob chết hoặc auto tắt
+            while humanoid.Health > 0 and autoDungeon and not pauseForExit and hrp and hrp.Parent do
+                local targetPos = Vector3.new(hrpEnemy.Position.X, hrpEnemy.Position.Y + 15, hrpEnemy.Position.Z)
+                -- cập nhật hrp để gần mục tiêu (giữ an toàn bằng Lerp)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.22)
+                RunService.RenderStepped:Wait()
+                -- break nếu đang pause do Exit detect
+                if pauseForExit then break end
+            end
+        end
+
+        -- Auto attack loop (giống logic cũ) — chỉ chạy khi autoDungeon ON và không pauseForExit
+        task.spawn(function()
+            while true do
+                task.wait(0.4)
+                if autoDungeon and not pauseForExit then
+                    pcall(function()
+                        ReplicatedStorage
+                            :WaitForChild("Modules")
+                            :WaitForChild("Net")
+                            :WaitForChild("RE/RegisterAttack")
+                            :FireServer(0.4)
+                    end)
+                end
+            end
+        end)
+
+        -- Main loop: tìm dungeon model / kiểm tra Exit -> nếu có thì bay tới Root; nếu không sẽ tìm enemy gần nhất và follow
+        task.spawn(function()
+            while true do
+                task.wait(SCAN_INTERVAL)
+                if not autoDungeon then continue end
+                if not hrp or not hrp.Parent then continue end
+
+                -- farmCenter luôn là vị trí của chính bạn (cập nhật)
+                farmCenter = hrp.Position
+
+                -- 1) kiểm tra Dungeon models (lấy model gần nhất, nếu có Exit Root có TouchInterest -> xử lý)
+                local nearestDungeonModel = getNearestDungeonModel()
+                if nearestDungeonModel then
+                    local rootPart = checkDungeonExitOnModel(nearestDungeonModel)
+                    if rootPart then
+                        -- pause attack/follow và bay tới giữa Root
+                        pauseForExit = true
+                        -- di chuyển nhanh đến giữa Root (cách 2-3 studs lên để an toàn)
+                        local target = rootPart.Position + Vector3.new(0, 3, 0)
+                        pcall(function() tweenToPosition(target) end)
+                        -- sau khi tới, chờ cho đến khi TouchInterest biến mất (một ngưỡng an toàn) hoặc 6s tối đa
+                        local waited = 0
+                        while pauseForExit and rootPart and rootPart.Parent and waited < 6 do
+                            local stillTouch = rootPart:FindFirstChild("TouchInterest") or rootPart:FindFirstChildOfClass("TouchTransmitter")
+                            if not stillTouch then
+                                break
+                            end
+                            task.wait(0.5)
+                            waited = waited + 0.5
+                        end
+                        -- resume
+                        pauseForExit = false
+                        -- tiếp vòng lặp tiếp theo
+                        continue
+                    end
+                end
+
+                -- 2) nếu không gặp exit, tìm mục tiêu trong radius và đánh
+                local target = getNearestEnemy(farmCenter)
+                if target and not pauseForExit then
+                    followEnemy(target)
+                end
+            end
+        end)
+
+        -- nhân vật respawn: không reset autoDungeon; tạm nghỉ và resume sau 2s nếu vẫn ON
+        player.CharacterAdded:Connect(function(newChar)
+            refreshCharacterRefs(newChar)
+            -- tạm dừng mọi hành vi theo target cho tới khi nhân vật ổn định
+            pauseForExit = true
+            task.delay(2, function()
+                pauseForExit = false
+            end)
+        end)
+
+        -- Toggle nút ON/OFF (giữ trạng thái persistent qua respawn)
+        autoBtn.MouseButton1Click:Connect(function()
+            autoDungeon = not autoDungeon
+            autoBtn.Text = autoDungeon and "ON" or "OFF"
+            autoBtn.BackgroundColor3 = autoDungeon and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+
+            if autoDungeon then
+                -- bật ngay: đặt center = hrp vị trí hiện tại
+                if hrp and hrp.Parent then
+                    farmCenter = hrp.Position
+                end
+            else
+                -- tắt => ngưng
+                pauseForExit = false
+            end
+        end)
+
+        -- lần đầu ensure refs
+        refreshCharacterRefs()
     end
 
     wait(0.2)
