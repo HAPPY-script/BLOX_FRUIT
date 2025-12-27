@@ -684,9 +684,9 @@ return function(sections)
                 -- ❗ nếu đang đánh priority → bỏ qua check enemy thường
                 if not isPriorityTarget then
                     local newNearest = getNearestEnemy(center)
-                    if newNearest and newNearest ~= enemy then
-                        local newDist = ...
-                        local curDist = ...
+                    if newNearest and newNearest ~= enemy and newNearest:FindFirstChild("HumanoidRootPart") then
+                        local newDist = (center - newNearest.HumanoidRootPart.Position).Magnitude
+                        local curDist = (center - hrpEnemy.Position).Magnitude
                         if newDist + 1 < curDist then
                             break
                         end
@@ -882,5 +882,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.08 SUCCESS✅")
+    print("Raid tad V0.09 SUCCESS✅")
 end
