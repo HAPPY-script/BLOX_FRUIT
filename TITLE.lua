@@ -22,7 +22,7 @@ return function(sections)
         TitleRaid.Position = UDim2.new(0, 10, 0, 110)
         TitleRaid.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleRaid.TextColor3 = Color3.new(1, 1, 1)
-        TitleRaid.Text = "AUTO DUNGEON🪓 (test)"
+        TitleRaid.Text = "AUTO DUNGEON🪓"
         TitleRaid.TextScaled = true
         TitleRaid.Font = Enum.Font.SourceSansBold
         TitleRaid.BorderSizePixel = 2
