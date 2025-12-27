@@ -462,7 +462,7 @@ return function(sections)
         autoBtn.TextScaled = true
 
         -- Cấu hình theo yêu cầu
-        local DISTANCE_LIMIT = 850
+        local DISTANCE_LIMIT = 1000
         local SCAN_INTERVAL = 0.08
         local MOVE_SPEED = 600
         local FOLLOW_HEIGHT = 35
