@@ -477,6 +477,9 @@ return function(sections)
         local followLock = false             -- tránh follow chồng chéo
         local currentTarget = nil            -- current enemy model
 
+        local ALLOWED_PLACE = 73902483975735
+        local blocked = false
+
         -- ensure refs (respawn safe)
         local function refreshCharacterRefs(newChar)
             character = newChar or player.Character
@@ -776,14 +779,41 @@ return function(sections)
 
         -- Toggle UI
         autoBtn.MouseButton1Click:Connect(function()
-            autoDungeon = not autoDungeon
+            if blocked then return end
+
+            local newState = not autoDungeon
+
+            -- Nếu đang cố bật và không ở Place hợp lệ -> block
+            if newState then
+                if game.PlaceId ~= ALLOWED_PLACE then
+                    blocked = true
+                    -- hiển thị cảnh báo NO DUNGEON
+                    autoBtn.Text = "NO DUNGEON"
+                    autoBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+
+                    -- sau 2s phục hồi về OFF
+                    task.spawn(function()
+                        task.wait(2)
+                        autoBtn.Text = "OFF"
+                        autoBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+                        blocked = false
+                    end)
+
+                    return
+                end
+            end
+
+            -- nếu không bị block thì đổi trạng thái bình thường
+            autoDungeon = newState
             autoBtn.Text = autoDungeon and "ON" or "OFF"
             autoBtn.BackgroundColor3 = autoDungeon and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
 
             if autoDungeon then
+                -- chỉ gọi hook khi thực sự bật
+                pcall(function()
+                    player:SetAttribute("FastAttackEnemy", true)
+                end)
 
-                player:SetAttribute("FastAttackEnemy", true)
-                
                 if hrp and hrp.Parent then
                     farmCenter = hrp.Position
                 end
