@@ -457,7 +457,7 @@ return function(sections)
         -- ===== UI: Nút bật/tắt (theo mẫu) =====
         local busoButton = Instance.new("TextButton", HomeFrame)
         busoButton.Size = UDim2.new(0, 90, 0, 30)
-        busoButton.Position = UDim2.new(0, 240, 0, 160)
+        busoButton.Position = UDim2.new(0, 240, 0, 260)
         busoButton.Text = autoBuso and "ON" or "OFF"
         busoButton.BackgroundColor3 = autoBuso and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
         busoButton.TextColor3 = Color3.new(1,1,1)
