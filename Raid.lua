@@ -445,11 +445,13 @@ return function(sections)
         local RunService = game:GetService("RunService")
         local TweenService = game:GetService("TweenService")
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local workspace = workspace
 
         local player = Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
         local hrp = character:FindFirstChild("HumanoidRootPart") or character:WaitForChild("HumanoidRootPart")
 
+        -- UI ON/OFF (đơn giản như mẫu)
         local autoBtn = Instance.new("TextButton", HomeFrame)
         autoBtn.Size = UDim2.new(0, 90, 0, 30)
         autoBtn.Position = UDim2.new(0, 240, 0, 110)
@@ -459,17 +461,23 @@ return function(sections)
         autoBtn.Font = Enum.Font.SourceSansBold
         autoBtn.TextScaled = true
 
-        -- Cấu hình
+        -- Cấu hình theo yêu cầu
         local DISTANCE_LIMIT = 850
-        local SCAN_INTERVAL = 0.4        -- interval chính để tìm mục tiêu (nhẹ)
-        local TELEPORT_TWEEN_SPEED = 600 -- khoảng tốc độ dùng để tính thời gian tween (distance / speed)
+        local SCAN_INTERVAL = 0.08           -- nhỏ để gần như không có delay
+        local MOVE_SPEED = 600               -- giữ tốc độ bay như trước (units/sec)
+        local FOLLOW_HEIGHT = 75             -- tăng lên 75 stud
+        local ATTACK_INTERVAL = 0.35         -- tăng tốc đánh thành 0.35
 
         local autoDungeon = false
-        local pauseForExit = false       -- tạm dừng đánh khi cần bay tới Exit Root
-        local farmCenter = nil           -- sẽ là hrp.Position (always)
-        local anchor -- optional camera anchor if used in followEnemy (kept minimal)
+        local pauseForExit = false
 
-        -- helper: ensure hrp khi respawn
+        -- state helpers
+        local farmCenter = nil
+        local movementLock = false           -- tránh nhiều movement cùng lúc
+        local followLock = false             -- tránh follow chồng chéo
+        local currentTarget = nil            -- current enemy model
+
+        -- ensure refs (respawn safe)
         local function refreshCharacterRefs(newChar)
             character = newChar or player.Character
             if character then
@@ -479,21 +487,38 @@ return function(sections)
             end
         end
 
-        -- hàm tween di chuyển HRP tới vị trí targetPos (an toàn, dùng CFrame)
-        local function tweenToPosition(targetPos)
-            if not hrp or not hrp.Parent then return end
-            local dist = (hrp.Position - targetPos).Magnitude
-            if dist > 10000 then return end
-            local time = math.clamp(dist / TELEPORT_TWEEN_SPEED, 0.05, 5)
-            local tween = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(targetPos)})
-            local ok, err = pcall(function()
-                tween:Play()
-                tween.Completed:Wait()
-            end)
-            pcall(function() tween:Cancel() end)
+        -- interruptible movement: move hrp towards targetPos at MOVE_SPEED units/sec
+        -- returns true if arrived, false if interrupted by a provided interruptFn returning true
+        local function moveToPositionInterruptible(targetPos, interruptFn)
+            if not hrp or not hrp.Parent then return false end
+            movementLock = true
+            local arrived = false
+
+            while hrp and hrp.Parent do
+                local pos = hrp.Position
+                local dir = (targetPos - pos)
+                local dist = dir.Magnitude
+                if dist <= 1 then
+                    arrived = true
+                    break
+                end
+
+                if interruptFn and interruptFn() then
+                    break
+                end
+
+                local dt = RunService.Heartbeat:Wait()
+                local step = math.min(dist, MOVE_SPEED * dt)
+                local newPos = pos + dir.Unit * step
+                hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+                hrp.CFrame = CFrame.new(newPos)
+            end
+
+            movementLock = false
+            return arrived
         end
 
-        -- tìm quái gần nhất trong workspace.Enemies theo centerPos (giữ nguyên logic cũ)
+        -- find nearest enemy within DISTANCE_LIMIT around centerPos
         local function getNearestEnemy(centerPos)
             local folder = workspace:FindFirstChild("Enemies")
             if not folder then return nil end
@@ -515,7 +540,7 @@ return function(sections)
             return nearest
         end
 
-        -- tìm model Dungeon gần nhất trong workspace.Map.Dungeon
+        -- get nearest dungeon model (by model pivot/primarypart)
         local function getNearestDungeonModel()
             local map = workspace:FindFirstChild("Map")
             if not map then return nil end
@@ -523,11 +548,9 @@ return function(sections)
             if not dungeon then return nil end
 
             local nearest, nearestDist
-            local myPos = (hrp and hrp.Position) or (player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position) or Vector3.new(0,0,0)
-
+            local myPos = (hrp and hrp.Position) or Vector3.new(0,0,0)
             for _, mdl in ipairs(dungeon:GetChildren()) do
                 if mdl:IsA("Model") then
-                    -- try primarypart or pivot
                     local pos
                     if mdl.PrimaryPart then
                         pos = mdl.PrimaryPart.Position
@@ -544,56 +567,141 @@ return function(sections)
                     end
                 end
             end
-
-            return nearest, nearestDist
+            return nearest
         end
 
-        -- kiểm tra model gần nhất có ExitTeleporter -> Root -> TouchInterest không
+        -- check ExitTeleporter.Root with TouchInterest
         local function checkDungeonExitOnModel(mdl)
             if not mdl then return nil end
-            -- tìm ExitTeleporter trong model (có thể là con trực tiếp hoặc sâu)
-            local exit = mdl:FindFirstChild("ExitTeleporter", true) -- tìm sâu
+            local exit = mdl:FindFirstChild("ExitTeleporter", true)
             if not exit then return nil end
-            local rootPart = exit:FindFirstChild("Root")
-            if not rootPart or not rootPart:IsA("BasePart") then return nil end
-            -- TouchInterest có thể là named "TouchInterest" hoặc dạng TouchTransmitter
-            local hasTouch = rootPart:FindFirstChild("TouchInterest") or rootPart:FindFirstChildOfClass("TouchTransmitter")
-            if hasTouch then
-                return rootPart
-            end
+            local root = exit:FindFirstChild("Root")
+            if not root or not root:IsA("BasePart") then return nil end
+            local hasTouch = root:FindFirstChild("TouchInterest") or root:FindFirstChildOfClass("TouchTransmitter")
+            if hasTouch then return root end
             return nil
         end
 
-        -- follow enemy (đơn giản: di chuyển tới enemy dùng tween / lerp giống logic cũ, nhưng ngắn gọn)
+        -- followEnemy: prioritise immediate arrival to high pos and then stable lerp follow
         local function followEnemy(enemy)
-            if not enemy or not enemy.Parent or not hrp then return end
-            local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
-            local humanoid = enemy:FindFirstChildOfClass("Humanoid")
-            if not hrpEnemy or not humanoid then return end
+            if followLock then return end
+            followLock = true
+            currentTarget = enemy
 
-            -- nếu xa quá, tween tới gần
-            local dist = (hrp.Position - hrpEnemy.Position).Magnitude
-            if dist > 200 then
-                tweenToPosition(hrpEnemy.Position + Vector3.new(0, 5, 0))
+            if not enemy or not enemy.Parent or not hrp then
+                followLock = false
+                currentTarget = nil
                 return
             end
 
-            -- theo sau đơn giản: lerp đến vị trí mục tiêu trên mỗi RenderStepped cho tới khi mob chết hoặc auto tắt
-            while humanoid.Health > 0 and autoDungeon and not pauseForExit and hrp and hrp.Parent do
-                local targetPos = Vector3.new(hrpEnemy.Position.X, hrpEnemy.Position.Y + 15, hrpEnemy.Position.Z)
-                -- cập nhật hrp để gần mục tiêu (giữ an toàn bằng Lerp)
-                hrp.AssemblyLinearVelocity = Vector3.zero
-                hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.22)
-                RunService.RenderStepped:Wait()
-                -- break nếu đang pause do Exit detect
-                if pauseForExit then break end
+            local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
+            local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+            if not hrpEnemy or not humanoid then
+                followLock = false
+                currentTarget = nil
+                return
             end
+
+            -- 1) immediately move to high position above enemy (straight, interruptible)
+            local highPos = hrpEnemy.Position + Vector3.new(0, FOLLOW_HEIGHT, 0)
+            -- interrupt if during travel: new closer enemy appears (we will check in interruptFn)
+            local function interruptIfBetterEnemy()
+                if not autoDungeon then return true end
+                -- look for any enemy closer than current target
+                local center = hrp.Position
+                local newNearest = getNearestEnemy(center)
+                if newNearest and newNearest ~= enemy then
+                    -- if another enemy found and is alive, prefer it only if it's closer to player than currentEnemy by some margin
+                    local newDist = (center - newNearest:FindFirstChild("HumanoidRootPart").Position).Magnitude
+                    local curDist = (center - hrpEnemy.Position).Magnitude
+                    if newDist + 1 < curDist then
+                        return true
+                    end
+                end
+                return false
+            end
+
+            moveToPositionInterruptible(highPos, interruptIfBetterEnemy)
+
+            -- if interrupted by a better enemy, we exit here and let main loop handle it
+            if not autoDungeon or not hrp or not hrp.Parent then
+                followLock = false
+                currentTarget = nil
+                return
+            end
+
+            -- 2) arrived or nearly arrived: perform tight follow loop at high altitude until mob dies or user toggles off or pauseForExit
+            while autoDungeon and not pauseForExit and humanoid and humanoid.Health > 0 and hrp and hrp.Parent do
+                -- if a different enemy is now significantly closer, break to prioritize it
+                local center = hrp.Position
+                local newNearest = getNearestEnemy(center)
+                if newNearest and newNearest ~= enemy then
+                    local newDist = (center - newNearest:FindFirstChild("HumanoidRootPart").Position).Magnitude
+                    local curDist = (center - hrpEnemy.Position).Magnitude
+                    if newDist + 1 < curDist then
+                        break
+                    end
+                end
+
+                local targetPos = Vector3.new(hrpEnemy.Position.X, hrpEnemy.Position.Y + FOLLOW_HEIGHT, hrpEnemy.Position.Z)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                -- lerp instantly (dứt khoát nhưng smooth)
+                hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.5)
+                RunService.RenderStepped:Wait()
+            end
+
+            followLock = false
+            currentTarget = nil
         end
 
-        -- Auto attack loop (giống logic cũ) — chỉ chạy khi autoDungeon ON và không pauseForExit
+        -- handle root: move to root; while moving, if enemy appears prioritise it (cancel root)
+        local function handleDungeonRoot(rootPart)
+            if movementLock then return end
+            pauseForExit = true
+
+            -- target slightly above root for safety
+            local target = rootPart.Position + Vector3.new(0, 3, 0)
+
+            -- interrupt if enemy appears nearby
+            local function interruptIfEnemyAppears()
+                if not autoDungeon then return true end
+                local foundEnemy = getNearestEnemy(hrp.Position)
+                if foundEnemy then
+                    return true
+                end
+                return false
+            end
+
+            local arrived = moveToPositionInterruptible(target, interruptIfEnemyAppears)
+            -- if interrupted by enemy, resume immediately (pauseForExit false)
+            if not arrived then
+                pauseForExit = false
+                return
+            end
+
+            -- reached root: wait shortly (but check enemies while waiting)
+            local waited = 0
+            while waited < 3 and pauseForExit and rootPart and rootPart.Parent do
+                local stillTouch = rootPart:FindFirstChild("TouchInterest") or rootPart:FindFirstChildOfClass("TouchTransmitter")
+                if not stillTouch then
+                    break
+                end
+                -- if enemy appears while waiting, break to fight it
+                local en = getNearestEnemy(hrp.Position)
+                if en then
+                    break
+                end
+                task.wait(0.25)
+                waited = waited + 0.25
+            end
+
+            pauseForExit = false
+        end
+
+        -- Auto attack loop with ATTACK_INTERVAL
         task.spawn(function()
             while true do
-                task.wait(0.4)
+                task.wait(ATTACK_INTERVAL)
                 if autoDungeon and not pauseForExit then
                     pcall(function()
                         ReplicatedStorage
@@ -606,79 +714,72 @@ return function(sections)
             end
         end)
 
-        -- Main loop: tìm dungeon model / kiểm tra Exit -> nếu có thì bay tới Root; nếu không sẽ tìm enemy gần nhất và follow
+        -- Main loop: prioritize enemy, then root if no enemy
         task.spawn(function()
             while true do
                 task.wait(SCAN_INTERVAL)
                 if not autoDungeon then continue end
                 if not hrp or not hrp.Parent then continue end
+                if pauseForExit then continue end
 
-                -- farmCenter luôn là vị trí của chính bạn (cập nhật)
                 farmCenter = hrp.Position
 
-                -- 1) kiểm tra Dungeon models (lấy model gần nhất, nếu có Exit Root có TouchInterest -> xử lý)
+                -- Priority 1: enemy
+                local enemy = getNearestEnemy(farmCenter)
+                if enemy then
+                    -- immediately go fight enemy (followEnemy handles arrival and following)
+                    task.spawn(function() pcall(function() followEnemy(enemy) end) end)
+                    -- small immediate next-iteration (no delay) to re-evaluate quickly
+                    continue
+                end
+
+                -- Priority 2: nearest dungeon model's root check
                 local nearestDungeonModel = getNearestDungeonModel()
                 if nearestDungeonModel then
                     local rootPart = checkDungeonExitOnModel(nearestDungeonModel)
                     if rootPart then
-                        -- pause attack/follow và bay tới giữa Root
-                        pauseForExit = true
-                        -- di chuyển nhanh đến giữa Root (cách 2-3 studs lên để an toàn)
-                        local target = rootPart.Position + Vector3.new(0, 3, 0)
-                        pcall(function() tweenToPosition(target) end)
-                        -- sau khi tới, chờ cho đến khi TouchInterest biến mất (một ngưỡng an toàn) hoặc 6s tối đa
-                        local waited = 0
-                        while pauseForExit and rootPart and rootPart.Parent and waited < 6 do
-                            local stillTouch = rootPart:FindFirstChild("TouchInterest") or rootPart:FindFirstChildOfClass("TouchTransmitter")
-                            if not stillTouch then
-                                break
-                            end
-                            task.wait(0.5)
-                            waited = waited + 0.5
-                        end
-                        -- resume
-                        pauseForExit = false
-                        -- tiếp vòng lặp tiếp theo
+                        -- handle root but allow interruption if enemy appears
+                        task.spawn(function() pcall(function() handleDungeonRoot(rootPart) end) end)
                         continue
                     end
                 end
 
-                -- 2) nếu không gặp exit, tìm mục tiêu trong radius và đánh
-                local target = getNearestEnemy(farmCenter)
-                if target and not pauseForExit then
-                    followEnemy(target)
-                end
+                -- if nothing, loop again quickly
             end
         end)
 
-        -- nhân vật respawn: không reset autoDungeon; tạm nghỉ và resume sau 2s nếu vẫn ON
+        -- respawn handling: pause 2s then resume (state preserved)
         player.CharacterAdded:Connect(function(newChar)
             refreshCharacterRefs(newChar)
-            -- tạm dừng mọi hành vi theo target cho tới khi nhân vật ổn định
             pauseForExit = true
+            -- ensure movement locks reset
+            movementLock = false
+            followLock = false
+            currentTarget = nil
             task.delay(2, function()
                 pauseForExit = false
             end)
         end)
 
-        -- Toggle nút ON/OFF (giữ trạng thái persistent qua respawn)
+        -- Toggle UI
         autoBtn.MouseButton1Click:Connect(function()
             autoDungeon = not autoDungeon
             autoBtn.Text = autoDungeon and "ON" or "OFF"
             autoBtn.BackgroundColor3 = autoDungeon and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
 
             if autoDungeon then
-                -- bật ngay: đặt center = hrp vị trí hiện tại
+
+                player:SetAttribute("FastAttackEnemy", true)
+                
                 if hrp and hrp.Parent then
                     farmCenter = hrp.Position
                 end
             else
-                -- tắt => ngưng
                 pauseForExit = false
             end
         end)
 
-        -- lần đầu ensure refs
+        -- ensure initial refs
         refreshCharacterRefs()
     end
 
