@@ -462,20 +462,24 @@ return function(sections)
         autoBtn.TextScaled = true
 
         -- Cấu hình theo yêu cầu
-        local DISTANCE_LIMIT = 900
-        local SCAN_INTERVAL = 0.08           -- nhỏ để gần như không có delay
-        local MOVE_SPEED = 600               -- giữ tốc độ bay như trước (units/sec)
-        local FOLLOW_HEIGHT = 35             -- tăng lên 35 stud (bạn có thể đổi lại 75 nếu muốn)
-        local ATTACK_INTERVAL = 0.35         -- tăng tốc đánh thành 0.35
+        local DISTANCE_LIMIT = 850
+        local SCAN_INTERVAL = 0.08
+        local MOVE_SPEED = 600
+        local FOLLOW_HEIGHT = 35
+        local ATTACK_INTERVAL = 0.35
 
         local autoDungeon = false
         local pauseForExit = false
 
         -- state helpers
         local farmCenter = nil
-        local movementLock = false           -- tránh nhiều movement cùng lúc
-        local followLock = false             -- tránh follow chồng chéo
-        local currentTarget = nil            -- current enemy model
+        local movementLock = false
+        local followLock = false
+        local currentTarget = nil
+
+        -- priority handling
+        local priorityTarget = nil        -- current PropHitboxPlaceholder to prioritize
+        local priorityLock = false       -- khi true thì đang engage priority target
 
         local ALLOWED_PLACE = 73902483975735
         local blocked = false
@@ -490,8 +494,67 @@ return function(sections)
             end
         end
 
+        -- helper: is this model a "priority" enemy?
+        local function isPriorityEnemy(mdl)
+            if not mdl then return false end
+            -- If the model itself is named PropHitboxPlaceholder OR contains a child with that name
+            if mdl.Name == "PropHitboxPlaceholder" then return true end
+            if mdl:FindFirstChild("PropHitboxPlaceholder") then return true end
+            return false
+        end
+
+        -- find nearest priority enemy within DISTANCE_LIMIT from centerPos
+        local function getNearestPriorityEnemy(centerPos)
+            local folder = workspace:FindFirstChild("Enemies")
+            if not folder then return nil end
+            local nearest, nearestDist
+            for _, mob in ipairs(folder:GetChildren()) do
+                if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") then
+                    if isPriorityEnemy(mob) then
+                        local hp = mob:FindFirstChildOfClass("Humanoid")
+                        if hp and hp.Health > 0 then
+                            local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
+                            if dist <= DISTANCE_LIMIT then
+                                if not nearestDist or dist < nearestDist then
+                                    nearest = mob
+                                    nearestDist = dist
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            return nearest
+        end
+
+        -- find nearest non-priority enemy within DISTANCE_LIMIT around centerPos
+        local function getNearestEnemy(centerPos)
+            local folder = workspace:FindFirstChild("Enemies")
+            if not folder then return nil end
+            local nearest, nearestDist
+            for _, mob in ipairs(folder:GetChildren()) do
+                if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") then
+                    if isPriorityEnemy(mob) then
+                        -- skip priority enemies here; they handled separately
+                        continue
+                    end
+                    local hp = mob:FindFirstChildOfClass("Humanoid")
+                    if hp and hp.Health > 0 then
+                        local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
+                        if dist <= DISTANCE_LIMIT then
+                            if not nearestDist or dist < nearestDist then
+                                nearest = mob
+                                nearestDist = dist
+                            end
+                        end
+                    end
+                end
+            end
+            return nearest
+        end
+
         -- interruptible movement: move hrp towards targetPos at MOVE_SPEED units/sec
-        -- returns true if arrived, false if interrupted by a provided interruptFn returning true
+        -- returns true if arrived, false if interrupted by interruptFn returning true
         local function moveToPositionInterruptible(targetPos, interruptFn)
             if not hrp or not hrp.Parent then return false end
             movementLock = true
@@ -521,93 +584,7 @@ return function(sections)
             return arrived
         end
 
-        -- tìm enemy đặc biệt PropHitboxPlaceholder trong DISTANCE_LIMIT
-        local function getNearestPriorityEnemy(centerPos)
-            local folder = workspace:FindFirstChild("Enemies")
-            if not folder then return nil end
-            local best, bestDist
-            for _, mob in ipairs(folder:GetChildren()) do
-                if mob:IsA("Model") and mob.Name == "PropHitboxPlaceholder" and mob:FindFirstChild("HumanoidRootPart") then
-                    local hp = mob:FindFirstChildOfClass("Humanoid")
-                    if hp and hp.Health > 0 then
-                        local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
-                        if dist <= DISTANCE_LIMIT then
-                            if not bestDist or dist < bestDist then
-                                best = mob
-                                bestDist = dist
-                            end
-                        end
-                    end
-                end
-            end
-            return best
-        end
-
-        -- find nearest enemy within DISTANCE_LIMIT around centerPos
-        local function getNearestEnemy(centerPos)
-            local folder = workspace:FindFirstChild("Enemies")
-            if not folder then return nil end
-            local nearest, nearestDist
-            for _, mob in ipairs(folder:GetChildren()) do
-                if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") then
-                    local hp = mob:FindFirstChildOfClass("Humanoid")
-                    if hp and hp.Health > 0 then
-                        local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
-                        if dist <= DISTANCE_LIMIT then
-                            if not nearestDist or dist < nearestDist then
-                                nearest = mob
-                                nearestDist = dist
-                            end
-                        end
-                    end
-                end
-            end
-            return nearest
-        end
-
-        -- get nearest dungeon model (by model pivot/primarypart)
-        local function getNearestDungeonModel()
-            local map = workspace:FindFirstChild("Map")
-            if not map then return nil end
-            local dungeon = map:FindFirstChild("Dungeon")
-            if not dungeon then return nil end
-
-            local nearest, nearestDist
-            local myPos = (hrp and hrp.Position) or Vector3.new(0,0,0)
-            for _, mdl in ipairs(dungeon:GetChildren()) do
-                if mdl:IsA("Model") then
-                    local pos
-                    if mdl.PrimaryPart then
-                        pos = mdl.PrimaryPart.Position
-                    else
-                        local ok, pivot = pcall(function() return mdl:GetPivot().Position end)
-                        pos = ok and pivot or nil
-                    end
-                    if pos then
-                        local d = (myPos - pos).Magnitude
-                        if not nearestDist or d < nearestDist then
-                            nearest = mdl
-                            nearestDist = d
-                        end
-                    end
-                end
-            end
-            return nearest
-        end
-
-        -- check ExitTeleporter.Root with TouchInterest
-        local function checkDungeonExitOnModel(mdl)
-            if not mdl then return nil end
-            local exit = mdl:FindFirstChild("ExitTeleporter", true)
-            if not exit then return nil end
-            local root = exit:FindFirstChild("Root")
-            if not root or not root:IsA("BasePart") then return nil end
-            local hasTouch = root:FindFirstChild("TouchInterest") or root:FindFirstChildOfClass("TouchTransmitter")
-            if hasTouch then return root end
-            return nil
-        end
-
-        -- followEnemy: prioritise immediate arrival to high pos and then stable lerp follow
+        -- followEnemy updated: checks for priorityTarget and will yield if priority appears
         local function followEnemy(enemy)
             if followLock then return end
             followLock = true
@@ -629,45 +606,46 @@ return function(sections)
 
             -- 1) immediately move to high position above enemy (straight, interruptible)
             local highPos = hrpEnemy.Position + Vector3.new(0, FOLLOW_HEIGHT, 0)
-            -- interrupt if during travel: special priority enemy OR new closer enemy appears
-            local function interruptIfBetterEnemy()
+            -- interrupt if a priority target appears (anywhere within DISTANCE_LIMIT)
+            local function interruptIfPriorityAppears()
                 if not autoDungeon then return true end
-                -- nếu có Priority enemy xuất hiện thì interrupt ngay
-                local pri = getNearestPriorityEnemy(hrp.Position)
-                if pri and pri ~= enemy then
+                local pr = priorityTarget or getNearestPriorityEnemy(hrp.Position)
+                if pr and pr ~= enemy then
+                    -- set global priorityTarget so other loops know
+                    priorityTarget = pr
                     return true
                 end
-                -- look for any enemy closer than current target (normal priority)
-                local center = hrp.Position
-                local newNearest = getNearestEnemy(center)
-                if newNearest and newNearest ~= enemy then
-                    local newDist = (center - newNearest:FindFirstChild("HumanoidRootPart").Position).Magnitude
-                    local curDist = (center - hrpEnemy.Position).Magnitude
-                    if newDist + 1 < curDist then
-                        return true
-                    end
-                end
+                -- otherwise, allow movement to continue
                 return false
             end
 
-            moveToPositionInterruptible(highPos, interruptIfBetterEnemy)
+            moveToPositionInterruptible(highPos, interruptIfPriorityAppears)
 
-            -- if interrupted by a better enemy, we exit here and let main loop handle it
+            -- if autoDungeon turned off or hrp gone -> cleanup
             if not autoDungeon or not hrp or not hrp.Parent then
                 followLock = false
                 currentTarget = nil
                 return
             end
 
-            -- 2) arrived or nearly arrived: perform tight follow loop at high altitude until mob dies or user toggles off or pauseForExit
+            -- if a priority target was set while traveling, give control back to main loop to handle it
+            if priorityTarget and priorityTarget ~= enemy then
+                followLock = false
+                currentTarget = nil
+                return
+            end
+
+            -- 2) tight follow loop at high altitude until mob dies or user toggles off or pauseForExit
             while autoDungeon and not pauseForExit and humanoid and humanoid.Health > 0 and hrp and hrp.Parent do
-                -- if a priority enemy appears now then break immediately
-                local center = hrp.Position
-                local priNow = getNearestPriorityEnemy(center)
-                if priNow and priNow ~= enemy then
+                -- if a priority appears -> break immediately to prioritize it
+                local pr = priorityTarget or getNearestPriorityEnemy(hrp.Position)
+                if pr and pr ~= enemy then
+                    priorityTarget = pr
                     break
                 end
-                -- if a different normal enemy is now significantly closer, break to prioritize it
+
+                -- if a different normal enemy is significantly closer, main logic may prefer it; keep small tolerance
+                local center = hrp.Position
                 local newNearest = getNearestEnemy(center)
                 if newNearest and newNearest ~= enemy then
                     local newDist = (center - newNearest:FindFirstChild("HumanoidRootPart").Position).Magnitude
@@ -679,7 +657,6 @@ return function(sections)
 
                 local targetPos = Vector3.new(hrpEnemy.Position.X, hrpEnemy.Position.Y + FOLLOW_HEIGHT, hrpEnemy.Position.Z)
                 hrp.AssemblyLinearVelocity = Vector3.zero
-                -- lerp instantly (dứt khoát nhưng smooth)
                 hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.5)
                 RunService.RenderStepped:Wait()
             end
@@ -688,12 +665,73 @@ return function(sections)
             currentTarget = nil
         end
 
-        -- handle root: move to root; while moving, if enemy appears prioritise it (cancel root)
+        -- followPriority: aggressively go to priority target and do not be interrupted by normal enemies.
+        -- It can only be interrupted by: priority dying, autoDungeon false, pauseForExit true, or a NEW PRIORITY (rare).
+        local function followPriority(enemy)
+            if not enemy or not enemy.Parent then return end
+            -- If another priority is already being engaged, skip (simple lock)
+            if priorityLock then return end
+            priorityLock = true
+            priorityTarget = enemy
+
+            -- ensure we stop any normal follow/movement: we rely on interrupt checks in other loops to stop
+            -- immediate move to above the priority enemy
+            local hrpEnemy = enemy:FindFirstChild("HumanoidRootPart")
+            local humanoid = enemy:FindFirstChildOfClass("Humanoid")
+            if not hrpEnemy or not humanoid then
+                priorityTarget = nil
+                priorityLock = false
+                return
+            end
+
+            while autoDungeon and not pauseForExit and humanoid and humanoid.Health > 0 and hrp and hrp.Parent do
+                -- target position above priority
+                local targetPos = Vector3.new(hrpEnemy.Position.X, hrpEnemy.Position.Y + FOLLOW_HEIGHT, hrpEnemy.Position.Z)
+
+                -- move directly (using moveToPositionInterruptible but with a stricter interrupt: only interrupt if a new priority closer than this one appears)
+                local function interruptFn()
+                    if not autoDungeon then return true end
+                    -- check if this priority is still valid
+                    if not enemy.Parent or (enemy:FindFirstChildOfClass("Humanoid") or {Health=0}).Health <= 0 then
+                        return true
+                    end
+                    -- if another priority appears and is different and closer -> switch
+                    local newPr = getNearestPriorityEnemy(hrp.Position)
+                    if newPr and newPr ~= enemy then
+                        local newDist = (hrp.Position - newPr:FindFirstChild("HumanoidRootPart").Position).Magnitude
+                        local curDist = (hrp.Position - hrpEnemy.Position).Magnitude
+                        if newDist + 1 < curDist then
+                            priorityTarget = newPr
+                            return true
+                        end
+                    end
+                    return false
+                end
+
+                moveToPositionInterruptible(targetPos, interruptFn)
+
+                -- hover near target while attacking; break conditions above will exit loop
+                if not (humanoid and humanoid.Health > 0) then break end
+                if not autoDungeon then break end
+                if pauseForExit then break end
+
+                -- keep following closely by lerp to stay above priority
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(targetPos), 0.65)
+                RunService.RenderStepped:Wait()
+            end
+
+            -- finished engaging priority (died or aborted) -> clear
+            priorityTarget = nil
+            priorityLock = false
+        end
+
+        -- handle root: move to root; while moving, if priority appears, cancel root immediately
         local function handleDungeonRoot(rootPart)
             if movementLock then return end
             pauseForExit = true
 
-            -- 🔹 DELAY 1.5s trước khi bay tới Root (có kiểm tra priority + enemy)
+            -- delay 1.5s with checking
             local waited = 0
             while waited < 1.5 do
                 if not autoDungeon then
@@ -704,8 +742,13 @@ return function(sections)
                     pauseForExit = false
                     return
                 end
-                -- nếu trong lúc chờ mà có priority enemy hoặc enemy thường → hủy đi root
-                if getNearestPriorityEnemy(hrp.Position) or getNearestEnemy(hrp.Position) then
+                -- nếu trong lúc chờ mà có priority → hủy đi root
+                if getNearestPriorityEnemy(hrp.Position) then
+                    pauseForExit = false
+                    return
+                end
+                -- also cancel if any normal enemy appears (existing behavior)
+                if getNearestEnemy(hrp.Position) then
                     pauseForExit = false
                     return
                 end
@@ -713,33 +756,29 @@ return function(sections)
                 waited += 0.1
             end
 
-            -- target slightly above root for safety
             local target = rootPart.Position + Vector3.new(0, 3, 0)
 
-            -- interrupt if enemy appears nearby (priority checked first)
-            local function interruptIfEnemyAppears()
+            -- interrupt if priority appears
+            local function interruptIfPriorityAppears()
                 if not autoDungeon then return true end
-                if getNearestPriorityEnemy(hrp.Position) then return true end
-                return getNearestEnemy(hrp.Position) ~= nil
+                return getNearestPriorityEnemy(hrp.Position) ~= nil
             end
 
-            local arrived = moveToPositionInterruptible(target, interruptIfEnemyAppears)
+            local arrived = moveToPositionInterruptible(target, interruptIfPriorityAppears)
 
             if not arrived then
                 pauseForExit = false
                 return
             end
 
-            -- giữ nguyên logic chờ touch như cũ
+            -- giữ nguyên logic chờ touch như cũ, nhưng vẫn break nếu priority xuất hiện
             local waitedTouch = 0
             while waitedTouch < 3 and pauseForExit and rootPart and rootPart.Parent do
                 local stillTouch = rootPart:FindFirstChild("TouchInterest")
                     or rootPart:FindFirstChildOfClass("TouchTransmitter")
                 if not stillTouch then break end
 
-                -- ưu tiên special enemy nếu xuất hiện trong lúc chờ
                 if getNearestPriorityEnemy(hrp.Position) then break end
-                if getNearestEnemy(hrp.Position) then break end
 
                 task.wait(0.25)
                 waitedTouch += 0.25
@@ -748,7 +787,7 @@ return function(sections)
             pauseForExit = false
         end
 
-        -- Auto attack loop with ATTACK_INTERVAL (dùng biến để đồng bộ)
+        -- Auto attack loop with ATTACK_INTERVAL
         task.spawn(function()
             while true do
                 task.wait(ATTACK_INTERVAL)
@@ -758,13 +797,13 @@ return function(sections)
                             :WaitForChild("Modules")
                             :WaitForChild("Net")
                             :WaitForChild("RE/RegisterAttack")
-                            :FireServer(ATTACK_INTERVAL)
+                            :FireServer(0.4)
                     end)
                 end
             end
         end)
 
-        -- Main loop: prioritize special enemy, normal enemy, then root
+        -- Main loop: ALWAYS check for priority first, then normal enemy, then root
         task.spawn(function()
             while true do
                 task.wait(SCAN_INTERVAL)
@@ -774,14 +813,19 @@ return function(sections)
 
                 farmCenter = hrp.Position
 
-                -- Priority 0: special priority enemy (PropHitboxPlaceholder)
-                local priorityEnemy = getNearestPriorityEnemy(farmCenter)
-                if priorityEnemy then
-                    task.spawn(function() pcall(function() followEnemy(priorityEnemy) end) end)
+                -- Priority check: PropHitboxPlaceholder first
+                local pr = getNearestPriorityEnemy(farmCenter)
+                if pr then
+                    -- set global priorityTarget and spawn followPriority (will forcibly interrupt normal follow/movement)
+                    priorityTarget = pr
+                    task.spawn(function()
+                        pcall(function() followPriority(pr) end)
+                    end)
+                    -- immediate re-eval next tick
                     continue
                 end
 
-                -- Priority 1: normal enemy
+                -- Priority 1 (normal enemies)
                 local enemy = getNearestEnemy(farmCenter)
                 if enemy then
                     task.spawn(function() pcall(function() followEnemy(enemy) end) end)
@@ -789,9 +833,9 @@ return function(sections)
                 end
 
                 -- Priority 2: nearest dungeon model's root check
-                local nearestDungeonModel = getNearestDungeonModel()
+                local nearestDungeonModel = getNearestDungeonModel and getNearestDungeonModel() or nil
                 if nearestDungeonModel then
-                    local rootPart = checkDungeonExitOnModel(nearestDungeonModel)
+                    local rootPart = checkDungeonExitOnModel and checkDungeonExitOnModel(nearestDungeonModel) or nil
                     if rootPart then
                         task.spawn(function() pcall(function() handleDungeonRoot(rootPart) end) end)
                         continue
@@ -806,48 +850,42 @@ return function(sections)
         player.CharacterAdded:Connect(function(newChar)
             refreshCharacterRefs(newChar)
             pauseForExit = true
-            -- ensure movement locks reset
             movementLock = false
             followLock = false
             currentTarget = nil
+            priorityTarget = nil
+            priorityLock = false
             task.delay(2, function()
                 pauseForExit = false
             end)
         end)
 
-        -- Toggle UI (có block kiểm tra PlaceId)
+        -- Toggle UI
         autoBtn.MouseButton1Click:Connect(function()
             if blocked then return end
 
             local newState = not autoDungeon
 
-            -- Nếu đang cố bật và không ở Place hợp lệ -> block
             if newState then
                 if game.PlaceId ~= ALLOWED_PLACE then
                     blocked = true
-                    -- hiển thị cảnh báo NO DUNGEON
                     autoBtn.Text = "NO DUNGEON"
                     autoBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
-
-                    -- sau 2s phục hồi về OFF
                     task.spawn(function()
                         task.wait(2)
                         autoBtn.Text = "OFF"
                         autoBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
                         blocked = false
                     end)
-
                     return
                 end
             end
 
-            -- nếu không bị block thì đổi trạng thái bình thường
             autoDungeon = newState
             autoBtn.Text = autoDungeon and "ON" or "OFF"
             autoBtn.BackgroundColor3 = autoDungeon and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
 
             if autoDungeon then
-                -- chỉ gọi hook khi thực sự bật
                 pcall(function()
                     player:SetAttribute("FastAttackEnemy", true)
                 end)
@@ -857,6 +895,9 @@ return function(sections)
                 end
             else
                 pauseForExit = false
+                -- clear priorities when turning off
+                priorityTarget = nil
+                priorityLock = false
             end
         end)
 
@@ -866,5 +907,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.05 SUCCESS✅")
+    print("Raid tad V0.06 SUCCESS✅")
 end
