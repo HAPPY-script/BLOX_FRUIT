@@ -504,13 +504,63 @@ return function(sections)
             busoButton.BackgroundColor3 = autoBuso and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
         end)
     end
-    
+
+        --Auto Observe======================================================================================================
+    do
+        local Players = game:GetService("Players")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+        local player = Players.LocalPlayer
+        local autoObserve = false          -- MẶC ĐỊNH OFF
+        local INTERVAL = 5                 -- 5 giây / lần
+
+        -- ===== UI: Nút bật/tắt (đúng mẫu hệ thống) =====
+        local observeButton = Instance.new("TextButton", HomeFrame)
+        observeButton.Size = UDim2.new(0, 90, 0, 30)
+        observeButton.Position = UDim2.new(0, 240, 0, 310)
+        observeButton.Text = "OFF"
+        observeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        observeButton.TextColor3 = Color3.new(1, 1, 1)
+        observeButton.Font = Enum.Font.SourceSansBold
+        observeButton.TextScaled = true
+
+        -- ===== Gọi bật Observe =====
+        local function enableObserve()
+            ReplicatedStorage.Remotes.CommE:FireServer("Ken", true)
+        end
+
+        -- ===== Loop Auto (nhẹ CPU) =====
+        task.spawn(function()
+            while true do
+                if autoObserve then
+                    enableObserve()
+                    task.wait(INTERVAL)
+                else
+                    task.wait(0.3) -- ngủ khi OFF để không tốn CPU
+                end
+            end
+        end)
+
+        -- ===== Toggle =====
+        observeButton.MouseButton1Click:Connect(function()
+            autoObserve = not autoObserve
+            observeButton.Text = autoObserve and "ON" or "OFF"
+            observeButton.BackgroundColor3 =
+                autoObserve and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
+
+            -- bật là gọi Observe ngay lập tức
+            if autoObserve then
+                enableObserve()
+            end
+        end)
+    end
+
         --SELECT TEAM======================================================================================================
     do
         -- Tạo frame chứa 2 nút
         local teamFrame = Instance.new("Frame", HomeFrame)
         teamFrame.Size = UDim2.new(0, 320, 0, 40)
-        teamFrame.Position = UDim2.new(0, 10, 0, 305)
+        teamFrame.Position = UDim2.new(0, 10, 0, 355)
         teamFrame.BackgroundTransparency = 1
 
         -- Marines Button
@@ -589,5 +639,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Player_v0.05 tad SUCCESS✅")
+    print("Player_v0.06 tad SUCCESS✅")
 end
