@@ -659,40 +659,53 @@ return function(sections)
             if movementLock then return end
             pauseForExit = true
 
+            -- 🔹 DELAY 1.5s trước khi bay tới Root (có kiểm tra)
+            local waited = 0
+            while waited < 1.5 do
+                if not autoDungeon then
+                    pauseForExit = false
+                    return
+                end
+                if not hrp or not hrp.Parent then
+                    pauseForExit = false
+                    return
+                end
+                -- nếu trong lúc chờ mà có enemy → hủy đi root
+                if getNearestEnemy(hrp.Position) then
+                    pauseForExit = false
+                    return
+                end
+                task.wait(0.1)
+                waited += 0.1
+            end
+
             -- target slightly above root for safety
             local target = rootPart.Position + Vector3.new(0, 3, 0)
 
             -- interrupt if enemy appears nearby
             local function interruptIfEnemyAppears()
                 if not autoDungeon then return true end
-                local foundEnemy = getNearestEnemy(hrp.Position)
-                if foundEnemy then
-                    return true
-                end
-                return false
+                return getNearestEnemy(hrp.Position) ~= nil
             end
 
             local arrived = moveToPositionInterruptible(target, interruptIfEnemyAppears)
-            -- if interrupted by enemy, resume immediately (pauseForExit false)
+
             if not arrived then
                 pauseForExit = false
                 return
             end
 
-            -- reached root: wait shortly (but check enemies while waiting)
-            local waited = 0
-            while waited < 3 and pauseForExit and rootPart and rootPart.Parent do
-                local stillTouch = rootPart:FindFirstChild("TouchInterest") or rootPart:FindFirstChildOfClass("TouchTransmitter")
-                if not stillTouch then
-                    break
-                end
-                -- if enemy appears while waiting, break to fight it
-                local en = getNearestEnemy(hrp.Position)
-                if en then
-                    break
-                end
+            -- giữ nguyên logic chờ touch như cũ
+            local waitedTouch = 0
+            while waitedTouch < 3 and pauseForExit and rootPart and rootPart.Parent do
+                local stillTouch = rootPart:FindFirstChild("TouchInterest")
+                    or rootPart:FindFirstChildOfClass("TouchTransmitter")
+                if not stillTouch then break end
+
+                if getNearestEnemy(hrp.Position) then break end
+
                 task.wait(0.25)
-                waited = waited + 0.25
+                waitedTouch += 0.25
             end
 
             pauseForExit = false
@@ -785,5 +798,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.02 SUCCESS✅")
+    print("Raid tad V0.03 SUCCESS✅")
 end
