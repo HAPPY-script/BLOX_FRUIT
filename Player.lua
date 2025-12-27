@@ -444,12 +444,73 @@ return function(sections)
         end)
     end
 
+        --Auto Buso======================================================================================================
+
+    do
+        local Players = game:GetService("Players")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+        local player = Players.LocalPlayer
+        local autoBuso = true          -- MẶC ĐỊNH ON
+        local CHECK_INTERVAL = 3     -- thời gian kiểm tra (giây)
+
+        -- ===== UI: Nút bật/tắt (theo mẫu) =====
+        local busoButton = Instance.new("TextButton", HomeFrame)
+        busoButton.Size = UDim2.new(0, 90, 0, 30)
+        busoButton.Position = UDim2.new(0, 240, 0, 160)
+        busoButton.Text = autoBuso and "ON" or "OFF"
+        busoButton.BackgroundColor3 = autoBuso and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
+        busoButton.TextColor3 = Color3.new(1,1,1)
+        busoButton.Font = Enum.Font.SourceSansBold
+        busoButton.TextScaled = true
+
+        -- ===== Helpers =====
+        local function getBusoGlow()
+            local gui = player:FindFirstChild("PlayerGui")
+            return gui
+                and gui:FindFirstChild("Main", true)
+                and gui.Main:FindFirstChild("BottomHUDList", true)
+                and gui.Main.BottomHUDList:FindFirstChild("UniversalContextButtons", true)
+                and gui.Main.BottomHUDList.UniversalContextButtons:FindFirstChild("BoundActionBuso", true)
+                and gui.Main.BottomHUDList.UniversalContextButtons.BoundActionBuso:FindFirstChild("SelectedGlow")
+        end
+
+        local function isBusoOn()
+            local glow = getBusoGlow()
+            return glow and glow.ImageTransparency == 0
+        end
+
+        local function turnOnBuso()
+            ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
+        end
+
+        -- ===== Loop Auto =====
+        task.spawn(function()
+            while true do
+                if autoBuso then
+                    -- chỉ bật khi đang OFF
+                    if not isBusoOn() then
+                        turnOnBuso()
+                    end
+                end
+                task.wait(CHECK_INTERVAL)
+            end
+        end)
+
+        -- ===== Toggle =====
+        busoButton.MouseButton1Click:Connect(function()
+            autoBuso = not autoBuso
+            busoButton.Text = autoBuso and "ON" or "OFF"
+            busoButton.BackgroundColor3 = autoBuso and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
+        end)
+    end
+    
         --SELECT TEAM======================================================================================================
     do
         -- Tạo frame chứa 2 nút
         local teamFrame = Instance.new("Frame", HomeFrame)
         teamFrame.Size = UDim2.new(0, 320, 0, 40)
-        teamFrame.Position = UDim2.new(0, 10, 0, 255)
+        teamFrame.Position = UDim2.new(0, 10, 0, 305)
         teamFrame.BackgroundTransparency = 1
 
         -- Marines Button
@@ -528,5 +589,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Player_v0.04 tad SUCCESS✅")
+    print("Player_v0.05 tad SUCCESS✅")
 end
