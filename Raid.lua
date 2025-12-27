@@ -465,7 +465,7 @@ return function(sections)
         local DISTANCE_LIMIT = 850
         local SCAN_INTERVAL = 0.08           -- nhỏ để gần như không có delay
         local MOVE_SPEED = 600               -- giữ tốc độ bay như trước (units/sec)
-        local FOLLOW_HEIGHT = 75             -- tăng lên 75 stud
+        local FOLLOW_HEIGHT = 35             -- tăng lên 35 stud
         local ATTACK_INTERVAL = 0.35         -- tăng tốc đánh thành 0.35
 
         local autoDungeon = false
@@ -785,5 +785,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.01 SUCCESS✅")
+    print("Raid tad V0.02 SUCCESS✅")
 end
