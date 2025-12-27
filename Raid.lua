@@ -480,6 +480,14 @@ return function(sections)
         local ALLOWED_PLACE = 73902483975735
         local blocked = false
 
+        local IGNORED_ENEMIES = {
+            ["Blank Buddy"] = true
+        }
+
+        local function isIgnoredEnemy(mob)
+            return IGNORED_ENEMIES[mob.Name] == true
+        end
+
         -- ensure refs (respawn safe)
         local function refreshCharacterRefs(newChar)
             character = newChar or player.Character
@@ -527,7 +535,11 @@ return function(sections)
             if not folder then return nil end
             local best, bestDist
             for _, mob in ipairs(folder:GetChildren()) do
-                if mob:IsA("Model") and mob.Name == "PropHitboxPlaceholder" and mob:FindFirstChild("HumanoidRootPart") then
+                if mob:IsA("Model")
+                    and mob.Name == "PropHitboxPlaceholder"
+                    and not isIgnoredEnemy(mob)
+                    and mob:FindFirstChild("HumanoidRootPart") then
+
                     local hp = mob:FindFirstChildOfClass("Humanoid")
                     if hp and hp.Health > 0 then
                         local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
@@ -549,7 +561,10 @@ return function(sections)
             if not folder then return nil end
             local nearest, nearestDist
             for _, mob in ipairs(folder:GetChildren()) do
-                if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") then
+                if mob:IsA("Model")
+                    and not isIgnoredEnemy(mob)
+                    and mob:FindFirstChild("HumanoidRootPart") then
+
                     local hp = mob:FindFirstChildOfClass("Humanoid")
                     if hp and hp.Health > 0 then
                         local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
@@ -882,5 +897,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.09 SUCCESS✅")
+    print("Raid tad V0.10 SUCCESS✅")
 end
