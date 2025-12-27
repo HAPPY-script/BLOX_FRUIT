@@ -521,13 +521,37 @@ return function(sections)
             return arrived
         end
 
-        -- find nearest enemy within DISTANCE_LIMIT around centerPos
+        -- find nearest important enemy (PropHitboxPlaceholder) within DISTANCE_LIMIT around centerPos
+        local function getNearestImportantEnemy(centerPos)
+            local folder = workspace:FindFirstChild("Enemies")
+            if not folder then return nil end
+            local nearest, nearestDist
+            for _, mob in ipairs(folder:GetChildren()) do
+                if mob:IsA("Model") and mob.Name == "PropHitboxPlaceholder" and mob:FindFirstChild("HumanoidRootPart") then
+                    local hp = mob:FindFirstChildOfClass("Humanoid")
+                    if hp and hp.Health > 0 then
+                        local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
+                        if dist <= DISTANCE_LIMIT then
+                            if not nearestDist or dist < nearestDist then
+                                nearest = mob
+                                nearestDist = dist
+                            end
+                        end
+                    end
+                end
+            end
+            return nearest
+        end
+
+        -- find nearest normal enemy within DISTANCE_LIMIT around centerPos
         local function getNearestEnemy(centerPos)
             local folder = workspace:FindFirstChild("Enemies")
             if not folder then return nil end
             local nearest, nearestDist
             for _, mob in ipairs(folder:GetChildren()) do
                 if mob:IsA("Model") and mob:FindFirstChild("HumanoidRootPart") then
+                    -- skip the important ones here (they're handled separately)
+                    if mob.Name == "PropHitboxPlaceholder" then continue end
                     local hp = mob:FindFirstChildOfClass("Humanoid")
                     if hp and hp.Health > 0 then
                         local dist = (centerPos - mob.HumanoidRootPart.Position).Magnitude
@@ -607,14 +631,18 @@ return function(sections)
 
             -- 1) immediately move to high position above enemy (straight, interruptible)
             local highPos = hrpEnemy.Position + Vector3.new(0, FOLLOW_HEIGHT, 0)
-            -- interrupt if during travel: new closer enemy appears (we will check in interruptFn)
+            -- interrupt if during travel: new closer enemy appears or important appears
             local function interruptIfBetterEnemy()
                 if not autoDungeon then return true end
-                -- look for any enemy closer than current target
+                -- if important enemy exists -> interrupt immediately
+                local important = getNearestImportantEnemy(hrp.Position)
+                if important and important ~= enemy then
+                    return true
+                end
+                -- look for any regular enemy closer than current target
                 local center = hrp.Position
                 local newNearest = getNearestEnemy(center)
                 if newNearest and newNearest ~= enemy then
-                    -- if another enemy found and is alive, prefer it only if it's closer to player than currentEnemy by some margin
                     local newDist = (center - newNearest:FindFirstChild("HumanoidRootPart").Position).Magnitude
                     local curDist = (center - hrpEnemy.Position).Magnitude
                     if newDist + 1 < curDist then
@@ -626,7 +654,7 @@ return function(sections)
 
             moveToPositionInterruptible(highPos, interruptIfBetterEnemy)
 
-            -- if interrupted by a better enemy, we exit here and let main loop handle it
+            -- if interrupted by a better enemy/important, we exit here and let main loop handle it
             if not autoDungeon or not hrp or not hrp.Parent then
                 followLock = false
                 currentTarget = nil
@@ -635,7 +663,13 @@ return function(sections)
 
             -- 2) arrived or nearly arrived: perform tight follow loop at high altitude until mob dies or user toggles off or pauseForExit
             while autoDungeon and not pauseForExit and humanoid and humanoid.Health > 0 and hrp and hrp.Parent do
-                -- if a different enemy is now significantly closer, break to prioritize it
+                -- if an important enemy appears, break to prioritize it
+                local importantNow = getNearestImportantEnemy(hrp.Position)
+                if importantNow and importantNow ~= enemy then
+                    break
+                end
+
+                -- if a different regular enemy is now significantly closer, break to prioritize it
                 local center = hrp.Position
                 local newNearest = getNearestEnemy(center)
                 if newNearest and newNearest ~= enemy then
@@ -673,7 +707,12 @@ return function(sections)
                     pauseForExit = false
                     return
                 end
-                -- nếu trong lúc chờ mà có enemy → hủy đi root
+                -- nếu trong lúc chờ mà có important enemy → hủy đi root
+                if getNearestImportantEnemy(hrp.Position) then
+                    pauseForExit = false
+                    return
+                end
+                -- nếu trong lúc chờ mà có regular enemy → hủy đi root
                 if getNearestEnemy(hrp.Position) then
                     pauseForExit = false
                     return
@@ -685,9 +724,10 @@ return function(sections)
             -- target slightly above root for safety
             local target = rootPart.Position + Vector3.new(0, 3, 0)
 
-            -- interrupt if enemy appears nearby
+            -- interrupt if important or regular enemy appears nearby
             local function interruptIfEnemyAppears()
                 if not autoDungeon then return true end
+                if getNearestImportantEnemy(hrp.Position) then return true end
                 return getNearestEnemy(hrp.Position) ~= nil
             end
 
@@ -698,13 +738,14 @@ return function(sections)
                 return
             end
 
-            -- giữ nguyên logic chờ touch như cũ
+            -- giữ nguyên logic chờ touch như cũ, nhưng ưu tiên important xuất hiện
             local waitedTouch = 0
             while waitedTouch < 3 and pauseForExit and rootPart and rootPart.Parent do
                 local stillTouch = rootPart:FindFirstChild("TouchInterest")
                     or rootPart:FindFirstChildOfClass("TouchTransmitter")
                 if not stillTouch then break end
 
+                if getNearestImportantEnemy(hrp.Position) then break end
                 if getNearestEnemy(hrp.Position) then break end
 
                 task.wait(0.25)
@@ -730,7 +771,7 @@ return function(sections)
             end
         end)
 
-        -- Main loop: prioritize enemy, then root if no enemy
+        -- Main loop: prioritize important enemy -> enemy -> root
         task.spawn(function()
             while true do
                 task.wait(SCAN_INTERVAL)
@@ -740,12 +781,17 @@ return function(sections)
 
                 farmCenter = hrp.Position
 
-                -- Priority 1: enemy
+                -- Priority 0: important enemy (PropHitboxPlaceholder)
+                local important = getNearestImportantEnemy(farmCenter)
+                if important then
+                    task.spawn(function() pcall(function() followEnemy(important) end) end)
+                    continue
+                end
+
+                -- Priority 1: normal enemy
                 local enemy = getNearestEnemy(farmCenter)
                 if enemy then
-                    -- immediately go fight enemy (followEnemy handles arrival and following)
                     task.spawn(function() pcall(function() followEnemy(enemy) end) end)
-                    -- small immediate next-iteration (no delay) to re-evaluate quickly
                     continue
                 end
 
@@ -754,7 +800,6 @@ return function(sections)
                 if nearestDungeonModel then
                     local rootPart = checkDungeonExitOnModel(nearestDungeonModel)
                     if rootPart then
-                        -- handle root but allow interruption if enemy appears
                         task.spawn(function() pcall(function() handleDungeonRoot(rootPart) end) end)
                         continue
                     end
@@ -777,7 +822,7 @@ return function(sections)
             end)
         end)
 
-        -- Toggle UI
+        -- Toggle UI (with Place check)
         autoBtn.MouseButton1Click:Connect(function()
             if blocked then return end
 
@@ -828,5 +873,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.03 SUCCESS✅")
+    print("Raid tad V0.04 SUCCESS✅")
 end
