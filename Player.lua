@@ -565,6 +565,7 @@ return function(sections)
 
         local autoAbility = false
         local autoAwakening = false
+        local awakeningBusy = false -- chống spam + lag
 
         -- ===== UI: Auto Ability =====
         local abilityBtn = Instance.new("TextButton", HomeFrame)
@@ -591,23 +592,49 @@ return function(sections)
             ReplicatedStorage.Remotes.CommE:FireServer("ActivateAbility")
         end
 
+        -- 🔧 FIX CORE: tìm Awakening an toàn
         local function fireAwakening()
+            if awakeningBusy then return end
+            awakeningBusy = true
+
             local bp = player:FindFirstChild("Backpack")
-            local awak = bp and bp:FindFirstChild("Awakening")
-            local rf = awak and awak:FindFirstChild("RemoteFunction")
-            if rf then
-                rf:InvokeServer(true)
+            if not bp then
+                awakeningBusy = false
+                return
             end
+
+            -- chờ Awakening xuất hiện (tối đa 3s)
+            local awak = bp:FindFirstChild("Awakening")
+            local waited = 0
+            while not awak and waited < 3 do
+                task.wait(0.2)
+                waited += 0.2
+                awak = bp:FindFirstChild("Awakening")
+            end
+
+            if not awak then
+                awakeningBusy = false
+                return
+            end
+
+            local rf = awak:FindFirstChild("RemoteFunction")
+            if rf then
+                pcall(function()
+                    rf:InvokeServer(true)
+                end)
+            end
+
+            awakeningBusy = false
         end
 
-        -- ===== Loops (nhẹ CPU) =====
+        -- ===== Loops =====
         task.spawn(function()
             while true do
                 if autoAbility then
                     fireAbility()
                     task.wait(INTERVAL)
                 else
-                    task.wait(0.3) -- ngủ khi OFF
+                    task.wait(0.3)
                 end
             end
         end)
@@ -618,9 +645,15 @@ return function(sections)
                     fireAwakening()
                     task.wait(INTERVAL)
                 else
-                    task.wait(0.3) -- ngủ khi OFF
+                    task.wait(0.3)
                 end
             end
+        end)
+
+        -- ===== Respawn FIX =====
+        player.CharacterAdded:Connect(function()
+            -- reset trạng thái awakening để tránh chết loop
+            awakeningBusy = false
         end)
 
         -- ===== Toggles =====
@@ -629,7 +662,7 @@ return function(sections)
             abilityBtn.Text = autoAbility and "ON" or "OFF"
             abilityBtn.BackgroundColor3 =
                 autoAbility and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
-            if autoAbility then fireAbility() end -- bật là gọi ngay
+            if autoAbility then fireAbility() end
         end)
 
         awakenBtn.MouseButton1Click:Connect(function()
@@ -637,7 +670,7 @@ return function(sections)
             awakenBtn.Text = autoAwakening and "ON" or "OFF"
             awakenBtn.BackgroundColor3 =
                 autoAwakening and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
-            if autoAwakening then fireAwakening() end -- bật là gọi ngay
+            if autoAwakening then fireAwakening() end
         end)
     end
 
