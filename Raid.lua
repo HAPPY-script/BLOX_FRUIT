@@ -124,7 +124,8 @@ return function(sections)
             toggleRaid.BackgroundColor3 = running and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
 
             if running then
-                player:SetAttribute("FastAttackEnemy", true)
+                game.Players.LocalPlayer:SetAttribute("FastAttackEnemyMode", "Toggle")
+                game.Players.LocalPlayer:SetAttribute("FastAttackEnemy", true)
             end
         end)
 
@@ -954,5 +955,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.12 SUCCESS✅")
+    print("Raid tad V0.13 SUCCESS✅")
 end
