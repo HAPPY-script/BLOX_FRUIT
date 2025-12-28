@@ -445,16 +445,16 @@ return function(sections)
     end
 
         --Auto Buso======================================================================================================
-
     do
         local Players = game:GetService("Players")
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local Workspace = game:GetService("Workspace")
 
         local player = Players.LocalPlayer
-        local autoBuso = true          -- MẶC ĐỊNH ON
-        local CHECK_INTERVAL = 3     -- thời gian kiểm tra (giây)
+        local autoBuso = true
+        local CHECK_INTERVAL = 3
 
-        -- ===== UI: Nút bật/tắt (theo mẫu) =====
+        -- ===== UI =====
         local busoButton = Instance.new("TextButton", HomeFrame)
         busoButton.Size = UDim2.new(0, 90, 0, 30)
         busoButton.Position = UDim2.new(0, 240, 0, 260)
@@ -465,30 +465,25 @@ return function(sections)
         busoButton.TextScaled = true
 
         -- ===== Helpers =====
-        local function getBusoGlow()
-            local gui = player:FindFirstChild("PlayerGui")
-            return gui
-                and gui:FindFirstChild("Main", true)
-                and gui.Main:FindFirstChild("BottomHUDList", true)
-                and gui.Main.BottomHUDList:FindFirstChild("UniversalContextButtons", true)
-                and gui.Main.BottomHUDList.UniversalContextButtons:FindFirstChild("BoundActionBuso", true)
-                and gui.Main.BottomHUDList.UniversalContextButtons.BoundActionBuso:FindFirstChild("SelectedGlow")
+        local function getCharacterModel()
+            local chars = Workspace:FindFirstChild("Characters")
+            return chars and chars:FindFirstChild(player.Name)
         end
 
         local function isBusoOn()
-            local glow = getBusoGlow()
-            return glow and glow.ImageTransparency == 0
+            local char = getCharacterModel()
+            return char and char:FindFirstChild("HasBuso") ~= nil
         end
 
         local function turnOnBuso()
             ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
         end
 
-        -- ===== Loop Auto =====
+        -- ===== Auto Loop =====
         task.spawn(function()
             while true do
                 if autoBuso then
-                    -- chỉ bật khi đang OFF
+                    -- chỉ gọi khi chắc chắn chưa bật
                     if not isBusoOn() then
                         turnOnBuso()
                     end
@@ -501,7 +496,8 @@ return function(sections)
         busoButton.MouseButton1Click:Connect(function()
             autoBuso = not autoBuso
             busoButton.Text = autoBuso and "ON" or "OFF"
-            busoButton.BackgroundColor3 = autoBuso and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
+            busoButton.BackgroundColor3 =
+                autoBuso and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
         end)
     end
 
@@ -758,5 +754,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Player_v0.07 tad SUCCESS✅")
+    print("Player_v0.08 tad SUCCESS✅")
 end
