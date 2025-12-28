@@ -932,6 +932,10 @@ return function(sections)
                 -- chỉ gọi hook khi thực sự bật
                 pcall(function()
                     player:SetAttribute("FastAttackEnemy", true)
+                    game.Players.LocalPlayer:SetAttribute("AutoBuso", true)
+                    game.Players.LocalPlayer:SetAttribute("AutoObserve", true)
+                    game.Players.LocalPlayer:SetAttribute("AutoAbility", true)
+                    game.Players.LocalPlayer:SetAttribute("AutoAwakening", true)
                 end)
 
                 if hrp and hrp.Parent then
@@ -948,5 +952,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.11 SUCCESS✅")
+    print("Raid tad V0.12 SUCCESS✅")
 end
