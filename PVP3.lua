@@ -720,7 +720,7 @@ return function(sections)
         local playerActive = false
 
         -- attack params (giữ giống trước)
-        local radius = 20
+        local radius = 100
         local delay = 0.01
         local maxhit = 5
 
