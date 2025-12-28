@@ -1128,6 +1128,10 @@ return function(sections)
         updatePlayerButtonUI()
 
     end
+    --[[HOOK
+game.Players.LocalPlayer:SetAttribute("FastAttackEnemyMode", "Toggle") -- Hold  FastAttackPlayerMode
+game.Players.LocalPlayer:SetAttribute("FastAttackEnemy", true) -- false  FastAttackPlayer
+    ]]
 
     -- AUTO ESCAPE===============================================================================================================
     do
