@@ -699,6 +699,7 @@ return function(sections)
         btnModeEnemy.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         btnModeEnemy.TextColor3 = Color3.new(1,1,1)
         btnModeEnemy.TextScaled = true
+        btnModeEnemy.TextWrapped = true
 
         local btnModePlayer = Instance.new("TextButton", HomeFrame)
         btnModePlayer.Size = UDim2.new(0, 50, 0, 30)
@@ -709,6 +710,7 @@ return function(sections)
         btnModePlayer.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         btnModePlayer.TextColor3 = Color3.new(1,1,1)
         btnModePlayer.TextScaled = true
+        btnModePlayer.TextWrapped = true
 
         -- trạng thái nội bộ (điều khiển bởi Attribute/shared/UI)
         local isFastAttackEnemyEnabled = false       -- power on/off
