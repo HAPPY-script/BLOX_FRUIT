@@ -668,6 +668,7 @@ return function(sections)
         local Net = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net")
         local EnemiesFolder = workspace:WaitForChild("Enemies")
         local LocalPlayer = Players.LocalPlayer
+        local UIS = game:GetService("UserInputService")
 
         -- Nút Fast Attack Enemy
         local btnFastAttackEnemy = Instance.new("TextButton", HomeFrame)
@@ -679,31 +680,103 @@ return function(sections)
         btnFastAttackEnemy.Font = Enum.Font.SourceSansBold
         btnFastAttackEnemy.TextSize = 30
 
+        -- Mode button cho Enemy (bên cạnh)
+        local btnEnemyMode = Instance.new("TextButton", HomeFrame)
+        btnEnemyMode.Size = UDim2.new(0, 50, 0, 30)
+        btnEnemyMode.Position = UDim2.new(0, 190, 0, 160) -- X = 190, Y = same as power
+        btnEnemyMode.Text = "Mode: Toggle"
+        btnEnemyMode.BackgroundColor3 = Color3.fromRGB(80,80,80)
+        btnEnemyMode.TextColor3 = Color3.new(1,1,1)
+        btnEnemyMode.Font = Enum.Font.SourceSans
+        btnEnemyMode.TextSize = 14
+
         -- Nút Attack Player
         local btnAttackPlayer = Instance.new("TextButton", HomeFrame)
         btnAttackPlayer.Size = UDim2.new(0, 90, 0, 30)
         btnAttackPlayer.Position = UDim2.new(0, 240, 0, 210)
         btnAttackPlayer.Text = "OFF"
-        btnAttackPlayer.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        btnAttackPlayer.BackgroundColor3 = Color3.fromRGB(30, 60, 120) -- xanh dương tối
         btnAttackPlayer.TextColor3 = Color3.new(1, 1, 1)
         btnAttackPlayer.Font = Enum.Font.SourceSansBold
         btnAttackPlayer.TextSize = 30
 
-        -- trạng thái nội bộ (điều khiển bởi Attribute/shared/UI)
-        local isFastAttackEnemyEnabled = false
-        local isAttackPlayerEnabled = false
+        -- Mode button cho Player (bên cạnh)
+        local btnPlayerMode = Instance.new("TextButton", HomeFrame)
+        btnPlayerMode.Size = UDim2.new(0, 50, 0, 30)
+        btnPlayerMode.Position = UDim2.new(0, 190, 0, 210) -- X = 190, Y = same as power
+        btnPlayerMode.Text = "Mode: Toggle"
+        btnPlayerMode.BackgroundColor3 = Color3.fromRGB(80,80,80)
+        btnPlayerMode.TextColor3 = Color3.new(1,1,1)
+        btnPlayerMode.Font = Enum.Font.SourceSans
+        btnPlayerMode.TextSize = 14
+
+        -- trạng thái nội bộ
+        local isFastAttackEnemyEnabled = false  -- power
+        local isAttackPlayerEnabled = false     -- power
+
+        local enemyMode = "toggle" -- "toggle" or "hold"
+        local playerMode = "toggle"
+
+        local enemyActive = false  -- true khi đang thực sự attack (ví dụ: powerOn + (toggle hoặc đang hold))
+        local playerActive = false
 
         -- helper cập nhật UI theo trạng thái
-        local function updateEnemyButtonUI(state)
-            btnFastAttackEnemy.Text = state and "ON" or "OFF"
-            btnFastAttackEnemy.BackgroundColor3 = state and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,50,50)
-        end
-        local function updatePlayerButtonUI(state)
-            btnAttackPlayer.Text = state and "ON" or "OFF"
-            btnAttackPlayer.BackgroundColor3 = state and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,50,50)
+        local function updateEnemyButtonUI()
+            -- power text
+            if enemyMode == "hold" then
+                if isFastAttackEnemyEnabled then
+                    if enemyActive then
+                        btnFastAttackEnemy.Text = "HOLDING"
+                        btnFastAttackEnemy.BackgroundColor3 = Color3.fromRGB(50,180,50)
+                    else
+                        btnFastAttackEnemy.Text = "POWER: ON"
+                        btnFastAttackEnemy.BackgroundColor3 = Color3.fromRGB(200,180,50)
+                    end
+                else
+                    btnFastAttackEnemy.Text = "POWER: OFF"
+                    btnFastAttackEnemy.BackgroundColor3 = Color3.fromRGB(255,50,50)
+                end
+                btnEnemyMode.Text = "Mode: Hold"
+            else -- toggle
+                btnEnemyMode.Text = "Mode: Toggle"
+                if isFastAttackEnemyEnabled then
+                    btnFastAttackEnemy.Text = "ON"
+                    btnFastAttackEnemy.BackgroundColor3 = Color3.fromRGB(50,180,50)
+                else
+                    btnFastAttackEnemy.Text = "OFF"
+                    btnFastAttackEnemy.BackgroundColor3 = Color3.fromRGB(255,50,50)
+                end
+            end
         end
 
-        -- Khi click UI: set Attribute (sẽ kích hoạt attribute listener để cập nhật biến & UI)
+        local function updatePlayerButtonUI()
+            if playerMode == "hold" then
+                if isAttackPlayerEnabled then
+                    if playerActive then
+                        btnAttackPlayer.Text = "HOLDING"
+                        btnAttackPlayer.BackgroundColor3 = Color3.fromRGB(50,180,50)
+                    else
+                        btnAttackPlayer.Text = "POWER: ON"
+                        btnAttackPlayer.BackgroundColor3 = Color3.fromRGB(200,180,50)
+                    end
+                else
+                    btnAttackPlayer.Text = "POWER: OFF"
+                    btnAttackPlayer.BackgroundColor3 = Color3.fromRGB(30,60,120)
+                end
+                btnPlayerMode.Text = "Mode: Hold"
+            else
+                btnPlayerMode.Text = "Mode: Toggle"
+                if isAttackPlayerEnabled then
+                    btnAttackPlayer.Text = "ON"
+                    btnAttackPlayer.BackgroundColor3 = Color3.fromRGB(50,180,50)
+                else
+                    btnAttackPlayer.Text = "OFF"
+                    btnAttackPlayer.BackgroundColor3 = Color3.fromRGB(30,60,120)
+                end
+            end
+        end
+
+        -- Khi click UI: toggles power attribute
         btnFastAttackEnemy.MouseButton1Click:Connect(function()
             LocalPlayer:SetAttribute("FastAttackEnemy", not (LocalPlayer:GetAttribute("FastAttackEnemy") == true))
         end)
@@ -712,35 +785,85 @@ return function(sections)
             LocalPlayer:SetAttribute("FastAttackPlayer", not (LocalPlayer:GetAttribute("FastAttackPlayer") == true))
         end)
 
-        -- Attribute listeners: khi attribute thay đổi (từ UI hoặc từ script khác), cập nhật trạng thái & UI
+        -- Mode buttons: toggle giữa "toggle" <-> "hold" và lưu vào attribute mode
+        btnEnemyMode.MouseButton1Click:Connect(function()
+            local nextMode = (LocalPlayer:GetAttribute("FastAttackEnemyMode") == "hold") and "toggle" or "hold"
+            LocalPlayer:SetAttribute("FastAttackEnemyMode", nextMode)
+        end)
+        btnPlayerMode.MouseButton1Click:Connect(function()
+            local nextMode = (LocalPlayer:GetAttribute("FastAttackPlayerMode") == "hold") and "toggle" or "hold"
+            LocalPlayer:SetAttribute("FastAttackPlayerMode", nextMode)
+        end)
+
+        -- Attribute listeners: power + mode
         LocalPlayer:GetAttributeChangedSignal("FastAttackEnemy"):Connect(function()
             local v = LocalPlayer:GetAttribute("FastAttackEnemy")
             isFastAttackEnemyEnabled = (v == true)
-            updateEnemyButtonUI(isFastAttackEnemyEnabled)
+            -- in toggle mode enabled => active immediately; in hold mode active only while holding (so set false now)
+            if enemyMode == "toggle" then
+                enemyActive = isFastAttackEnemyEnabled
+            else
+                enemyActive = false
+            end
+            updateEnemyButtonUI()
+        end)
+
+        LocalPlayer:GetAttributeChangedSignal("FastAttackEnemyMode"):Connect(function()
+            local v = LocalPlayer:GetAttribute("FastAttackEnemyMode")
+            if v == "hold" then enemyMode = "hold" elseif v == "toggle" then enemyMode = "toggle" end
+            -- when switching modes, ensure active consistency
+            if enemyMode == "toggle" then
+                enemyActive = isFastAttackEnemyEnabled
+            else
+                enemyActive = false
+            end
+            updateEnemyButtonUI()
         end)
 
         LocalPlayer:GetAttributeChangedSignal("FastAttackPlayer"):Connect(function()
             local v = LocalPlayer:GetAttribute("FastAttackPlayer")
             isAttackPlayerEnabled = (v == true)
-            updatePlayerButtonUI(isAttackPlayerEnabled)
+            if playerMode == "toggle" then
+                playerActive = isAttackPlayerEnabled
+            else
+                playerActive = false
+            end
+            updatePlayerButtonUI()
         end)
 
-        -- Khởi tạo giá trị từ Attribute nếu đã tồn tại
+        LocalPlayer:GetAttributeChangedSignal("FastAttackPlayerMode"):Connect(function()
+            local v = LocalPlayer:GetAttribute("FastAttackPlayerMode")
+            if v == "hold" then playerMode = "hold" elseif v == "toggle" then playerMode = "toggle" end
+            if playerMode == "toggle" then
+                playerActive = isAttackPlayerEnabled
+            else
+                playerActive = false
+            end
+            updatePlayerButtonUI()
+        end)
+
+        -- Khởi tạo giá trị từ Attribute nếu đã tồn tại (default toggle)
         do
             local v = LocalPlayer:GetAttribute("FastAttackEnemy")
             if v == true then
                 isFastAttackEnemyEnabled = true
-                updateEnemyButtonUI(true)
             end
+            local vm = LocalPlayer:GetAttribute("FastAttackEnemyMode")
+            if vm == "hold" or vm == "toggle" then enemyMode = vm end
+            -- sync active
+            if enemyMode == "toggle" then enemyActive = isFastAttackEnemyEnabled else enemyActive = false end
+            updateEnemyButtonUI()
+
             local v2 = LocalPlayer:GetAttribute("FastAttackPlayer")
-            if v2 == true then
-                isAttackPlayerEnabled = true
-                updatePlayerButtonUI(true)
-            end
+            if v2 == true then isAttackPlayerEnabled = true end
+            local vm2 = LocalPlayer:GetAttribute("FastAttackPlayerMode")
+            if vm2 == "hold" or vm2 == "toggle" then playerMode = vm2 end
+            if playerMode == "toggle" then playerActive = isAttackPlayerEnabled else playerActive = false end
+            updatePlayerButtonUI()
         end
 
         -- Polling nhẹ để hỗ trợ `shared.FastAttackEnemy` / `shared.FastAttackPlayer`
-        -- Nếu một script khác dùng `shared.FastAttackEnemy = true` thì polling sẽ phát hiện và push vào Attribute.
+        -- Now supports: boolean (power) OR string "hold"/"toggle" (mode)
         task.spawn(function()
             local lastSharedEnemy = nil
             local lastSharedPlayer = nil
@@ -752,17 +875,97 @@ return function(sections)
                 if sEnemy ~= lastSharedEnemy then
                     lastSharedEnemy = sEnemy
                     if sEnemy ~= nil then
-                        -- push vào attribute (cách đồng bộ an toàn giữa scripts)
-                        LocalPlayer:SetAttribute("FastAttackEnemy", sEnemy == true)
+                        if type(sEnemy) == "boolean" then
+                            LocalPlayer:SetAttribute("FastAttackEnemy", sEnemy == true)
+                        elseif type(sEnemy) == "string" then
+                            local lower = sEnemy:lower()
+                            if lower == "hold" or lower == "toggle" then
+                                LocalPlayer:SetAttribute("FastAttackEnemyMode", lower)
+                            end
+                        end
                     end
                 end
 
                 if sPlayer ~= lastSharedPlayer then
                     lastSharedPlayer = sPlayer
                     if sPlayer ~= nil then
-                        LocalPlayer:SetAttribute("FastAttackPlayer", sPlayer == true)
+                        if type(sPlayer) == "boolean" then
+                            LocalPlayer:SetAttribute("FastAttackPlayer", sPlayer == true)
+                        elseif type(sPlayer) == "string" then
+                            local lower = sPlayer:lower()
+                            if lower == "hold" or lower == "toggle" then
+                                LocalPlayer:SetAttribute("FastAttackPlayerMode", lower)
+                            end
+                        end
                     end
                 end
+            end
+        end)
+
+        -- Hỗ trợ hold: Input handlers (GUI + anywhere)
+        -- Enemy hold
+        btnFastAttackEnemy.InputBegan:Connect(function(input)
+            if enemyMode ~= "hold" then return end
+            if not isFastAttackEnemyEnabled then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                enemyActive = true
+                updateEnemyButtonUI()
+            end
+        end)
+        btnFastAttackEnemy.InputEnded:Connect(function(input)
+            if enemyMode ~= "hold" then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                enemyActive = false
+                updateEnemyButtonUI()
+            end
+        end)
+        UIS.InputBegan:Connect(function(input, gameProcessed)
+            if gameProcessed then return end
+            if enemyMode ~= "hold" then return end
+            if not isFastAttackEnemyEnabled then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                enemyActive = true
+                updateEnemyButtonUI()
+            end
+        end)
+        UIS.InputEnded:Connect(function(input, gameProcessed)
+            if enemyMode ~= "hold" then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                enemyActive = false
+                updateEnemyButtonUI()
+            end
+        end)
+
+        -- Player hold
+        btnAttackPlayer.InputBegan:Connect(function(input)
+            if playerMode ~= "hold" then return end
+            if not isAttackPlayerEnabled then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                playerActive = true
+                updatePlayerButtonUI()
+            end
+        end)
+        btnAttackPlayer.InputEnded:Connect(function(input)
+            if playerMode ~= "hold" then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                playerActive = false
+                updatePlayerButtonUI()
+            end
+        end)
+        UIS.InputBegan:Connect(function(input, gameProcessed)
+            if gameProcessed then return end
+            if playerMode ~= "hold" then return end
+            if not isAttackPlayerEnabled then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                playerActive = true
+                updatePlayerButtonUI()
+            end
+        end)
+        UIS.InputEnded:Connect(function(input, gameProcessed)
+            if playerMode ~= "hold" then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                playerActive = false
+                updatePlayerButtonUI()
             end
         end)
 
@@ -785,10 +988,18 @@ return function(sections)
             return closest
         end
 
-        -- Coroutine tấn công Enemy
+        -- Coroutine tấn công Enemy (giữ rate giống cũ)
         coroutine.wrap(function()
             while true do
-                if isFastAttackEnemyEnabled then
+                -- in toggle mode: active if power on; in hold mode: active only while holding
+                local shouldAttackEnemy = false
+                if enemyMode == "toggle" then
+                    shouldAttackEnemy = isFastAttackEnemyEnabled
+                else
+                    shouldAttackEnemy = (isFastAttackEnemyEnabled and enemyActive)
+                end
+
+                if shouldAttackEnemy then
                     local target = getClosestEnemy()
                     if target then
                         pcall(function()
@@ -800,10 +1011,17 @@ return function(sections)
             end
         end)()
 
-        -- Coroutine tấn công Player (luôn chạy nếu bật)
+        -- Coroutine tấn công Player (giữ logic như cũ)
         coroutine.wrap(function()
             while true do
-                if isAttackPlayerEnabled then
+                local shouldAttackPlayer = false
+                if playerMode == "toggle" then
+                    shouldAttackPlayer = isAttackPlayerEnabled
+                else
+                    shouldAttackPlayer = (isAttackPlayerEnabled and playerActive)
+                end
+
+                if shouldAttackPlayer then
                     for _, player in pairs(Players:GetPlayers()) do
                         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
                             pcall(function()
@@ -815,6 +1033,8 @@ return function(sections)
                 wait(0.05)
             end
         end)()
+
+        print("FastAttack (enemy/player) UI + hold/toggle ready")
     end
 
     -- AUTO ESCAPE===============================================================================================================
@@ -1045,5 +1265,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("PVP_S3-v0.3 tad SUCCESS✅")
+    print("PVP_S3-v0.4 tad SUCCESS✅")
 end
