@@ -690,7 +690,6 @@ return function(sections)
         btnAttackPlayer.Font = Enum.Font.SourceSansBold
         btnAttackPlayer.TextSize = 30
 
-        -- Mode buttons (X = 190px, same Y as power)
         local btnModeEnemy = Instance.new("TextButton", HomeFrame)
         btnModeEnemy.Size = UDim2.new(0, 50, 0, 30)
         btnModeEnemy.Position = UDim2.new(0, 190, 0, 160)
@@ -699,6 +698,7 @@ return function(sections)
         btnModeEnemy.TextSize = 14
         btnModeEnemy.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         btnModeEnemy.TextColor3 = Color3.new(1,1,1)
+        btnModeEnemy.TextScaled = true
 
         local btnModePlayer = Instance.new("TextButton", HomeFrame)
         btnModePlayer.Size = UDim2.new(0, 50, 0, 30)
@@ -708,6 +708,7 @@ return function(sections)
         btnModePlayer.TextSize = 14
         btnModePlayer.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         btnModePlayer.TextColor3 = Color3.new(1,1,1)
+        btnModePlayer.TextScaled = true
 
         -- trạng thái nội bộ (điều khiển bởi Attribute/shared/UI)
         local isFastAttackEnemyEnabled = false       -- power on/off
@@ -1279,5 +1280,5 @@ game.Players.LocalPlayer:SetAttribute("FastAttackEnemy", true) -- false  FastAtt
 
     wait(0.2)
 
-    print("PVP_S3-v0.5 tad SUCCESS✅")
+    print("PVP_S3-v0.6 tad SUCCESS✅")
 end
