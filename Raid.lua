@@ -931,7 +931,9 @@ return function(sections)
 
                 -- chỉ gọi hook khi thực sự bật
                 pcall(function()
-                    player:SetAttribute("FastAttackEnemy", true)
+                    game.Players.LocalPlayer:SetAttribute("FastAttackEnemyMode", "Toggle")
+                    game.Players.LocalPlayer:SetAttribute("FastAttackEnemy", true)
+                    
                     game.Players.LocalPlayer:SetAttribute("AutoBuso", true)
                     game.Players.LocalPlayer:SetAttribute("AutoObserve", true)
                     game.Players.LocalPlayer:SetAttribute("AutoAbility", true)
