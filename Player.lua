@@ -451,18 +451,35 @@ return function(sections)
         local Workspace = game:GetService("Workspace")
 
         local player = Players.LocalPlayer
-        local autoBuso = true
         local CHECK_INTERVAL = 3
+
+        -- internal state (đồng bộ với Attribute "AutoBuso")
+        local autoBuso = true
 
         -- ===== UI =====
         local busoButton = Instance.new("TextButton", HomeFrame)
         busoButton.Size = UDim2.new(0, 90, 0, 30)
         busoButton.Position = UDim2.new(0, 240, 0, 260)
-        busoButton.Text = autoBuso and "ON" or "OFF"
-        busoButton.BackgroundColor3 = autoBuso and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
         busoButton.TextColor3 = Color3.new(1,1,1)
         busoButton.Font = Enum.Font.SourceSansBold
         busoButton.TextScaled = true
+
+        local function updateButtonUI(state)
+            busoButton.Text = state and "ON" or "OFF"
+            busoButton.BackgroundColor3 = state and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
+        end
+
+        -- init UI from default/attribute
+        do
+            local attr = player:GetAttribute("AutoBuso")
+            if attr ~= nil then
+                autoBuso = (attr == true)
+            else
+                -- nếu chưa có attribute, khởi tạo attribute theo giá trị mặc định của script
+                player:SetAttribute("AutoBuso", autoBuso)
+            end
+            updateButtonUI(autoBuso)
+        end
 
         -- ===== Helpers =====
         local function getCharacterModel()
@@ -476,7 +493,10 @@ return function(sections)
         end
 
         local function turnOnBuso()
-            ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
+            -- pcall để tránh lỗi nếu remote không tồn tại / bị thay đổi
+            pcall(function()
+                ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
+            end)
         end
 
         -- ===== Auto Loop =====
@@ -492,65 +512,143 @@ return function(sections)
             end
         end)
 
-        -- ===== Toggle =====
+        -- ===== UI Toggle (bấm bằng chuột) =====
         busoButton.MouseButton1Click:Connect(function()
-            autoBuso = not autoBuso
-            busoButton.Text = autoBuso and "ON" or "OFF"
-            busoButton.BackgroundColor3 =
-                autoBuso and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
+            -- không set local variable trực tiếp nữa, set Attribute để đồng bộ với external hooks
+            local newVal = not (player:GetAttribute("AutoBuso") == true)
+            player:SetAttribute("AutoBuso", newVal)
         end)
-    end
 
+        -- ===== Attribute listener: khi script khác set Attribute hoặc UI đổi attribute sẽ vào đây =====
+        player:GetAttributeChangedSignal("AutoBuso"):Connect(function()
+            local v = player:GetAttribute("AutoBuso")
+            autoBuso = (v == true)
+            updateButtonUI(autoBuso)
+        end)
+
+        -- ===== Polling lightweight: hỗ trợ legacy shared.AutoBuso = true/false =====
+        task.spawn(function()
+            local lastShared = nil
+            while true do
+                task.wait(0.15)
+                local s = (shared and shared.AutoBuso)
+                if s ~= lastShared then
+                    lastShared = s
+                    if s ~= nil then
+                        -- push vào Attribute (giữ Attribute là nguồn chân thực)
+                        player:SetAttribute("AutoBuso", s == true)
+                    end
+                end
+            end
+        end)
+
+        shared = shared or {}
+        shared.ToggleAutoBuso = function(val)
+            player:SetAttribute("AutoBuso", val == true)
+        end
+    end
+    --[[HOOK
+game.Players.LocalPlayer:SetAttribute("AutoBuso", true)  -- bật
+game.Players.LocalPlayer:SetAttribute("AutoBuso", false) -- tắt
+    ]]
         --Auto Observe======================================================================================================
     do
         local Players = game:GetService("Players")
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
         local player = Players.LocalPlayer
-        local autoObserve = false          -- MẶC ĐỊNH OFF
-        local INTERVAL = 5                 -- 5 giây / lần
+        local INTERVAL = 5 -- 5 giây / lần
 
-        -- ===== UI: Nút bật/tắt (đúng mẫu hệ thống) =====
+        -- internal state (nguồn chân thực là Attribute)
+        local autoObserve = false
+
+        -- ===== UI =====
         local observeButton = Instance.new("TextButton", HomeFrame)
         observeButton.Size = UDim2.new(0, 90, 0, 30)
         observeButton.Position = UDim2.new(0, 240, 0, 310)
-        observeButton.Text = "OFF"
-        observeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         observeButton.TextColor3 = Color3.new(1, 1, 1)
         observeButton.Font = Enum.Font.SourceSansBold
         observeButton.TextScaled = true
 
-        -- ===== Gọi bật Observe =====
-        local function enableObserve()
-            ReplicatedStorage.Remotes.CommE:FireServer("Ken", true)
+        local function updateButtonUI(state)
+            observeButton.Text = state and "ON" or "OFF"
+            observeButton.BackgroundColor3 =
+                state and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
         end
 
-        -- ===== Loop Auto (nhẹ CPU) =====
+        -- ===== Khởi tạo từ Attribute nếu có =====
+        do
+            local attr = player:GetAttribute("AutoObserve")
+            if attr ~= nil then
+                autoObserve = (attr == true)
+            else
+                player:SetAttribute("AutoObserve", autoObserve)
+            end
+            updateButtonUI(autoObserve)
+        end
+
+        -- ===== Gọi bật Observe =====
+        local function enableObserve()
+            pcall(function()
+                ReplicatedStorage.Remotes.CommE:FireServer("Ken", true)
+            end)
+        end
+
+        -- ===== Auto Loop (giữ logic cũ, nhẹ CPU) =====
         task.spawn(function()
             while true do
                 if autoObserve then
                     enableObserve()
                     task.wait(INTERVAL)
                 else
-                    task.wait(0.3) -- ngủ khi OFF để không tốn CPU
+                    task.wait(0.3)
                 end
             end
         end)
 
-        -- ===== Toggle =====
+        -- ===== UI Toggle (chỉ set Attribute) =====
         observeButton.MouseButton1Click:Connect(function()
-            autoObserve = not autoObserve
-            observeButton.Text = autoObserve and "ON" or "OFF"
-            observeButton.BackgroundColor3 =
-                autoObserve and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
+            local newVal = not (player:GetAttribute("AutoObserve") == true)
+            player:SetAttribute("AutoObserve", newVal)
+        end)
 
-            -- bật là gọi Observe ngay lập tức
+        -- ===== Attribute listener (UI + script khác đều đi qua đây) =====
+        player:GetAttributeChangedSignal("AutoObserve"):Connect(function()
+            local v = player:GetAttribute("AutoObserve")
+            autoObserve = (v == true)
+            updateButtonUI(autoObserve)
+
+            -- bật là gọi Observe ngay lập tức (giữ đúng hành vi cũ)
             if autoObserve then
                 enableObserve()
             end
         end)
-    end
 
+        -- ===== Polling nhẹ: hỗ trợ legacy shared.AutoObserve =====
+        task.spawn(function()
+            local lastShared = nil
+            while true do
+                task.wait(0.15)
+                local s = (shared and shared.AutoObserve)
+                if s ~= lastShared then
+                    lastShared = s
+                    if s ~= nil then
+                        player:SetAttribute("AutoObserve", s == true)
+                    end
+                end
+            end
+        end)
+
+        -- ===== Optional helper cho script rất cũ =====
+        shared = shared or {}
+        shared.ToggleAutoObserve = function(val)
+            player:SetAttribute("AutoObserve", val == true)
+        end
+    end
+    --[[HOOK
+game.Players.LocalPlayer:SetAttribute("AutoObserve", true)   -- bật
+game.Players.LocalPlayer:SetAttribute("AutoObserve", false)  -- tắt
+    ]]
         --AUTO Auto Ability & Auto Awakening===============================================================================
     do
         local Players = game:GetService("Players")
@@ -559,16 +657,15 @@ return function(sections)
         local player = Players.LocalPlayer
         local INTERVAL = 5
 
+        -- internal state (nguồn chân thực: Attribute)
         local autoAbility = false
         local autoAwakening = false
-        local awakeningBusy = false -- chống spam + lag
+        local awakeningBusy = false
 
         -- ===== UI: Auto Ability =====
         local abilityBtn = Instance.new("TextButton", HomeFrame)
         abilityBtn.Size = UDim2.new(0, 90, 0, 30)
         abilityBtn.Position = UDim2.new(0, 240, 0, 360)
-        abilityBtn.Text = "OFF"
-        abilityBtn.BackgroundColor3 = Color3.fromRGB(255,50,50)
         abilityBtn.TextColor3 = Color3.new(1,1,1)
         abilityBtn.Font = Enum.Font.SourceSansBold
         abilityBtn.TextScaled = true
@@ -577,18 +674,42 @@ return function(sections)
         local awakenBtn = Instance.new("TextButton", HomeFrame)
         awakenBtn.Size = UDim2.new(0, 90, 0, 30)
         awakenBtn.Position = UDim2.new(0, 240, 0, 410)
-        awakenBtn.Text = "OFF"
-        awakenBtn.BackgroundColor3 = Color3.fromRGB(255,50,50)
         awakenBtn.TextColor3 = Color3.new(1,1,1)
         awakenBtn.Font = Enum.Font.SourceSansBold
         awakenBtn.TextScaled = true
 
-        -- ===== Actions =====
-        local function fireAbility()
-            ReplicatedStorage.Remotes.CommE:FireServer("ActivateAbility")
+        local function updateAbilityUI(state)
+            abilityBtn.Text = state and "ON" or "OFF"
+            abilityBtn.BackgroundColor3 =
+                state and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
         end
 
-        -- 🔧 FIX CORE: tìm Awakening an toàn
+        local function updateAwakenUI(state)
+            awakenBtn.Text = state and "ON" or "OFF"
+            awakenBtn.BackgroundColor3 =
+                state and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
+        end
+
+        -- ===== Init từ Attribute nếu có =====
+        do
+            local a = player:GetAttribute("AutoAbility")
+            local w = player:GetAttribute("AutoAwakening")
+
+            if a ~= nil then autoAbility = (a == true) else player:SetAttribute("AutoAbility", autoAbility) end
+            if w ~= nil then autoAwakening = (w == true) else player:SetAttribute("AutoAwakening", autoAwakening) end
+
+            updateAbilityUI(autoAbility)
+            updateAwakenUI(autoAwakening)
+        end
+
+        -- ===== Actions =====
+        local function fireAbility()
+            pcall(function()
+                ReplicatedStorage.Remotes.CommE:FireServer("ActivateAbility")
+            end)
+        end
+
+        -- Awakening (giữ logic fix cũ)
         local function fireAwakening()
             if awakeningBusy then return end
             awakeningBusy = true
@@ -599,7 +720,6 @@ return function(sections)
                 return
             end
 
-            -- chờ Awakening xuất hiện (tối đa 3s)
             local awak = bp:FindFirstChild("Awakening")
             local waited = 0
             while not awak and waited < 3 do
@@ -623,7 +743,7 @@ return function(sections)
             awakeningBusy = false
         end
 
-        -- ===== Loops =====
+        -- ===== Auto Loops =====
         task.spawn(function()
             while true do
                 if autoAbility then
@@ -646,29 +766,79 @@ return function(sections)
             end
         end)
 
-        -- ===== Respawn FIX =====
-        player.CharacterAdded:Connect(function()
-            -- reset trạng thái awakening để tránh chết loop
-            awakeningBusy = false
+        -- ===== Attribute listeners (hook trung tâm) =====
+        player:GetAttributeChangedSignal("AutoAbility"):Connect(function()
+            local v = player:GetAttribute("AutoAbility")
+            autoAbility = (v == true)
+            updateAbilityUI(autoAbility)
+
+            -- bật là gọi ngay (giữ logic chuẩn)
+            if autoAbility then
+                fireAbility()
+            end
         end)
 
-        -- ===== Toggles =====
+        player:GetAttributeChangedSignal("AutoAwakening"):Connect(function()
+            local v = player:GetAttribute("AutoAwakening")
+            autoAwakening = (v == true)
+            updateAwakenUI(autoAwakening)
+
+            if autoAwakening then
+                fireAwakening()
+            end
+        end)
+
+        -- ===== UI chỉ set Attribute =====
         abilityBtn.MouseButton1Click:Connect(function()
-            autoAbility = not autoAbility
-            abilityBtn.Text = autoAbility and "ON" or "OFF"
-            abilityBtn.BackgroundColor3 =
-                autoAbility and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
-            if autoAbility then fireAbility() end
+            player:SetAttribute("AutoAbility", not (player:GetAttribute("AutoAbility") == true))
         end)
 
         awakenBtn.MouseButton1Click:Connect(function()
-            autoAwakening = not autoAwakening
-            awakenBtn.Text = autoAwakening and "ON" or "OFF"
-            awakenBtn.BackgroundColor3 =
-                autoAwakening and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
-            if autoAwakening then fireAwakening() end
+            player:SetAttribute("AutoAwakening", not (player:GetAttribute("AutoAwakening") == true))
         end)
+
+        -- ===== Respawn FIX =====
+        player.CharacterAdded:Connect(function()
+            awakeningBusy = false
+        end)
+
+        -- ===== shared hook (legacy) =====
+        task.spawn(function()
+            local lastA, lastW
+            while true do
+                task.wait(0.15)
+                local sa = shared and shared.AutoAbility
+                local sw = shared and shared.AutoAwakening
+
+                if sa ~= lastA then
+                    lastA = sa
+                    if sa ~= nil then
+                        player:SetAttribute("AutoAbility", sa == true)
+                    end
+                end
+
+                if sw ~= lastW then
+                    lastW = sw
+                    if sw ~= nil then
+                        player:SetAttribute("AutoAwakening", sw == true)
+                    end
+                end
+            end
+        end)
+
+        -- helper optional
+        shared = shared or {}
+        shared.ToggleAutoAbility = function(v)
+            player:SetAttribute("AutoAbility", v == true)
+        end
+        shared.ToggleAutoAwakening = function(v)
+            player:SetAttribute("AutoAwakening", v == true)
+        end
     end
+    --[[HOOK
+game.Players.LocalPlayer:SetAttribute("AutoAbility", true)
+game.Players.LocalPlayer:SetAttribute("AutoAwakening", false)
+    ]]
 
         --SELECT TEAM======================================================================================================
     do
@@ -754,5 +924,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Player_v0.08 tad SUCCESS✅")
+    print("Player_v0.09 tad SUCCESS✅")
 end
