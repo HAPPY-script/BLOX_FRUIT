@@ -1165,7 +1165,8 @@ return function(sections)
             lastLevel = getLevel()
 
             if running then
-                player:SetAttribute("FastAttackEnemy", true)
+                game.Players.LocalPlayer:SetAttribute("FastAttackEnemyMode", "Toggle")
+                game.Players.LocalPlayer:SetAttribute("FastAttackEnemy", true)
             end
         end)
 
@@ -1473,7 +1474,8 @@ return function(sections)
             lastLevel = getLevel()
 
             if running then
-                player:SetAttribute("FastAttackEnemy", true)
+                game.Players.LocalPlayer:SetAttribute("FastAttackEnemyMode", "Toggle")
+                game.Players.LocalPlayer:SetAttribute("FastAttackEnemy", true)
             end
         end)
 
@@ -1794,7 +1796,8 @@ return function(sections)
             if running then
 
                 --Turn on FastAttack Enemy
-                player:SetAttribute("FastAttackEnemy", true)
+                game.Players.LocalPlayer:SetAttribute("FastAttackEnemyMode", "Toggle")
+                game.Players.LocalPlayer:SetAttribute("FastAttackEnemy", true)
                 
                 -- tạo farm point ở vị trí hiện tại của người chơi
                 createFarmPoint(hrp.Position)
@@ -1870,5 +1873,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Home tad SUCCESS✅")
+    print("Home tad V0.01 SUCCESS✅")
 end
