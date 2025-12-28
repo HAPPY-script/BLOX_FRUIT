@@ -471,6 +471,9 @@ return function(sections)
         local autoDungeon = false
         local pauseForExit = false
 
+        local lastEquippedToolName = nil
+        local toolTrackConn = nil
+
         -- state helpers
         local farmCenter = nil
         local movementLock = false           -- tránh nhiều movement cùng lúc
@@ -486,6 +489,29 @@ return function(sections)
 
         local function isIgnoredEnemy(mob)
             return IGNORED_ENEMIES[mob.Name] == true
+        end
+
+        -- Hook tool tracking on a character: listen ChildAdded and capture existing tool
+        local function hookToolTracking(char)
+            -- disconnect previous connection if any
+            if toolTrackConn then
+                pcall(function() toolTrackConn:Disconnect() end)
+                toolTrackConn = nil
+            end
+            if not char then return end
+
+            -- capture currently equipped tool immediately (if any)
+            local existing = char:FindFirstChildOfClass("Tool")
+            if existing and autoDungeon then
+                lastEquippedToolName = existing.Name
+            end
+
+            -- listen for future equips (player picks up / equips a tool)
+            toolTrackConn = char.ChildAdded:Connect(function(obj)
+                if obj and obj:IsA("Tool") and autoDungeon then
+                    lastEquippedToolName = obj.Name
+                end
+            end)
         end
 
         -- ensure refs (respawn safe)
@@ -836,15 +862,37 @@ return function(sections)
         -- respawn handling: pause 2s then resume (state preserved)
         player.CharacterAdded:Connect(function(newChar)
             refreshCharacterRefs(newChar)
+            hookToolTracking(newChar) -- start listening on new char
             pauseForExit = true
-            -- ensure movement locks reset
+
+            -- reset locks
             movementLock = false
             followLock = false
             currentTarget = nil
+
+            -- sau 2s: resume + equip tool cũ nếu cần
             task.delay(2, function()
                 pauseForExit = false
+
+                if autoDungeon and lastEquippedToolName then
+                    -- small wait to ensure Backpack is ready
+                    task.wait(0.2)
+                    -- only equip if player currently has no tool equipped
+                    if newChar and not newChar:FindFirstChildOfClass("Tool") then
+                        local bp = player:FindFirstChild("Backpack")
+                        local tool = bp and bp:FindFirstChild(lastEquippedToolName)
+                        if tool then
+                            pcall(function()
+                                tool.Parent = newChar
+                            end)
+                        end
+                    end
+                end
             end)
         end)
+
+        -- when script starts, hook current character tracking
+        hookToolTracking(character)
 
         -- Toggle UI (có block kiểm tra PlaceId)
         autoBtn.MouseButton1Click:Connect(function()
@@ -878,6 +926,9 @@ return function(sections)
             autoBtn.BackgroundColor3 = autoDungeon and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
 
             if autoDungeon then
+                -- start tracking current character (in case user toggles while alive)
+                hookToolTracking(character)
+
                 -- chỉ gọi hook khi thực sự bật
                 pcall(function()
                     player:SetAttribute("FastAttackEnemy", true)
@@ -897,5 +948,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.10 SUCCESS✅")
+    print("Raid tad V0.11 SUCCESS✅")
 end
