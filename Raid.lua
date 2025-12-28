@@ -859,7 +859,7 @@ return function(sections)
             end
         end)
 
-        -- respawn handling: pause 2s then resume (state preserved)
+        -- respawn handling: pause 1s then resume (state preserved)
         player.CharacterAdded:Connect(function(newChar)
             refreshCharacterRefs(newChar)
             hookToolTracking(newChar) -- start listening on new char
@@ -870,8 +870,8 @@ return function(sections)
             followLock = false
             currentTarget = nil
 
-            -- sau 2s: resume + equip tool cũ nếu cần
-            task.delay(2, function()
+            -- sau 1s: resume + equip tool cũ nếu cần
+            task.delay(1, function()
                 pauseForExit = false
 
                 if autoDungeon and lastEquippedToolName then
