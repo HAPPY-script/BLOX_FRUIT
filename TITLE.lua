@@ -17,16 +17,16 @@ return function(sections)
         TitleRaid.BorderSizePixel = 2
         TitleRaid.BorderColor3 = Color3.new(255, 255, 255)
 
-        local TitleRaid = Instance.new("TextLabel", HomeFrame)
-        TitleRaid.Size = UDim2.new(0, 220, 0, 30)
-        TitleRaid.Position = UDim2.new(0, 10, 0, 110)
-        TitleRaid.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        TitleRaid.TextColor3 = Color3.new(1, 1, 1)
-        TitleRaid.Text = "AUTO DUNGEON🪓"
-        TitleRaid.TextScaled = true
-        TitleRaid.Font = Enum.Font.SourceSansBold
-        TitleRaid.BorderSizePixel = 2
-        TitleRaid.BorderColor3 = Color3.new(255, 255, 255)
+        local DungeonUI = Instance.new("TextLabel", HomeFrame)
+        DungeonUI.Size = UDim2.new(0, 220, 0, 30)
+        DungeonUI.Position = UDim2.new(0, 10, 0, 110)
+        DungeonUI.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        DungeonUI.TextColor3 = Color3.new(1, 1, 1)
+        DungeonUI.Text = "AUTO DUNGEON🪓"
+        DungeonUI.TextScaled = true
+        DungeonUI.Font = Enum.Font.SourceSansBold
+        DungeonUI.BorderSizePixel = 2
+        DungeonUI.BorderColor3 = Color3.new(255, 255, 255)
     end
 
     -- HOME ---------------------------------------------------------
@@ -312,22 +312,22 @@ return function(sections)
         TitleButton.BorderColor3 = Color3.new(255, 255, 255)
 
         local TitleButton = Instance.new("TextLabel", HomeFrame)
-        TitleButton.Size = UDim2.new(0, 220, 0, 30)
+        TitleButton.Size = UDim2.new(0, 170, 0, 30)
         TitleButton.Position = UDim2.new(0, 10, 0, 160)
         TitleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleButton.Text = "⚡Fast Attack Enemy🧟"
+        TitleButton.Text = "⚡Fast Attack Enemy🧟(testing)"
         TitleButton.TextScaled = true
         TitleButton.Font = Enum.Font.SourceSansBold
         TitleButton.BorderSizePixel = 2
         TitleButton.BorderColor3 = Color3.new(255, 255, 255)
 
         local TitleButton = Instance.new("TextLabel", HomeFrame)
-        TitleButton.Size = UDim2.new(0, 220, 0, 30)
+        TitleButton.Size = UDim2.new(0, 170, 0, 30)
         TitleButton.Position = UDim2.new(0, 10, 0, 210)
         TitleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleButton.Text = "⚡Fast Attack Player🧍"
+        TitleButton.Text = "⚡Fast Attack Player🧍(testing)"
         TitleButton.TextScaled = true
         TitleButton.Font = Enum.Font.SourceSansBold
         TitleButton.BorderSizePixel = 2
