@@ -316,7 +316,7 @@ return function(sections)
         TitleButton.Position = UDim2.new(0, 10, 0, 160)
         TitleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleButton.Text = "⚡Fast Attack Enemy🧟(testing)"
+        TitleButton.Text = "⚡Fast Attack Enemy🧟"
         TitleButton.TextScaled = true
         TitleButton.Font = Enum.Font.SourceSansBold
         TitleButton.BorderSizePixel = 2
@@ -327,7 +327,7 @@ return function(sections)
         TitleButton.Position = UDim2.new(0, 10, 0, 210)
         TitleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleButton.TextColor3 = Color3.new(1, 1, 1)
-        TitleButton.Text = "⚡Fast Attack Player🧍(testing)"
+        TitleButton.Text = "⚡Fast Attack Player🧍"
         TitleButton.TextScaled = true
         TitleButton.Font = Enum.Font.SourceSansBold
         TitleButton.BorderSizePixel = 2
