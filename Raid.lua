@@ -467,7 +467,7 @@ return function(sections)
         local SCAN_INTERVAL = 0.08           -- nhỏ để gần như không có delay
         local MOVE_SPEED = 600               -- giữ tốc độ bay như trước (units/sec)
         local FOLLOW_HEIGHT = 35             -- tăng lên 35 stud (bạn có thể đổi lại 75 nếu muốn)
-        local ATTACK_INTERVAL = 0.35         -- tăng tốc đánh thành 0.35
+        local ATTACK_INTERVAL = 0.5         -- tăng tốc đánh thành 0.5
 
         local autoDungeon = false
         local pauseForExit = false
@@ -871,8 +871,8 @@ return function(sections)
             followLock = false
             currentTarget = nil
 
-            -- sau 1s: resume + equip tool cũ nếu cần
-            task.delay(1, function()
+            -- sau 0.5s: resume + equip tool cũ nếu cần
+            task.delay(0.5, function()
                 pauseForExit = false
 
                 if autoDungeon and lastEquippedToolName then
