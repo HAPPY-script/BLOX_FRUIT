@@ -653,15 +653,18 @@ game.Players.LocalPlayer:SetAttribute("AutoObserve", false)  -- tắt
     do
         local Players = game:GetService("Players")
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local UIS = game:GetService("UserInputService")
+        local RunService = game:GetService("RunService")
 
         local player = Players.LocalPlayer
         local INTERVAL = 5
 
-        -- internal state (ui chỉ hiển thị; logic chính đọc Attribute trực tiếp)
+        -- minimal state
         local awakeningBusy = false
+        local awakenAttemptId = 0
+        local awakeningStartedAt = 0
+        local MAX_AWAIT = 4 -- nếu InvokeServer treo > 4s thì coi như timeout và cho phép retry
 
-        -- ===== UI: Auto Ability =====
+        -- UI (giữ nguyên của bạn)
         local abilityBtn = Instance.new("TextButton", HomeFrame)
         abilityBtn.Size = UDim2.new(0, 90, 0, 30)
         abilityBtn.Position = UDim2.new(0, 240, 0, 360)
@@ -669,7 +672,6 @@ game.Players.LocalPlayer:SetAttribute("AutoObserve", false)  -- tắt
         abilityBtn.Font = Enum.Font.SourceSansBold
         abilityBtn.TextScaled = true
 
-        -- ===== UI: Auto Awakening =====
         local awakenBtn = Instance.new("TextButton", HomeFrame)
         awakenBtn.Size = UDim2.new(0, 90, 0, 30)
         awakenBtn.Position = UDim2.new(0, 240, 0, 410)
@@ -689,18 +691,16 @@ game.Players.LocalPlayer:SetAttribute("AutoObserve", false)  -- tắt
                 state and Color3.fromRGB(50,255,50) or Color3.fromRGB(255,50,50)
         end
 
-        -- ===== Init từ Attribute nếu có =====
+        -- init UI từ Attribute
         do
             local a = player:GetAttribute("AutoAbility")
             local w = player:GetAttribute("AutoAwakening")
-
             if a ~= nil then updateAbilityUI(a == true) else player:SetAttribute("AutoAbility", false) end
             if w ~= nil then updateAwakenUI(w == true) else player:SetAttribute("AutoAwakening", false) end
         end
 
-        -- ===== Actions =====
+        -- ability action (giữ nguyên)
         local function fireAbility()
-            -- non-blocking fire (FireServer không yield)
             pcall(function()
                 if ReplicatedStorage and ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("CommE") then
                     ReplicatedStorage.Remotes.CommE:FireServer("ActivateAbility")
@@ -708,21 +708,25 @@ game.Players.LocalPlayer:SetAttribute("AutoObserve", false)  -- tắt
             end)
         end
 
-        -- Awakening: non-blocking attempt, đảm bảo awakeningBusy luôn reset
-        local function fireAwakening()
+        -- attempt awakening: non-blocking, with attemptId to avoid race
+        local function attemptAwakening()
+            -- nếu đang có attempt đang cooperatively running, skip
             if awakeningBusy then return end
+
+            -- prepare attempt id and start time
+            awakenAttemptId = awakenAttemptId + 1
+            local myId = awakenAttemptId
             awakeningBusy = true
+            awakeningStartedAt = tick()
 
             task.spawn(function()
-                local success = false
-                local startT = tick()
-
-                -- chờ Backpack + item Awakening tối đa 3s (như trước)
+                local succeeded = false
+                -- small fast check for backpack + Awakening item (non-blocking)
                 local bp = player:FindFirstChild("Backpack")
                 local waited = 0
                 while waited < 3 and (not bp or not bp:FindFirstChild("Awakening")) do
-                    task.wait(0.2)
-                    waited = waited + 0.2
+                    task.wait(0.18)
+                    waited = waited + 0.18
                     bp = player:FindFirstChild("Backpack")
                 end
 
@@ -730,52 +734,67 @@ game.Players.LocalPlayer:SetAttribute("AutoObserve", false)  -- tắt
                 if awak then
                     local rf = awak:FindFirstChild("RemoteFunction")
                     if rf and typeof(rf.InvokeServer) == "function" then
-                        -- pcall để tránh error văng ra; làm non-blocking bằng task.spawn phía trên
+                        -- pcall so errors don't bubble; InvokeServer may yield
                         local ok, err = pcall(function()
-                            -- InvokeServer có thể yield lâu; nhưng đang chạy trong task.spawn
                             rf:InvokeServer(true)
                         end)
-                        if ok then success = true end
+                        if ok then succeeded = true end
                     end
                 end
 
-                awakeningBusy = false
-                return success
+                -- only clear busy if this task is the latest attempt (avoid race with timeout invalidation)
+                if awakenAttemptId == myId then
+                    awakeningBusy = false
+                end
+                -- done (we leave hung tasks to finish but they won't flip busy flag if they aren't latest)
             end)
         end
 
-        -- ===== Auto Loops (đọc Attribute trực tiếp) =====
-        task.spawn(function()
-            while true do
-                local enabled = (player:GetAttribute("AutoAbility") == true)
-                if enabled then
-                    -- gọi ngay rồi chờ interval
+        -- Heartbeat-driven timer (đọc Attribute mỗi frame -> nhạy & robust)
+        local lastAwakenTick = 0
+        local lastAbilityTick = 0
+
+        RunService.Heartbeat:Connect(function(dt)
+            -- ability: read attribute directly, fire when interval elapsed
+            local enabledAbility = (player:GetAttribute("AutoAbility") == true)
+            if enabledAbility then
+                if (tick() - lastAbilityTick) >= INTERVAL then
+                    lastAbilityTick = tick()
                     fireAbility()
-                    task.wait(INTERVAL)
-                else
-                    task.wait(0.25)
                 end
+            else
+                -- keep lastAbilityTick in past so that when enabled it fires quickly
+                lastAbilityTick = tick() - INTERVAL - 0.01
+            end
+
+            -- awakening: read attribute directly
+            local enabledAwaken = (player:GetAttribute("AutoAwakening") == true)
+
+            -- watchdog: nếu một attempt đang busy quá lâu thì invalidate (cho phép retry)
+            if awakeningBusy and (tick() - awakeningStartedAt) > MAX_AWAIT then
+                -- invalidate current attempt so later spawn won't be blocked forever
+                awakeningBusy = false
+                awakenAttemptId = awakenAttemptId + 1 -- bump id so previous tasks won't clear our new busy flag
+            end
+
+            if enabledAwaken then
+                if (tick() - lastAwakenTick) >= INTERVAL and not awakeningBusy then
+                    lastAwakenTick = tick()
+                    attemptAwakening()
+                end
+            else
+                -- ensure next enable will attempt almost immediately
+                lastAwakenTick = tick() - INTERVAL - 0.01
             end
         end)
 
-        task.spawn(function()
-            while true do
-                local enabled = (player:GetAttribute("AutoAwakening") == true)
-                if enabled then
-                    fireAwakening()
-                    task.wait(INTERVAL)
-                else
-                    task.wait(0.25)
-                end
-            end
-        end)
-
-        -- ===== Attribute listeners (UI sync) =====
+        -- Attribute listeners for UI sync + immediate trigger
         player:GetAttributeChangedSignal("AutoAbility"):Connect(function()
             local v = player:GetAttribute("AutoAbility")
             updateAbilityUI(v == true)
             if v == true then
-                -- kích hoạt ngay
+                -- fire immediately (and reset timer so next automatic happens after full INTERVAL)
+                lastAbilityTick = tick()
                 fireAbility()
             end
         end)
@@ -784,44 +803,42 @@ game.Players.LocalPlayer:SetAttribute("AutoObserve", false)  -- tắt
             local v = player:GetAttribute("AutoAwakening")
             updateAwakenUI(v == true)
             if v == true then
-                fireAwakening()
+                -- try immediately
+                lastAwakenTick = tick()
+                attemptAwakening()
             end
         end)
 
-        -- ===== UI chỉ set Attribute =====
+        -- UI toggles (giữ nguyên)
         abilityBtn.MouseButton1Click:Connect(function()
             local cur = player:GetAttribute("AutoAbility")
             player:SetAttribute("AutoAbility", not (cur == true))
         end)
-
         awakenBtn.MouseButton1Click:Connect(function()
             local cur = player:GetAttribute("AutoAwakening")
             player:SetAttribute("AutoAwakening", not (cur == true))
         end)
 
-        -- ===== Respawn / humanoid died fixes =====
-        -- ensure awakeningBusy reset and UI re-sync
-        local function onCharacter(c)
+        -- Respawn/humanoid died: invalidate any stuck attempts and resync UI
+        local function onCharacter(char)
             awakeningBusy = false
-            -- re-sync UI from attributes in case something changed while dead
+            awakenAttemptId = awakenAttemptId + 1
             updateAbilityUI(player:GetAttribute("AutoAbility") == true)
             updateAwakenUI(player:GetAttribute("AutoAwakening") == true)
 
-            -- optional: listen to Humanoid.Died to reset
-            local hum = c:WaitForChild("Humanoid", 5)
+            local hum = char:FindFirstChildOfClass("Humanoid")
             if hum then
                 hum.Died:Connect(function()
                     awakeningBusy = false
+                    awakenAttemptId = awakenAttemptId + 1
                 end)
             end
         end
 
-        if player.Character then
-            onCharacter(player.Character)
-        end
+        if player.Character then onCharacter(player.Character) end
         player.CharacterAdded:Connect(onCharacter)
 
-        -- ===== shared hook (legacy) =====
+        -- shared hook (giữ nhưng đơn giản)
         task.spawn(function()
             local lastA, lastW = nil, nil
             while true do
@@ -832,7 +849,6 @@ game.Players.LocalPlayer:SetAttribute("AutoObserve", false)  -- tắt
                 if sa ~= lastA then
                     lastA = sa
                     if sa ~= nil then
-                        -- support boolean or string values (true/false or "on"/"off")
                         if type(sa) == "string" then
                             local low = string.lower(sa)
                             if low == "on" or low == "true" then
@@ -864,14 +880,10 @@ game.Players.LocalPlayer:SetAttribute("AutoObserve", false)  -- tắt
             end
         end)
 
-        -- helper optional
+        -- helper API
         shared = shared or {}
-        shared.ToggleAutoAbility = function(v)
-            player:SetAttribute("AutoAbility", v == true)
-        end
-        shared.ToggleAutoAwakening = function(v)
-            player:SetAttribute("AutoAwakening", v == true)
-        end
+        shared.ToggleAutoAbility = function(v) player:SetAttribute("AutoAbility", v == true) end
+        shared.ToggleAutoAwakening = function(v) player:SetAttribute("AutoAwakening", v == true) end
     end
 
     --[[HOOK
