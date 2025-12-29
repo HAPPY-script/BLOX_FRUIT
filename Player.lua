@@ -656,7 +656,7 @@ game.Players.LocalPlayer:SetAttribute("AutoObserve", false)  -- tắt
         local RunService = game:GetService("RunService")
 
         local player = Players.LocalPlayer
-        local INTERVAL = 5
+        local INTERVAL = 2
 
         -- minimal state
         local awakeningBusy = false
