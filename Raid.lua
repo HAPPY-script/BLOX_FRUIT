@@ -1011,6 +1011,16 @@ return function(sections)
 
         local ignoredStableGui = nil
 
+        local function normalizeText(txt)
+            if not txt then return "" end
+            -- remove tags like <...>
+            local s = tostring(txt):gsub("<[^>]+>", "")
+            -- trim
+            s = s:match("^%s*(.-)%s*$") or s
+            -- lowercase for stable matching
+            return s:lower()
+        end
+
         -- HELPERS UI
         local function recordOriginal(btn)
         	if not originalMeta[btn] then
@@ -1211,57 +1221,34 @@ return function(sections)
         end)
 
         local function buildPriorityMap()
-        	local map = {}
-        	for i, btn in ipairs(executionOrder) do
-        		if btn and btn:IsA("GuiObject") then
-        			local label = btn:FindFirstChild("DisplayName")
-        			local txt = nil
-        			if label and label:IsA("TextLabel") then txt = label.Text:gsub("<[^>]+>", "") end
-        			if (not txt or txt == "") and btn:IsA("TextButton") then
-        				txt = tostring(btn.Text or "")
-        			end
-        			if txt and txt ~= "" then
-        				-- giữ chỉ số nhỏ nhất nếu trùng (ưu tiên cao hơn)
-        				if not map[txt] or i < map[txt] then
-        					map[txt] = i
-        				end
-        			end
-        		end
-        	end
-        	return map
-        end
-
-        local function chooseBestFromValid(validGuis, dynMap)
-        	local bestBtn, bestGui, bestPriority
-        	for sg, meta in pairs(validGuis) do
-        		local text = meta.text
-        		-- ưu tiên dynamic map
-        		local p = dynMap[text]
-        		if p then
-        			if (not bestPriority) or p < bestPriority then
-        				bestPriority = p
-        				bestBtn = meta.btn
-        				bestGui = sg
-        			end
-        		else
-        			-- fallback: static list
-        			local sidx = getStaticIndex(text)
-        			if sidx then
-        				if (not bestPriority) or sidx < bestPriority then
-        					bestPriority = sidx
-        					bestBtn = meta.btn
-        					bestGui = sg
-        				end
-        			end
-        		end
-        	end
-        	return bestGui, bestBtn, bestPriority
+            local map = {}
+            for i, btn in ipairs(executionOrder) do
+                if btn and btn:IsA("GuiObject") then
+                    local label = btn:FindFirstChild("DisplayName")
+                    local txt = nil
+                    if label and label:IsA("TextLabel") then txt = label.Text end
+                    if (not txt or txt == "") and btn:IsA("TextButton") then
+                        txt = tostring(btn.Text or "")
+                    end
+                    if txt and txt ~= "" then
+                        local key = normalizeText(txt)
+                        -- keep smallest (higher) priority index if duplicate names
+                        if not map[key] or i < map[key] then
+                            map[key] = i
+                        end
+                    end
+                end
+            end
+            return map
         end
 
         -- static fallback priority map from TARGET_TEXTS
         local function getStaticIndex(text)
-        	for i, v in ipairs(TARGET_TEXTS) do if text == v then return i end end
-        	return nil
+            local key = normalizeText(text)
+            for i, v in ipairs(TARGET_TEXTS) do
+                if normalizeText(v) == key then return i end
+            end
+            return nil
         end
 
         local function clickButtonAt(btn)
@@ -1276,82 +1263,103 @@ return function(sections)
         math.randomseed(tick())
 
         local function isValidBuffGui(sg)
-        	if not sg:IsA("ScreenGui") or not sg.Enabled then return false end
+            if not sg or not sg:IsA("ScreenGui") or not sg.Enabled then return false end
 
-        	local frame = sg:FindFirstChild("1")
-        	if not frame then return false end
+            local frame = sg:FindFirstChild("1")
+            if not frame then return false end
 
-        	local btn = frame:FindFirstChild("2")
-        	if not btn or not btn:IsA("TextButton") then return false end
-        	if not btn.Visible or not btn.Active then return false end
+            local btn = frame:FindFirstChild("2")
+            if not btn or not btn:IsA("TextButton") then return false end
+            if not btn.Visible or not btn.Active then return false end
 
-        	local label = btn:FindFirstChild("DisplayName")
-        	if not label or not label:IsA("TextLabel") then return false end
-        	if label.Text == "" then return false end
+            local label = btn:FindFirstChild("DisplayName")
+            if not label or not label:IsA("TextLabel") then return false end
+            if label.Text == "" then return false end
 
-        	return true, btn, label
+            local norm = normalizeText(label.Text)
+            return true, btn, label, norm
         end
 
         local function tryAutoClick()
-        	if not autoRunning then return end
-        	if os.clock() - lastClickTime < SCAN_INTERVAL then return end
+            if not autoRunning then return end
+            if os.clock() - lastClickTime < SCAN_INTERVAL then return end
 
-        	local pgRoot = player:FindFirstChild("PlayerGui")
-        	if not pgRoot then return end
+            local pgRoot = player:FindFirstChild("PlayerGui")
+            if not pgRoot then return end
 
-        	-- build danh sách ScreenGui hợp lệ (không break sớm)
-        	local validGuis = {}
-        	for _, sg in ipairs(pgRoot:GetChildren()) do
-        		local ok, btn, label = isValidBuffGui(sg)
-        		if ok then
-        			local text = (label and label.Text or ""):gsub("<[^>]+>", "")
-        			validGuis[sg] = { btn = btn, label = label, text = text }
-        		end
-        	end
+            -- gather all valid GUIs first
+            local valid = {}
+            for _, sg in ipairs(pgRoot:GetChildren()) do
+                local ok, btn, label, norm = isValidBuffGui(sg)
+                if ok then
+                    table.insert(valid, {sg = sg, btn = btn, label = label, key = norm})
+                end
+            end
 
-        	-- nếu không có GUI hợp lệ -> reset state
-        	local countValid = 0
-        	for _ in pairs(validGuis) do countValid += 1 end
-        	if countValid == 0 then
-        		stableGui = nil
-        		stableSince = 0
-        		ignoredStableGui = nil
-        		return
-        	end
+            -- no valid GUI -> reset stable state
+            if #valid == 0 then
+                stableGui = nil
+                stableSince = 0
+                ignoredStableGui = nil
+                return
+            end
 
-        	-- build mapping ưu tiên dựa trên executionOrder
-        	local dynMap = buildPriorityMap()
+            -- build dynamic priority map once
+            local dynMap = buildPriorityMap()
 
-        	-- chọn best GUI theo dynamic map -> static fallback
-        	local bestGui, bestBtn, bestPriority = chooseBestFromValid(validGuis, dynMap)
+            -- find best candidate among valid GUIs according to dynamic map or static fallback
+            local candidate = nil
+            local candidatePriority = nil
 
-        	-- nếu có bestBtn thì xử lý ổn định (REQUIRE_STABLE_TIME)
-        	if bestBtn then
-        		-- nếu GUI này đã bị ignore, bỏ qua
-        		if ignoredStableGui == bestGui then
-        			return
-        		end
+            for _, v in ipairs(valid) do
+                local k = v.key
+                local p = dynMap[k] -- dynamic priority (smaller = higher)
+                if p then
+                    if not candidatePriority or p < candidatePriority then
+                        candidate = v
+                        candidatePriority = p
+                    end
+                else
+                    local sidx = getStaticIndex(v.label.Text)
+                    if sidx then
+                        if not candidatePriority or sidx < candidatePriority then
+                            candidate = v
+                            candidatePriority = sidx
+                        end
+                    end
+                end
+            end
 
-        		-- GUI thay đổi -> reset timer
-        		if stableGui ~= bestGui then
-        			stableGui = bestGui
-        			stableSince = os.clock()
-        			return
-        		end
+            -- If none matched priority lists, fallback to first valid GUI for stability gating
+            local foundGui = (candidate and candidate.sg) or valid[1].sg
 
-        		-- chưa đủ thời gian ổn định -> chờ
-        		if os.clock() - stableSince < REQUIRED_STABLE_TIME then
-        			return
-        		end
+            -- if this GUI was previously ignored, skip
+            if ignoredStableGui == foundGui then
+                return
+            end
 
-        		-- Đủ ổn định -> click
-        		lastClickTime = os.clock()
-        		clickButtonAt(bestBtn)
-        		return
-        	end
+            -- GUI changed -> reset stable timer
+            if stableGui ~= foundGui then
+                stableGui = foundGui
+                stableSince = os.clock()
+                return
+            end
 
-        	-- không tìm thấy button ưu tiên nào -> khóa GUI hiện tại
-        	ignoredStableGui = stableGui
+            -- wait until GUI stable enough
+            if os.clock() - stableSince < REQUIRED_STABLE_TIME then
+                return
+            end
+
+            -- ===== GUI ổn định =====
+            -- If we already have candidate from above (meaning there is a prioritized buff among visible GUIs), click it
+            if candidate and candidate.btn then
+                lastClickTime = os.clock()
+                clickButtonAt(candidate.btn)
+                return
+            end
+
+            -- If GUI stable but no priority match, mark it ignored
+            ignoredStableGui = stableGui
         end
         
         -- Loop auto
@@ -1374,5 +1382,5 @@ return function(sections)
     
     wait(0.2)
 
-    print("Raid tad V0.20 SUCCESS✅")
+    print("Raid tad V0.21 SUCCESS✅")
 end
