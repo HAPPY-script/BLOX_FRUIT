@@ -7,7 +7,7 @@ return function(sections)
         local HomeFrame = sections["Raid"]
 
         local TitleRaid = Instance.new("TextLabel", HomeFrame)
-        TitleRaid.Size = UDim2.new(0, 170, 0, 30)
+        TitleRaid.Size = UDim2.new(0, 220, 0, 30)
         TitleRaid.Position = UDim2.new(0, 10, 0, 10)
         TitleRaid.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         TitleRaid.TextColor3 = Color3.new(1, 1, 1)
@@ -29,7 +29,7 @@ return function(sections)
         DungeonUI.BorderColor3 = Color3.new(255, 255, 255)
 
         local BuffDungeonUI = Instance.new("TextLabel", HomeFrame)
-        BuffDungeonUI.Size = UDim2.new(0, 220, 0, 30)
+        BuffDungeonUI.Size = UDim2.new(0, 170, 0, 30)
         BuffDungeonUI.Position = UDim2.new(0, 10, 0, 160)
         BuffDungeonUI.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         BuffDungeonUI.TextColor3 = Color3.new(1, 1, 1)
