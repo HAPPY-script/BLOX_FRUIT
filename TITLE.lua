@@ -27,6 +27,17 @@ return function(sections)
         DungeonUI.Font = Enum.Font.SourceSansBold
         DungeonUI.BorderSizePixel = 2
         DungeonUI.BorderColor3 = Color3.new(255, 255, 255)
+
+        local BuffDungeonUI = Instance.new("TextLabel", HomeFrame)
+        BuffDungeonUI.Size = UDim2.new(0, 220, 0, 30)
+        BuffDungeonUI.Position = UDim2.new(0, 10, 0, 110)
+        BuffDungeonUI.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        BuffDungeonUI.TextColor3 = Color3.new(1, 1, 1)
+        BuffDungeonUI.Text = "AUTO BUFF SELECT💫 (testing)"
+        BuffDungeonUI.TextScaled = true
+        BuffDungeonUI.Font = Enum.Font.SourceSansBold
+        BuffDungeonUI.BorderSizePixel = 2
+        BuffDungeonUI.BorderColor3 = Color3.new(255, 255, 255)
     end
 
     -- HOME ---------------------------------------------------------
