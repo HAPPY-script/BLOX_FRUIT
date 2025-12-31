@@ -1138,17 +1138,6 @@ ListTitle.TextScaled = true
 ListTitle.TextWrapped = true
 ListTitle.Parent = Main
 
-local Open = Instance.new("TextButton")
-Open.Name = "Open"
-Open.Size = UDim2.new(0, 200, 0, 50)
-Open.BackgroundColor3 = Color3.new(1, 1, 1)
-Open.BorderSizePixel = 0
-Open.BorderColor3 = Color3.new(0, 0, 0)
-Open.TextColor3 = Color3.new(0, 0, 0)
-Open.TextSize = 14
-Open.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Open.Parent = AutoBuffSelectionGui
-
 local player = game.Players.LocalPlayer
 local gui = player.PlayerGui:FindFirstChild("AutoBuffSelectionGui")
 
