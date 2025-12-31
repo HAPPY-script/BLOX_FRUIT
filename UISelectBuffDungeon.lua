@@ -14,6 +14,7 @@ Main.BorderSizePixel = 0
 Main.BorderColor3 = Color3.new(0, 0, 0)
 Main.ZIndex = 50
 Main.AnchorPoint = Vector2.new(0.5, 0.5)
+Main.Visible = false
 Main.Parent = AutoBuffSelectionGui
 
 local TitleFrame = Instance.new("Frame")
