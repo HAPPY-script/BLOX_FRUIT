@@ -954,7 +954,248 @@ return function(sections)
     end
     
         --AUTO SELECT BUFF DUNGEON------------------------------------------------------------------------------------------------------------------
+    do
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/UISelectBuffDungeon.lua"))()
+        local Players = game:GetService("Players")
+        local TweenService = game:GetService("TweenService")
+        local RunService = game:GetService("RunService")
 
+        local player = Players.LocalPlayer
+        local pg = player:WaitForChild("PlayerGui")
+
+        if pg:GetAttribute("AutoBuffUI_Loaded") then return end
+        pg:SetAttribute("AutoBuffUI_Loaded", true)
+
+        -- CONFIG
+        local SCAN_INTERVAL = 2 -- seconds
+        local MIN_REQUIRED = 3   -- cần ít nhất 3 ScreenGui hợp lệ
+        local EXECUTION_GUI_NAME = "AutoBuffSelectionGui" -- gui chứa Main.Execution
+        local TARGET_SCREENGUI_NAME = "ScreenGui" -- chỉ lấy các ScreenGui có tên chính xác này
+
+        -- Helper: normalize text (strip RichText tags, trim, lower)
+        local function normalizeText(txt)
+            if not txt then return "" end
+            local s = tostring(txt)
+            s = s:gsub("<[^>]+>", "")                -- remove RichText tags like <b>...</b>
+            s = s:match("^%s*(.-)%s*$") or s         -- trim
+            return s:lower()
+        end
+
+        -- Safe click function: try VirtualInputManager, otherwise :Activate()
+        local vim
+        pcall(function() vim = game:GetService("VirtualInputManager") end)
+
+        local function clickButton(btn)
+            if not btn or not btn.Parent then return end
+            -- prefer VIM (exploit env) to click at center; fallback to :Activate()
+            local success, _ = pcall(function()
+                if vim then
+                    local p = btn.AbsolutePosition
+                    local s = btn.AbsoluteSize
+                    local x = p.X + s.X/2
+                    local y = p.Y + s.Y/2
+                    vim:SendMouseButtonEvent(x, y, 0, true, game, 1)
+                    task.wait()
+                    vim:SendMouseButtonEvent(x, y, 0, false, game, 1)
+                else
+                    btn:Activate()
+                end
+            end)
+            -- if first attempt failed and we used vim, try Activate as fallback
+            if not success then
+                pcall(function() btn:Activate() end)
+            end
+        end
+
+        -- Find Execution scrolling frame
+        local function findExecution()
+            local gui = pg:FindFirstChild(EXECUTION_GUI_NAME)
+            if not gui or not gui:IsA("ScreenGui") then return nil end
+            local main = gui:FindFirstChild("Main")
+            if not main or not main:IsA("Frame") then return nil end
+            local exec = main:FindFirstChild("Execution")
+            if not exec or not exec:IsA("ScrollingFrame") then return nil end
+            return exec
+        end
+
+        -- Build execution keys: returns array of {key = normalizedKey, button = guiButton, yKey = numericY}
+        local function buildExecutionKeys(exec)
+            local items = {}
+            for _, child in ipairs(exec:GetChildren()) do
+                if child:IsA("GuiObject") then
+                    local txt
+                    local display = child:FindFirstChild("DisplayName")
+                    if display and display:IsA("TextLabel") and tostring(display.Text) ~= "" then
+                        txt = display.Text
+                    elseif child:IsA("TextButton") and tostring(child.Text or "") ~= "" then
+                        txt = tostring(child.Text)
+                    end
+                    if txt and txt ~= "" then
+                        local py = 0
+                        if child.Position then
+                            local ys = (child.Position.Y.Scale or 0)
+                            local yo = (child.Position.Y.Offset or 0)
+                            py = ys + (yo / 100000) -- small tie-breaker as earlier
+                        end
+                        table.insert(items, { key = normalizeText(txt), button = child, yKey = py })
+                    end
+                end
+            end
+            table.sort(items, function(a, b) return a.yKey < b.yKey end)
+            return items
+        end
+
+        -- Scan PlayerGui for target ScreenGui children that match requirements:
+        -- name == TARGET_SCREENGUI_NAME, has child Frame named "1", inside it TextButton named "2"
+        local function scanCandidateScreenGuis()
+            local candidates = {}   -- { {sg=ScreenGui, frame = Frame("1"), btn = TextButton("2"), value = normalizedValue} }
+            local unused = {}       -- screenGuis not named TARGET_SCREENGUI_NAME (kept for record)
+            for _, sg in ipairs(pg:GetChildren()) do
+                if sg:IsA("ScreenGui") then
+                    if sg.Name ~= TARGET_SCREENGUI_NAME then
+                        table.insert(unused, sg)
+                    else
+                        local f = sg:FindFirstChild("1")
+                        if f and f:IsA("Frame") then
+                            local b = f:FindFirstChild("2")
+                            if b and b:IsA("TextButton") then
+                                -- find DisplayName label inside button
+                                local label = b:FindFirstChild("DisplayName")
+                                local val = ""
+                                if label and label:IsA("TextLabel") and tostring(label.Text) ~= "" then
+                                    val = normalizeText(label.Text)
+                                else
+                                    -- fallback to button.Text
+                                    val = normalizeText(b.Text)
+                                end
+                                table.insert(candidates, { sg = sg, frame = f, btn = b, value = val })
+                            end
+                        end
+                    end
+                end
+            end
+            return candidates, unused
+        end
+
+        -- choose top-most (smallest AbsolutePosition.Y) item from array of {btn=...} or {sg=...,btn=...}
+        local function chooseTopMost(list, btnField)
+            if not list or #list == 0 then return nil end
+            local best = list[1]
+            local bestY = math.huge
+            for _, v in ipairs(list) do
+                local btn = btnField and v[btnField] or v.btn or v.button
+                if btn and btn.AbsolutePosition then
+                    local y = btn.AbsolutePosition.Y
+                    if y < bestY then
+                        best = v
+                        bestY = y
+                    end
+                end
+            end
+            return best
+        end
+
+        -- main process: one iteration of scanning + decision + click
+        local function processOnce(exec)
+            if not exec then return end
+            local candidates = scanCandidateScreenGuis()
+            local valid = candidates
+            if #valid < MIN_REQUIRED then
+                return false, ("not_enough_candidates (have %d, need %d)"):format(#valid, MIN_REQUIRED)
+            end
+
+            -- build exec keys
+            local execKeys = buildExecutionKeys(exec)
+            if #execKeys == 0 then
+                -- no exec buttons => random pick
+                local pick = valid[math.random(1, #valid)]
+                if pick and pick.btn then
+                    clickButton(pick.btn)
+                    return true, "clicked_random_no_exec"
+                end
+                return false, "no_exec_and_no_valid_btn"
+            end
+
+            -- map exec keys to matching candidates
+            local execMatches = {} -- entries: { execItem = execKeys[i], matches = {candidate entries} }
+            for _, e in ipairs(execKeys) do
+                for _, c in ipairs(valid) do
+                    if c.value ~= "" and e.key == c.value then
+                        execMatches[#execMatches + 1] = { exec = e, candidate = c }
+                    end
+                end
+            end
+
+            if #execMatches > 0 then
+                -- find exec button among matches with smallest yKey (exec y)
+                table.sort(execMatches, function(a, b)
+                    return a.exec.yKey < b.exec.yKey
+                end)
+                local chosenExec = execMatches[1].exec
+                -- among all candidates that matched chosenExec.key, choose top-most ScreenGui button
+                local sameKeyCandidates = {}
+                for _, pair in ipairs(execMatches) do
+                    if pair.exec == chosenExec then
+                        table.insert(sameKeyCandidates, pair.candidate)
+                    end
+                end
+                -- If none in sameKeyCandidates (shouldn't happen), fallback to first pair candidate
+                local pick = chooseTopMost(sameKeyCandidates, "btn") or execMatches[1].candidate
+                if pick and pick.btn then
+                    clickButton(pick.btn)
+                    return true, ("clicked_match_exec (execKey=%s)"):format(chosenExec.key)
+                end
+            end
+
+            -- no matches with any exec keys -> click random candidate
+            local rand = valid[math.random(1, #valid)]
+            if rand and rand.btn then
+                clickButton(rand.btn)
+                return true, "clicked_random_candidate"
+            end
+
+            return false, "nothing_clicked"
+        end
+
+        local toggleBtn = Instance.new("TextButton", HomeFrame)
+        toggleBtn.Size = UDim2.new(0, 90, 0, 30)
+        toggleBtn.Position = UDim2.new(0, 240, 0, 160)
+        toggleBtn.Text = "OFF"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+        toggleBtn.Font = Enum.Font.SourceSansBold
+        toggleBtn.TextSize = 18
+
+        local enabled = false
+        toggleBtn.MouseButton1Click:Connect(function()
+            enabled = not enabled
+            toggleBtn.Text = enabled and "ON" or "OFF"
+            toggleBtn.BackgroundColor3 = enabled and Color3.fromRGB(50,200,50) or Color3.fromRGB(255,50,50)
+        end)
+
+        -- main loop (non-blocking)
+        task.spawn(function()
+            local exec = nil
+            while not exec do
+                exec = findExecution()
+                if not exec then
+                    task.wait(0.5)
+                end
+            end
+
+            math.randomseed(tick() + game.JobId:GetHashCode())
+
+            while true do
+                if enabled then
+                    local ok, info = pcall(processOnce, exec)
+                    -- optionally could print or log info for debug
+                    -- print("AutoBuff:", ok, info)
+                end
+                task.wait(SCAN_INTERVAL)
+            end
+        end)
+    end
+    
     wait(0.2)
 
     print("Raid tad V0.10 SUCCESS✅")
