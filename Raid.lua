@@ -972,7 +972,6 @@ return function(sections)
         local list = main:WaitForChild("List", 5)                  -- ScrollingFrame
         local titleFrame = main:WaitForChild("TitleFrame", 5)
         local closeBtn = titleFrame:WaitForChild("Close", 5)
-        local openBtn = gui:WaitForChild("Open", 5)
 
         -- CONFIG chức năng auto
         local TARGET_TEXTS = {
@@ -1151,7 +1150,6 @@ return function(sections)
         	busyTween = false
         end
 
-        openBtn.MouseButton1Click:Connect(openMain)
         closeBtn.MouseButton1Click:Connect(closeMain)
 
         local btnAutoToggle = Instance.new("TextButton", HomeFrame)
@@ -1319,5 +1317,5 @@ return function(sections)
     
     wait(0.2)
 
-    print("Raid tad V0.16 SUCCESS✅")
+    print("Raid tad V0.17 SUCCESS✅")
 end
