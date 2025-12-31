@@ -1270,6 +1270,42 @@ return function(sections)
             end
         end
 
+        -- build array of normalized keys in executionOrder order (top -> bottom)
+        local function buildExecKeys()
+            local keys = {}
+            for i, btn in ipairs(executionOrder) do
+                if btn and btn.Parent then
+                    local label = btn:FindFirstChild("DisplayName")
+                    local txt
+                    if label and label:IsA("TextLabel") then
+                        txt = label.Text
+                    elseif btn:IsA("TextButton") then
+                        txt = tostring(btn.Text or "")
+                    end
+                    if txt and txt ~= "" then
+                        table.insert(keys, normalizeText(txt))
+                    end
+                end
+            end
+            return keys
+        end
+
+        -- helper: choose top-most entry from a list (deterministic)
+        local function chooseTopMost(matchList)
+            if not matchList or #matchList == 0 then return nil end
+            local best = matchList[1]
+            local bestY = (best.btn and best.btn.AbsolutePosition and best.btn.AbsolutePosition.Y) or math.huge
+            for i = 2, #matchList do
+                local v = matchList[i]
+                local y = (v.btn and v.btn.AbsolutePosition and v.btn.AbsolutePosition.Y) or math.huge
+                if y < bestY then
+                    best = v
+                    bestY = y
+                end
+            end
+            return best
+        end
+
         local function tryAutoClick()
             if not autoRunning then return end
             if os.clock() - lastClickTime < SCAN_INTERVAL then return end
@@ -1293,28 +1329,37 @@ return function(sections)
                 return
             end
 
-            local dynMap = buildPriorityMap()
-
-            -- find best candidate among valid GUIs according to dynamic map only
+            -- build exec-keys (priority order) and try to match in that order
+            local execKeys = buildExecKeys()
             local candidate = nil
             local candidatePriority = nil
 
-            for _, v in ipairs(valid) do
-                local p = dynMap[v.key]
-                if p then
-                    if not candidatePriority or p < candidatePriority then
-                        candidate = v
-                        candidatePriority = p
+            if #execKeys > 0 then
+                for priorityIndex, key in ipairs(execKeys) do
+                    -- collect all valid entries matching this key
+                    local matches = {}
+                    for _, v in ipairs(valid) do
+                        if v.key == key then
+                            table.insert(matches, v)
+                        end
+                    end
+                    if #matches > 0 then
+                        -- deterministic pick among matches: top-most on screen
+                        local pick = chooseTopMost(matches)
+                        if pick then
+                            candidate = pick
+                            candidatePriority = priorityIndex
+                            break
+                        end
                     end
                 end
             end
 
             -- build a stable signature:
-            -- if we have a candidate, use its ScreenGui as signature (we wait until that candidate is stable)
+            -- if we have a candidate, use its ScreenGui identity + key to be safe
             -- otherwise use a sorted concatenation of all visible keys so we ensure whole-set stability
             local signature
             if candidate then
-                -- use ScreenGui identity + key to be safe
                 signature = tostring(candidate.sg:GetFullName()) .. "::" .. tostring(candidate.key)
             else
                 local keys = {}
@@ -1347,7 +1392,7 @@ return function(sections)
                 return
             end
 
-            -- no candidate matched priority list -> random pick among all valid
+            -- no candidate matched executionOrder -> random pick among all valid (fallback)
             randomClickFromValid(valid)
             ignoredStableSignature = stableSignature
         end
