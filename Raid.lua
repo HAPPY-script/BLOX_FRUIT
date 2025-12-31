@@ -1166,10 +1166,11 @@ return function(sections)
         local btnOpenMain = Instance.new("TextButton", HomeFrame)
         btnOpenMain.Size = UDim2.new(0, 50, 0, 30)
         btnOpenMain.Position = UDim2.new(0, 190, 0, 160)
-        btnOpenMain.Text = "Mode: Toggle"
+        btnOpenMain.Text = "Select"
+        btnOpenMain.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
         btnOpenMain.Font = Enum.Font.SourceSans
         btnOpenMain.TextSize = 14
-        btnOpenMain.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        btnOpenMain.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
         btnOpenMain.TextColor3 = Color3.new(1,1,1)
         btnOpenMain.TextScaled = true
         btnOpenMain.TextWrapped = true
