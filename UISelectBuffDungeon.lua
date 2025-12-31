@@ -1,3 +1,8 @@
+if _G.__BUFF_UI_LOADED__ then
+    return
+end
+_G.__BUFF_UI_LOADED__ = true
+
 local AutoBuffSelectionGui = Instance.new("ScreenGui")
 AutoBuffSelectionGui.Name = "AutoBuffSelectionGui"
 AutoBuffSelectionGui.ResetOnSpawn = false
@@ -1149,3 +1154,159 @@ if gui then
 		end
 	end
 end
+
+-- SYSTEM =======================================================================================================
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local gui = player.PlayerGui:WaitForChild("AutoBuffSelectionGui")
+local main = gui.Main
+local list = main.List
+local exec = main.Execution
+local closeBtn = main.TitleFrame.Close
+
+-- tween config
+local TWEEN_TIME = 0.25
+local EASING = Enum.EasingStyle.Quad
+
+-- execution layout
+local EXEC_ANCHOR = Vector2.new(0.5, 0)
+local EXEC_X = 0.5
+local EXEC_FIRST_Y = 0.015
+local EXEC_STEP_Y = 0.09
+
+-- default state
+main.AnchorPoint = Vector2.new(0.5, 0.5)
+main.Position = UDim2.new(0.5, 0, 2, 0)
+main.Visible = false
+
+local busy = false
+local isOpen = false
+local executionOrder = {}
+local originalMeta = {}
+
+-- ===== helpers =====
+local function record(btn)
+    if not originalMeta[btn] then
+        originalMeta[btn] = {
+            parent = btn.Parent,
+            pos = btn.Position,
+            anchor = btn.AnchorPoint
+        }
+    end
+end
+
+local function restore(btn)
+    local m = originalMeta[btn]
+    if not m then return end
+    btn.Parent = m.parent
+    btn.Position = m.pos
+    btn.AnchorPoint = m.anchor
+end
+
+local function updateExecPos()
+    for i, btn in ipairs(executionOrder) do
+        btn.AnchorPoint = EXEC_ANCHOR
+        btn.Position = UDim2.new(EXEC_X, 0, EXEC_FIRST_Y + (i-1)*EXEC_STEP_Y, 0)
+    end
+end
+
+local function addExec(btn)
+    record(btn)
+    table.insert(executionOrder, btn)
+    btn.Parent = exec
+    updateExecPos()
+end
+
+local function removeExec(btn)
+    for i, v in ipairs(executionOrder) do
+        if v == btn then
+            table.remove(executionOrder, i)
+            break
+        end
+    end
+    restore(btn)
+    updateExecPos()
+end
+
+local function attach(btn)
+    if not btn:IsA("TextButton") or btn:GetAttribute("ui_attached") then return end
+    btn:SetAttribute("ui_attached", true)
+    record(btn)
+
+    btn.MouseButton1Click:Connect(function()
+        if busy or not main.Visible then return end
+        if btn.Parent == exec then
+            removeExec(btn)
+        else
+            addExec(btn)
+        end
+    end)
+end
+
+for _, c in ipairs(list:GetChildren()) do attach(c) end
+for _, c in ipairs(exec:GetChildren()) do attach(c) end
+list.ChildAdded:Connect(attach)
+exec.ChildAdded:Connect(attach)
+
+-- ===== open / close =====
+local function openMain()
+    if busy or isOpen then return end
+    busy = true
+    main.Visible = true
+    main.Position = UDim2.new(0.5, 0, 2, 0)
+    TweenService:Create(
+        main,
+        TweenInfo.new(TWEEN_TIME, EASING),
+        {Position = UDim2.new(0.5, 0, 0.5, 0)}
+    ):Play()
+    task.wait(TWEEN_TIME)
+    isOpen = true
+    busy = false
+end
+
+local function closeMain()
+    if busy or not isOpen then return end
+    busy = true
+    TweenService:Create(
+        main,
+        TweenInfo.new(TWEEN_TIME, EASING),
+        {Position = UDim2.new(0.5, 0, 2, 0)}
+    ):Play()
+    task.wait(TWEEN_TIME)
+    main.Visible = false
+    isOpen = false
+    busy = false
+end
+
+closeBtn.MouseButton1Click:Connect(closeMain)
+
+-- expose toggle nếu cần gọi từ ngoài
+_G.ToggleBuffUI = function()
+    if isOpen then closeMain() else openMain() end
+end
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local ev = ReplicatedStorage:FindFirstChild("BuffUIEvent")
+    or Instance.new("BindableEvent", ReplicatedStorage)
+
+ev.Name = "BuffUIEvent"
+
+ev.Event:Connect(function(action)
+    if action == "open" then
+        openMain()
+    elseif action == "close" then
+        closeMain()
+    elseif action == "toggle" then
+        if isOpen then closeMain() else openMain() end
+    end
+end)
+
+--[[
+game.ReplicatedStorage.BuffUIEvent:Fire("open")
+game.ReplicatedStorage.BuffUIEvent:Fire("close")
+game.ReplicatedStorage.BuffUIEvent:Fire("toggle")
+]]
