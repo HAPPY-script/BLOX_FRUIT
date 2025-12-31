@@ -1280,6 +1280,15 @@ return function(sections)
             return true, btn, label, norm
         end
 
+        local function randomClickFromValid(validList)
+            if #validList == 0 then return end
+            local pick = validList[math.random(1, #validList)]
+            if pick and pick.btn then
+                lastClickTime = os.clock()
+                clickButtonAt(pick.btn)
+            end
+        end
+
         local function tryAutoClick()
             if not autoRunning then return end
             if os.clock() - lastClickTime < SCAN_INTERVAL then return end
@@ -1358,8 +1367,13 @@ return function(sections)
                 return
             end
 
-            -- If GUI stable but no priority match, mark it ignored
+            -- ===== GUI ổn định nhưng không có priority =====
+            -- random click 1 buff bất kỳ
+            randomClickFromValid(valid)
+
+            -- không cần ignore nữa vì đã xử lý rồi
             ignoredStableGui = stableGui
+
         end
         
         -- Loop auto
@@ -1382,5 +1396,5 @@ return function(sections)
     
     wait(0.2)
 
-    print("Raid tad V0.21 SUCCESS✅")
+    print("Raid tad V0.22 SUCCESS✅")
 end
