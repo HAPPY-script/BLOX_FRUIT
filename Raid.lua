@@ -1270,18 +1270,11 @@ return function(sections)
             end
         end
 
-        -- build array of normalized keys in executionOrder order (top -> bottom)
         local function buildExecKeys()
             local keys = {}
             for i, btn in ipairs(executionOrder) do
-                if btn and btn.Parent then
-                    local label = btn:FindFirstChild("DisplayName")
-                    local txt
-                    if label and label:IsA("TextLabel") then
-                        txt = label.Text
-                    elseif btn:IsA("TextButton") then
-                        txt = tostring(btn.Text or "")
-                    end
+                if btn and btn:IsA("TextButton") then
+                    local txt = btn.Text
                     if txt and txt ~= "" then
                         table.insert(keys, normalizeText(txt))
                     end
@@ -1392,9 +1385,22 @@ return function(sections)
                 return
             end
 
-            -- no candidate matched executionOrder -> random pick among all valid (fallback)
+            -- nếu có ít nhất 1 buff thuộc executionOrder đang xuất hiện
+            if #execKeys > 0 then
+                for _, v in ipairs(valid) do
+                    for _, key in ipairs(execKeys) do
+                        if v.key == key then
+                            -- có buff hợp lệ nhưng chưa stable đủ → CHỜ
+                            return
+                        end
+                    end
+                end
+            end
+
+            -- chỉ random khi KHÔNG CÓ buff nào thuộc Execution
             randomClickFromValid(valid)
             ignoredStableSignature = stableSignature
+
         end
 
         -- Loop auto
@@ -1417,5 +1423,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.23 SUCCESS✅")
+    print("Raid tad V0.24 SUCCESS✅")
 end
