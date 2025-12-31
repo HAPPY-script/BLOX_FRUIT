@@ -33,7 +33,7 @@ return function(sections)
         BuffDungeonUI.Position = UDim2.new(0, 10, 0, 160)
         BuffDungeonUI.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         BuffDungeonUI.TextColor3 = Color3.new(1, 1, 1)
-        BuffDungeonUI.Text = "AUTO BUFF SELECT💫 (BETA)"
+        BuffDungeonUI.Text = "AUTO BUFF SELECT💫 (Waiting)"
         BuffDungeonUI.TextScaled = true
         BuffDungeonUI.Font = Enum.Font.SourceSansBold
         BuffDungeonUI.BorderSizePixel = 2
