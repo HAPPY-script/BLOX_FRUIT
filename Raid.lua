@@ -954,7 +954,6 @@ return function(sections)
     end
     
         --AUTO SELECT BUFF DUNGEON------------------------------------------------------------------------------------------------------------------
-    -- AutoBuffSelection fixed logic
     do
         loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/UISelectBuffDungeon.lua"))()
         local Players = game:GetService("Players")
@@ -963,20 +962,20 @@ return function(sections)
         local VirtualInputManager = game:GetService("VirtualInputManager")
 
         local player = Players.LocalPlayer
-        local pg = player and player:WaitForChild("PlayerGui")
+        local pg = player:WaitForChild("PlayerGui")
 
-        local gui = pg and pg:FindFirstChild("AutoBuffSelectionGui")
+        local gui = pg:WaitForChild("AutoBuffSelectionGui", 5)
         if not gui then error("AutoBuffSelectionGui không tồn tại trong PlayerGui") end
 
         local main = gui:WaitForChild("Main", 5)
         local exec = main:WaitForChild("Execution", 5)             -- ScrollingFrame (user-ordered priority)
         local list = main:WaitForChild("List", 5)                  -- ScrollingFrame
         local titleFrame = main:WaitForChild("TitleFrame", 5)
-        local closeBtn = titleFrame and titleFrame:WaitForChild("Close", 5)
+        local closeBtn = titleFrame:WaitForChild("Close", 5)
 
-        -- Tunables
-        local REQUIRED_STABLE_TIME = 2       -- đợi 2s để ổn định (theo yêu cầu)
-        local SCAN_INTERVAL = 2              -- khoảng thời gian tối thiểu giữa 2 lần click
+        local SCAN_INTERVAL = 2
+
+        -- UI / tween config
         local TWEEN_TIME = 0.25
         local EASING = Enum.EasingStyle.Quad
 
@@ -986,49 +985,49 @@ return function(sections)
         local EXEC_FIRST_Y = 0.015
         local EXEC_STEP_Y = 0.09
 
+        -- DEFAULT CLOSED STATE
+        main.AnchorPoint = Vector2.new(0.5, 0.5)
+        main.Position = UDim2.new(0.5, 0, 2, 0) -- hidden
+        main.Visible = false
+
         -- STATES
         local busyTween = false
         local isOpen = false
-        local executionOrder = {} -- array for UI positions
+        local executionOrder = {} -- array maintained for UI move/restore (not used for priority calculation directly)
         local originalMeta = {}
 
+        -- AUTO STATES
         local autoRunning = false
         local lastClickTime = 0
 
         local stableSignature = nil
         local stableSince = 0
+        local REQUIRED_STABLE_TIME = 2
+
         local ignoredStableSignature = nil
 
-        -- safe normalize: strip richtext tags, control chars, collapse spaces, trim, lower
         local function normalizeText(txt)
             if not txt then return "" end
-            local s = tostring(txt)
-            -- remove richtext tags like <font color=...> or any <...>
-            s = s:gsub("<[^>]->", ""):gsub("<[^>]+>", "")
-            -- remove weird control chars
-            s = s:gsub("%c", "")
-            -- collapse multiple spaces
-            s = s:gsub("%s+", " ")
-            -- trim
+            local s = tostring(txt):gsub("<[^>]+>", "")
             s = s:match("^%s*(.-)%s*$") or s
-            return string.lower(s)
+            return s:lower()
         end
 
-        -- record/restore helpers for moving buttons to Execution
+        -- HELPERS UI
         local function recordOriginal(btn)
-            if typeof(btn) ~= "Instance" then return end
-            if originalMeta[btn] then return end
-            originalMeta[btn] = {
-                parent = btn.Parent,
-                position = btn.Position,
-                anchor = Vector2.new(btn.AnchorPoint.X, btn.AnchorPoint.Y)
-            }
+            if not originalMeta[btn] then
+                originalMeta[btn] = {
+                    parent = btn.Parent,
+                    position = btn.Position,
+                    anchor = Vector2.new(btn.AnchorPoint.X, btn.AnchorPoint.Y)
+                }
+            end
         end
 
         local function restoreOriginal(btn)
             local meta = originalMeta[btn]
             if not meta then
-                if list and btn then btn.Parent = list end
+                btn.Parent = list
                 return
             end
             btn.AnchorPoint = meta.anchor
@@ -1053,7 +1052,6 @@ return function(sections)
         end
 
         local function addToExecution(btn)
-            if not btn then return end
             recordOriginal(btn)
             if btn.Parent == exec then return end
 
@@ -1063,7 +1061,12 @@ return function(sections)
             end
             if not freeIndex then freeIndex = #executionOrder + 1 end
 
-            table.insert(executionOrder, freeIndex, btn)
+            if freeIndex <= #executionOrder then
+                table.insert(executionOrder, freeIndex, btn)
+            else
+                executionOrder[freeIndex] = btn
+            end
+
             btn.Parent = exec
             btn.AnchorPoint = EXEC_ANCHOR
             updateExecutionPositions()
@@ -1077,23 +1080,21 @@ return function(sections)
             updateExecutionPositions()
         end
 
-        -- attach toggle handler to items in List/Execution (so user can re-order)
+        -- Attach handlers to buttons in List/Exec
         local function attachToggleHandler(btn)
-            if not btn or not btn:IsA("GuiObject") then return end
+            if not btn:IsA("TextButton") then return end
             if btn:GetAttribute("attached") then return end
             btn:SetAttribute("attached", true)
             recordOriginal(btn)
-            if btn:IsA("TextButton") then
-                btn.MouseButton1Click:Connect(function()
-                    if busyTween then return end
-                    if not main.Visible then return end
-                    if btn.Parent == exec then
-                        removeFromExecution(btn)
-                    else
-                        addToExecution(btn)
-                    end
-                end)
-            end
+            btn.MouseButton1Click:Connect(function()
+                if busyTween then return end
+                if not main.Visible then return end
+                if btn.Parent == exec then
+                    removeFromExecution(btn)
+                else
+                    addToExecution(btn)
+                end
+            end)
         end
 
         for _, child in ipairs(list:GetChildren()) do attachToggleHandler(child) end
@@ -1105,6 +1106,7 @@ return function(sections)
                 if c:IsA("GuiObject") then table.insert(items, c) end
             end
             table.sort(items, function(a, b)
+                -- primary sort by UDim2 Y.Scale then by Y.Offset (stable)
                 local ay, ao = (a.Position and a.Position.Y.Scale) or 0, (a.Position and a.Position.Y.Offset) or 0
                 local by, bo = (b.Position and b.Position.Y.Scale) or 0, (b.Position and b.Position.Y.Offset) or 0
                 if ay == by then return ao < bo end
@@ -1125,7 +1127,7 @@ return function(sections)
             end
         end)
 
-        -- OPEN / CLOSE main
+        -- OPEN / CLOSE
         local function tweenPosition(targetPos)
             local info = TweenInfo.new(TWEEN_TIME, EASING)
             local tween = TweenService:Create(main, info, {Position = targetPos})
@@ -1162,30 +1164,33 @@ return function(sections)
             busyTween = false
         end
 
-        if closeBtn then closeBtn.MouseButton1Click:Connect(closeMain) end
+        closeBtn.MouseButton1Click:Connect(closeMain)
 
-        -- create auto toggle + open button in titleFrame (fix HomeFrame reference bug)
         local btnAutoToggle = Instance.new("TextButton", HomeFrame)
         btnAutoToggle.Size = UDim2.new(0, 90, 0, 30)
-        btnAutoToggle.Position = UDim2.new(0, 240, 0, 6)
+        btnAutoToggle.Position = UDim2.new(0, 240, 0, 160)
         btnAutoToggle.Text = "OFF"
         btnAutoToggle.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         btnAutoToggle.TextColor3 = Color3.new(1, 1, 1)
         btnAutoToggle.Font = Enum.Font.SourceSansBold
-        btnAutoToggle.TextSize = 18
+        btnAutoToggle.TextSize = 30
         btnAutoToggle.Name = "BtnAutoToggle"
 
+        -- Nút Open Main
         local btnOpenMain = Instance.new("TextButton", HomeFrame)
-        btnOpenMain.Size = UDim2.new(0, 70, 0, 30)
-        btnOpenMain.Position = UDim2.new(0, 160, 0, 6)
+        btnOpenMain.Size = UDim2.new(0, 50, 0, 30)
+        btnOpenMain.Position = UDim2.new(0, 190, 0, 160)
         btnOpenMain.Text = "Select"
+        btnOpenMain.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
         btnOpenMain.Font = Enum.Font.SourceSans
         btnOpenMain.TextSize = 14
         btnOpenMain.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
         btnOpenMain.TextColor3 = Color3.new(1,1,1)
-        btnOpenMain.TextScaled = false
+        btnOpenMain.TextScaled = true
+        btnOpenMain.TextWrapped = true
         btnOpenMain.Name = "BtnOpenMain"
 
+        -- Xử lý ON/OFF auto
         local function setAutoState(on)
             autoRunning = on
             if on then
@@ -1196,7 +1201,7 @@ return function(sections)
                 btnAutoToggle.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
             end
         end
-        setAutoState(false)
+        setAutoState(false) -- mặc định tắt
 
         btnAutoToggle.MouseButton1Click:Connect(function()
             setAutoState(not autoRunning)
@@ -1211,54 +1216,39 @@ return function(sections)
             end
         end)
 
-        -- click helper using VirtualInputManager (center of button)
+        -- click helper
         local function clickButtonAt(btn)
             if not btn or not btn.Parent then return end
             local p, s = btn.AbsolutePosition, btn.AbsoluteSize
             local x, y = p.X + s.X/2, p.Y + s.Y/2
-            -- some environments may not permit VirtualInputManager; pcall to avoid hard error
-            pcall(function()
-                VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 1)
-                task.wait(0.05)
-                VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 1)
-            end)
+            VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 1)
+            task.wait()
+            VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 1)
         end
 
         math.randomseed(tick())
 
-        -- Flexible validation: detect if given ScreenGui contains a GUI button with DisplayName label
+        -- validate incoming ScreenGui is valid buff GUI and return normalized key
         local function isValidBuffGui(sg)
             if not sg or not sg:IsA("ScreenGui") or not sg.Enabled then return false end
 
-            -- find any descendant TextButton which contains a child named "DisplayName" TextLabel (or similar)
-            for _, descendant in ipairs(sg:GetDescendants()) do
-                if descendant:IsA("TextButton") and descendant.Visible and descendant.Active then
-                    -- prefer child named "DisplayName"
-                    local label = descendant:FindFirstChild("DisplayName")
-                    if not label then
-                        -- fallback: find a TextLabel descendant called DisplayName anywhere under the button
-                        for _, sub in ipairs(descendant:GetDescendants()) do
-                            if sub:IsA("TextLabel") and sub.Name:lower():find("displayname") then
-                                label = sub
-                                break
-                            end
-                        end
-                    end
-                    -- if label present and has text, return
-                    if label and label:IsA("TextLabel") and tostring(label.Text or "") ~= "" then
-                        local norm = normalizeText(label.Text)
-                        if norm ~= "" then
-                            return true, descendant, label, norm
-                        end
-                    end
-                end
-            end
+            local frame = sg:FindFirstChild("1")
+            if not frame then return false end
 
-            return false
+            local btn = frame:FindFirstChild("2")
+            if not btn or not btn:IsA("TextButton") then return false end
+            if not btn.Visible or not btn.Active then return false end
+
+            local label = btn:FindFirstChild("DisplayName")
+            if not label or not label:IsA("TextLabel") then return false end
+            if label.Text == "" then return false end
+
+            local norm = normalizeText(label.Text)
+            return true, btn, label, norm
         end
 
         local function randomClickFromValid(validList)
-            if not validList or #validList == 0 then return end
+            if #validList == 0 then return end
             local pick = validList[math.random(1, #validList)]
             if pick and pick.btn then
                 lastClickTime = os.clock()
@@ -1266,22 +1256,24 @@ return function(sections)
             end
         end
 
-        -- Build execution keys ordered by visual Y (top->bottom)
+        -- build exec keys strictly by Visual Y in Execution scrolling frame (top -> bottom)
         local function buildExecKeys()
             local items = {}
             for _, child in ipairs(exec:GetChildren()) do
                 if child and child:IsA("GuiObject") then
-                    local txt
+                    -- find display text inside execution button (DisplayName label) or fallback to button.Text
                     local label = child:FindFirstChild("DisplayName")
-                    if label and label:IsA("TextLabel") and tostring(label.Text or "") ~= "" then
+                    local txt
+                    if label and label:IsA("TextLabel") and label.Text ~= "" then
                         txt = label.Text
                     elseif child:IsA("TextButton") and tostring(child.Text or "") ~= "" then
                         txt = tostring(child.Text)
                     end
                     if txt and txt ~= "" then
+                        -- compute sorting key using Position.Y (Scale + Offset) — consistent with UI ordering
                         local py = 0
                         if child.Position then
-                            py = (child.Position.Y.Scale or 0) + ((child.Position.Y.Offset or 0) / 100000)
+                            py = (child.Position.Y.Scale or 0) + ((child.Position.Y.Offset or 0) / 100000) -- small tie-breaker
                         end
                         table.insert(items, {key = normalizeText(txt), y = py})
                     end
@@ -1293,7 +1285,7 @@ return function(sections)
             return keys
         end
 
-        -- choose top-most by AbsolutePosition.Y
+        -- choose top-most on-screen among matches (AbsolutePosition.Y)
         local function chooseTopMost(matchList)
             if not matchList or #matchList == 0 then return nil end
             local best = matchList[1]
@@ -1309,40 +1301,37 @@ return function(sections)
             return best
         end
 
-        -- main auto logic: scan PlayerGui, find valid ScreenGui set, wait stable, then choose click target
         local function tryAutoClick()
             if not autoRunning then return end
             if os.clock() - lastClickTime < SCAN_INTERVAL then return end
 
-            local pgRoot = player and player:FindFirstChild("PlayerGui")
+            local pgRoot = player:FindFirstChild("PlayerGui")
             if not pgRoot then return end
 
             -- gather all valid GUIs first (scan ALL ScreenGui children)
             local valid = {}
             for _, sg in ipairs(pgRoot:GetChildren()) do
-                if sg:IsA("ScreenGui") then
-                    local ok, btn, label, norm = isValidBuffGui(sg)
-                    if ok then
-                        table.insert(valid, {sg = sg, btn = btn, label = label, key = norm, absY = (btn and btn.AbsolutePosition and btn.AbsolutePosition.Y) or math.huge})
-                    end
+                local ok, btn, label, norm = isValidBuffGui(sg)
+                if ok then
+                    table.insert(valid, {sg = sg, btn = btn, label = label, key = norm})
                 end
             end
 
             if #valid == 0 then
-                -- nothing visible -> reset stability
                 stableSignature = nil
                 stableSince = 0
                 ignoredStableSignature = nil
                 return
             end
 
-            -- build exec-keys by Y in Execution scrolling frame
+            -- build exec-keys by Y in Execution
             local execKeys = buildExecKeys()
             local candidate = nil
             local candidatePriority = nil
 
             if #execKeys > 0 then
                 for priorityIndex, key in ipairs(execKeys) do
+                    -- collect all valid entries matching this key
                     local matches = {}
                     for _, v in ipairs(valid) do
                         if v.key == key then
@@ -1350,6 +1339,7 @@ return function(sections)
                         end
                     end
                     if #matches > 0 then
+                        -- deterministic pick among matches: top-most on screen (AbsolutePosition.Y)
                         local pick = chooseTopMost(matches)
                         if pick then
                             candidate = pick
@@ -1360,15 +1350,18 @@ return function(sections)
                 end
             end
 
-            -- build a stable signature for the entire set of valid GUIs
-            -- signature: sorted list of "<sgFullName>::<key>::<absY>": using GetFullName() to reduce collisions
-            local sigParts = {}
-            for _, v in ipairs(valid) do
-                local sgName = pcall(function() return v.sg:GetFullName() end) and v.sg:GetFullName() or tostring(v.sg)
-                table.insert(sigParts, string.format("%s::%s::%d", sgName, v.key or "", math.floor(v.absY)))
+            -- build a stable signature:
+            -- if we have a candidate, use its ScreenGui identity + key to be safe
+            -- otherwise use a sorted concatenation of all visible keys so we ensure whole-set stability
+            local signature
+            if candidate then
+                signature = tostring(candidate.sg:GetFullName()) .. "::" .. tostring(candidate.key)
+            else
+                local keys = {}
+                for _, v in ipairs(valid) do keys[#keys+1] = v.key end
+                table.sort(keys)
+                signature = table.concat(keys, "|")
             end
-            table.sort(sigParts)
-            local signature = table.concat(sigParts, "|")
 
             -- skip if this signature was previously ignored
             if ignoredStableSignature == signature then
@@ -1391,38 +1384,36 @@ return function(sections)
             if candidate and candidate.btn then
                 lastClickTime = os.clock()
                 clickButtonAt(candidate.btn)
-                ignoredStableSignature = signature
                 return
             end
 
-            -- if execKeys present but no candidate matched, there may be execKey present among valid but not chosen due to ties:
+            -- if at least one execKey exists and any execKey is present among visible valid, we should have matched above.
+            -- But being defensive: if execKeys exists and any execution key is present in valid set, wait (do nothing).
             if #execKeys > 0 then
                 for _, v in ipairs(valid) do
                     for _, key in ipairs(execKeys) do
                         if v.key == key then
-                            -- found a valid that corresponds to Execution but not picked for some tie — wait another cycle
-                            return
+                            return -- wait — it is present but wasn't chosen due to some tie; give another stable cycle
                         end
                     end
                 end
             end
 
-            -- otherwise random pick
+            -- only random when NO buff from Execution is present among valid GUIs
             randomClickFromValid(valid)
-            ignoredStableSignature = signature
+            ignoredStableSignature = stableSignature
         end
 
-        -- run auto on Heartbeat (lightweight)
+        -- Loop auto
         RunService.Heartbeat:Connect(function(dt)
-            -- call in pcall to avoid crashing the heartbeat loop
-            pcall(tryAutoClick)
+            tryAutoClick()
         end)
 
-        -- safety: keep button .Active states updated
-        task.spawn(function()
+        -- Small safety: update button Active states while busy
+        spawn(function()
             while true do
                 if btnAutoToggle and btnOpenMain and closeBtn then
-                    btnAutoToggle.Active = true
+                    btnAutoToggle.Active = true -- auto toggle always usable
                     btnOpenMain.Active = not busyTween
                     closeBtn.Active = not busyTween
                 end
@@ -1430,8 +1421,8 @@ return function(sections)
             end
         end)
     end
-
+    
     wait(0.2)
 
-    print("Raid tad V0.26 SUCCESS✅")
+    print("Raid tad V0.25 SUCCESS✅")
 end
