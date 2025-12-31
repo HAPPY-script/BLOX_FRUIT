@@ -979,7 +979,7 @@ return function(sections)
         local TWEEN_TIME = 0.25
         local EASING = Enum.EasingStyle.Quad
 
-        -- Execution layout
+        -- Execution layout (used when moving buttons into exec)
         local EXEC_ANCHOR = Vector2.new(0.5, 0)
         local EXEC_X = 0.5
         local EXEC_FIRST_Y = 0.015
@@ -987,13 +987,13 @@ return function(sections)
 
         -- DEFAULT CLOSED STATE
         main.AnchorPoint = Vector2.new(0.5, 0.5)
-        main.Position = UDim2.new(0.5, 0, 2, 0) -- tắt
+        main.Position = UDim2.new(0.5, 0, 2, 0) -- hidden
         main.Visible = false
 
         -- STATES
         local busyTween = false
         local isOpen = false
-        local executionOrder = {} -- array top->bottom
+        local executionOrder = {} -- array maintained for UI move/restore (not used for priority calculation directly)
         local originalMeta = {}
 
         -- AUTO STATES
@@ -1105,7 +1105,13 @@ return function(sections)
             for _, c in ipairs(exec:GetChildren()) do
                 if c:IsA("GuiObject") then table.insert(items, c) end
             end
-            table.sort(items, function(a, b) return a.Position.Y.Scale < b.Position.Y.Scale end)
+            table.sort(items, function(a, b)
+                -- primary sort by UDim2 Y.Scale then by Y.Offset (stable)
+                local ay, ao = (a.Position and a.Position.Y.Scale) or 0, (a.Position and a.Position.Y.Offset) or 0
+                local by, bo = (b.Position and b.Position.Y.Scale) or 0, (b.Position and b.Position.Y.Offset) or 0
+                if ay == by then return ao < bo end
+                return ay < by
+            end)
             executionOrder = {}
             for i, v in ipairs(items) do executionOrder[i] = v end
             updateExecutionPositions()
@@ -1121,7 +1127,7 @@ return function(sections)
             end
         end)
 
-        -- OPEN / CLOSE (refactor thành hàm cho tái sử dụng)
+        -- OPEN / CLOSE
         local function tweenPosition(targetPos)
             local info = TweenInfo.new(TWEEN_TIME, EASING)
             local tween = TweenService:Create(main, info, {Position = targetPos})
@@ -1184,7 +1190,7 @@ return function(sections)
         btnOpenMain.TextWrapped = true
         btnOpenMain.Name = "BtnOpenMain"
 
-        -- Xử lý ON/OFF auto (mẫu: OFF đỏ, ON xanh)
+        -- Xử lý ON/OFF auto
         local function setAutoState(on)
             autoRunning = on
             if on then
@@ -1210,28 +1216,7 @@ return function(sections)
             end
         end)
 
-        -- build priority map from executionOrder only (top = 1 = highest)
-        local function buildPriorityMap()
-            local map = {}
-            for i, btn in ipairs(executionOrder) do
-                if btn and btn:IsA("GuiObject") then
-                    local label = btn:FindFirstChild("DisplayName")
-                    local txt = nil
-                    if label and label:IsA("TextLabel") then txt = label.Text end
-                    if (not txt or txt == "") and btn:IsA("TextButton") then
-                        txt = tostring(btn.Text or "")
-                    end
-                    if txt and txt ~= "" then
-                        local key = normalizeText(txt)
-                        if not map[key] or i < map[key] then
-                            map[key] = i
-                        end
-                    end
-                end
-            end
-            return map
-        end
-
+        -- click helper
         local function clickButtonAt(btn)
             if not btn or not btn.Parent then return end
             local p, s = btn.AbsolutePosition, btn.AbsoluteSize
@@ -1243,6 +1228,7 @@ return function(sections)
 
         math.randomseed(tick())
 
+        -- validate incoming ScreenGui is valid buff GUI and return normalized key
         local function isValidBuffGui(sg)
             if not sg or not sg:IsA("ScreenGui") or not sg.Enabled then return false end
 
@@ -1270,20 +1256,36 @@ return function(sections)
             end
         end
 
+        -- build exec keys strictly by Visual Y in Execution scrolling frame (top -> bottom)
         local function buildExecKeys()
-            local keys = {}
-            for i, btn in ipairs(executionOrder) do
-                if btn and btn:IsA("TextButton") then
-                    local txt = btn.Text
+            local items = {}
+            for _, child in ipairs(exec:GetChildren()) do
+                if child and child:IsA("GuiObject") then
+                    -- find display text inside execution button (DisplayName label) or fallback to button.Text
+                    local label = child:FindFirstChild("DisplayName")
+                    local txt
+                    if label and label:IsA("TextLabel") and label.Text ~= "" then
+                        txt = label.Text
+                    elseif child:IsA("TextButton") and tostring(child.Text or "") ~= "" then
+                        txt = tostring(child.Text)
+                    end
                     if txt and txt ~= "" then
-                        table.insert(keys, normalizeText(txt))
+                        -- compute sorting key using Position.Y (Scale + Offset) — consistent with UI ordering
+                        local py = 0
+                        if child.Position then
+                            py = (child.Position.Y.Scale or 0) + ((child.Position.Y.Offset or 0) / 100000) -- small tie-breaker
+                        end
+                        table.insert(items, {key = normalizeText(txt), y = py})
                     end
                 end
             end
+            table.sort(items, function(a, b) return a.y < b.y end)
+            local keys = {}
+            for _, it in ipairs(items) do table.insert(keys, it.key) end
             return keys
         end
 
-        -- helper: choose top-most entry from a list (deterministic)
+        -- choose top-most on-screen among matches (AbsolutePosition.Y)
         local function chooseTopMost(matchList)
             if not matchList or #matchList == 0 then return nil end
             local best = matchList[1]
@@ -1322,7 +1324,7 @@ return function(sections)
                 return
             end
 
-            -- build exec-keys (priority order) and try to match in that order
+            -- build exec-keys by Y in Execution
             local execKeys = buildExecKeys()
             local candidate = nil
             local candidatePriority = nil
@@ -1337,7 +1339,7 @@ return function(sections)
                         end
                     end
                     if #matches > 0 then
-                        -- deterministic pick among matches: top-most on screen
+                        -- deterministic pick among matches: top-most on screen (AbsolutePosition.Y)
                         local pick = chooseTopMost(matches)
                         if pick then
                             candidate = pick
@@ -1385,22 +1387,21 @@ return function(sections)
                 return
             end
 
-            -- nếu có ít nhất 1 buff thuộc executionOrder đang xuất hiện
+            -- if at least one execKey exists and any execKey is present among visible valid, we should have matched above.
+            -- But being defensive: if execKeys exists and any execution key is present in valid set, wait (do nothing).
             if #execKeys > 0 then
                 for _, v in ipairs(valid) do
                     for _, key in ipairs(execKeys) do
                         if v.key == key then
-                            -- có buff hợp lệ nhưng chưa stable đủ → CHỜ
-                            return
+                            return -- wait — it is present but wasn't chosen due to some tie; give another stable cycle
                         end
                     end
                 end
             end
 
-            -- chỉ random khi KHÔNG CÓ buff nào thuộc Execution
+            -- only random when NO buff from Execution is present among valid GUIs
             randomClickFromValid(valid)
             ignoredStableSignature = stableSignature
-
         end
 
         -- Loop auto
@@ -1423,5 +1424,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.24 SUCCESS✅")
+    print("Raid tad V0.25 SUCCESS✅")
 end
