@@ -955,6 +955,7 @@ return function(sections)
     
         --AUTO SELECT BUFF DUNGEON------------------------------------------------------------------------------------------------------------------
     do
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/UISelectBuffDungeon.lua"))()
         local Players = game:GetService("Players")
         local TweenService = game:GetService("TweenService")
         local RunService = game:GetService("RunService")
