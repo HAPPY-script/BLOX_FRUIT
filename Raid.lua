@@ -452,7 +452,7 @@ return function(sections)
         local character = player.Character or player.CharacterAdded:Wait()
         local hrp = character:FindFirstChild("HumanoidRootPart") or character:WaitForChild("HumanoidRootPart")
 
-        -- UI ON/OFF (đơn giản như mẫu)
+        -- UI ON/OFF
         local autoBtn = Instance.new("TextButton", HomeFrame)
         autoBtn.Size = UDim2.new(0, 90, 0, 30)
         autoBtn.Position = UDim2.new(0, 240, 0, 110)
