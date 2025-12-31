@@ -1005,6 +1005,11 @@ return function(sections)
         local autoRunning = false
         local lastClickTime = 0
 
+        local stableGui = nil
+        local stableSince = 0
+        local REQUIRED_STABLE_TIME = 2
+
+
         -- HELPERS UI
         local function recordOriginal(btn)
         	if not originalMeta[btn] then
@@ -1242,41 +1247,79 @@ return function(sections)
 
         math.randomseed(tick())
 
+        local function isValidBuffGui(sg)
+        	if not sg:IsA("ScreenGui") or not sg.Enabled then return false end
+
+        	local frame = sg:FindFirstChild("1")
+        	if not frame then return false end
+
+        	local btn = frame:FindFirstChild("2")
+        	if not btn or not btn:IsA("TextButton") then return false end
+        	if not btn.Visible or not btn.Active then return false end
+
+        	local label = btn:FindFirstChild("DisplayName")
+        	if not label or not label:IsA("TextLabel") then return false end
+        	if label.Text == "" then return false end
+
+        	return true, btn, label
+        end
+
         local function tryAutoClick()
         	if not autoRunning then return end
         	if os.clock() - lastClickTime < SCAN_INTERVAL then return end
 
-        	-- build current priority map from executionOrder
-        	local dynMap = buildPriorityMap()
-
         	local pgRoot = player:FindFirstChild("PlayerGui")
         	if not pgRoot then return end
 
+        	-- tìm GUI hợp lệ
+        	local foundGui, foundBtn, foundLabel
+        	for _, sg in ipairs(pgRoot:GetChildren()) do
+        		local ok, btn, label = isValidBuffGui(sg)
+        		if ok then
+        			foundGui = sg
+        			foundBtn = btn
+        			foundLabel = label
+        			break
+        		end
+        	end
+
+        	-- chưa có GUI hợp lệ → reset
+        	if not foundGui then
+        		stableGui = nil
+        		stableSince = 0
+        		return
+        	end
+
+        	-- GUI mới hoặc khác GUI cũ → reset timer
+        	if stableGui ~= foundGui then
+        		stableGui = foundGui
+        		stableSince = os.clock()
+        		return
+        	end
+
+        	-- chưa đủ 2s ổn định → chờ
+        	if os.clock() - stableSince < REQUIRED_STABLE_TIME then
+        		return
+        	end
+
+        	-- ===== TỪ ĐÂY GUI ĐÃ ỔN ĐỊNH =====
+
+        	local dynMap = buildPriorityMap()
         	local bestBtn, bestPriority
         	local allValid = {}
 
-        	-- scan same as trước: look for ScreenGui children that match internal structure: frame "1" -> "2" -> DisplayName
         	for _, sg in ipairs(pgRoot:GetChildren()) do
-        		if not sg:IsA("ScreenGui") or not sg.Enabled then continue end
-        		local frame = sg:FindFirstChild("1")
-        		if not frame then continue end
-        		local btn = frame:FindFirstChild("2")
-        		if not btn or not btn:IsA("TextButton") or not btn.Visible or not btn.Active then continue end
-        		local label = btn:FindFirstChild("DisplayName")
-        		if not label or not label:IsA("TextLabel") then continue end
+        		local ok, btn, label = isValidBuffGui(sg)
+        		if not ok then continue end
 
         		local text = label.Text:gsub("<[^>]+>", "")
         		table.insert(allValid, btn)
 
-        		-- priority from dynamic exec map (lower index = higher priority)
         		local p = dynMap[text]
-        		if p then
-        			if not bestPriority or p < bestPriority then
-        				bestPriority = p
-        				bestBtn = btn
-        			end
+        		if p and (not bestPriority or p < bestPriority) then
+        			bestPriority = p
+        			bestBtn = btn
         		else
-        			-- fallback to static list if dynamic doesn't cover
         			local sidx = getStaticIndex(text)
         			if sidx and (not bestPriority or sidx < bestPriority) then
         				bestPriority = sidx
@@ -1291,11 +1334,7 @@ return function(sections)
         		return
         	end
 
-        	-- nếu không có target match, random chọn 1 (behaviour cũ)
-        	if #allValid > 0 then
-        		lastClickTime = os.clock()
-        		clickButtonAt(allValid[math.random(#allValid)])
-        	end
+        	-- ❌ KHÔNG RANDOM NỮA KHI CÓ GUI ỔN ĐỊNH
         end
 
         -- Loop auto
@@ -1318,5 +1357,5 @@ return function(sections)
     
     wait(0.2)
 
-    print("Raid tad V0.17 SUCCESS✅")
+    print("Raid tad V0.18 SUCCESS✅")
 end
