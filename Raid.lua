@@ -956,9 +956,7 @@ return function(sections)
         --AUTO SELECT BUFF DUNGEON------------------------------------------------------------------------------------------------------------------
     -- AutoBuffSelection fixed logic
     do
-        -- optional: load external UISelectBuffDungeon if you still need it
-        -- pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/UISelectBuffDungeon.lua"))() end)
-
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/UISelectBuffDungeon.lua"))()
         local Players = game:GetService("Players")
         local TweenService = game:GetService("TweenService")
         local RunService = game:GetService("RunService")
