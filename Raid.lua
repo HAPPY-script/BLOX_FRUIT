@@ -952,8 +952,414 @@ return function(sections)
         -- ensure initial refs
         refreshCharacterRefs()
     end
+    
+        --AUTO SELECT BUFF DUNGEON------------------------------------------------------------------------------------------------------------------
+    do
+        local Players = game:GetService("Players")
+        local TweenService = game:GetService("TweenService")
+        local RunService = game:GetService("RunService")
+        local VirtualInputManager = game:GetService("VirtualInputManager")
 
+        local player = Players.LocalPlayer
+        local pg = player:WaitForChild("PlayerGui")
+
+        local gui = pg:WaitForChild("AutoBuffSelectionGui", 5)
+        if not gui then
+        	error("AutoBuffSelectionGui không tồn tại trong PlayerGui")
+        end
+
+        local main = gui:WaitForChild("Main", 5)
+        local exec = main:WaitForChild("Execution", 5)             -- ScrollingFrame
+        local list = main:WaitForChild("List", 5)                  -- ScrollingFrame
+        local titleFrame = main:WaitForChild("TitleFrame", 5)
+        local closeBtn = titleFrame:WaitForChild("Close", 5)
+        local openBtn = gui:WaitForChild("Open", 5)
+
+        -- CONFIG (theo yêu cầu)
+        local TARGET_TEXTS = {
+        	"Overflow","Defense","Fortress","Sword","Race Meter",
+        	"Melee","Lifesteal","Armor","All Cooldowns","HYPER!","Shadow"
+        }
+
+        local SCAN_INTERVAL = 2
+        local TWEEN_TIME = 0.25
+        local EASING = Enum.EasingStyle.Quad
+
+        -- Execution layout
+        local EXEC_ANCHOR = Vector2.new(0.5, 0)
+        local EXEC_X = 0.5
+        local EXEC_FIRST_Y = 0.015
+        local EXEC_STEP_Y = 0.09
+
+        -- ===== DEFAULT CLOSED STATE =====
+        main.AnchorPoint = Vector2.new(0.5, 0.5)
+        main.Position = UDim2.new(0.5, 0, 2, 0) -- vị trí tắt (dưới màn hình)
+        main.Visible = false
+
+        -- STATES
+        local busyTween = false   -- chống spam open/close
+        local isOpen = false
+        local executionOrder = {} -- mảng giữ thứ tự buttons trong Execution (top->bottom)
+
+        -- Auto states
+        local autoRunning = false -- mặc định OFF
+        local lastClickTime = 0
+
+        -- LƯU metadata gốc để trả về List
+        local originalMeta = {}
+
+        -- Helpers --------------------------------------------------------
+        local function recordOriginal(btn)
+        	if not originalMeta[btn] then
+        		originalMeta[btn] = {
+        			parent = btn.Parent,
+        			position = btn.Position,
+        			anchor = Vector2.new(btn.AnchorPoint.X, btn.AnchorPoint.Y)
+        		}
+        	end
+        end
+
+        local function restoreOriginal(btn)
+        	local meta = originalMeta[btn]
+        	if not meta then
+        		btn.Parent = list
+        		return
+        	end
+        	btn.AnchorPoint = meta.anchor
+        	btn.Position = meta.position
+        	btn.Parent = meta.parent
+        end
+
+        local function indexOf(tbl, value)
+        	for i = 1, #tbl do
+        		if tbl[i] == value then return i end
+        	end
+        	return nil
+        end
+
+        local function updateExecutionPositions()
+        	for i = 1, #executionOrder do
+        		local btn = executionOrder[i]
+        		if btn and btn.Parent == exec then
+        			btn.AnchorPoint = EXEC_ANCHOR
+        			local y = EXEC_FIRST_Y + (i - 1) * EXEC_STEP_Y
+        			btn.Position = UDim2.new(EXEC_X, 0, y, 0)
+        		end
+        	end
+        end
+
+        local function addToExecution(btn)
+        	recordOriginal(btn)
+        	if btn.Parent == exec then return end
+
+        	local freeIndex = nil
+        	for i = 1, #executionOrder do
+        		if executionOrder[i] == nil then
+        			freeIndex = i
+        			break
+        		end
+        	end
+        	if not freeIndex then
+        		freeIndex = #executionOrder + 1
+        	end
+
+        	if freeIndex <= #executionOrder then
+        		table.insert(executionOrder, freeIndex, btn)
+        	else
+        		executionOrder[freeIndex] = btn
+        	end
+
+        	btn.Parent = exec
+        	btn.AnchorPoint = EXEC_ANCHOR
+        	updateExecutionPositions()
+        end
+
+        local function removeFromExecution(btn)
+        	local idx = indexOf(executionOrder, btn)
+        	if not idx then return end
+        	table.remove(executionOrder, idx)
+        	restoreOriginal(btn)
+        	updateExecutionPositions()
+        end
+
+        -- Attach handlers to List/Execution buttons
+        local function attachToggleHandler(btn)
+        	if not btn:IsA("TextButton") then return end
+        	if btn:GetAttribute("attached") then return end
+        	btn:SetAttribute("attached", true)
+        	recordOriginal(btn)
+
+        	btn.MouseButton1Click:Connect(function()
+        		if busyTween then return end
+        		if not main.Visible then return end
+
+        		if btn.Parent == exec then
+        			removeFromExecution(btn)
+        		else
+        			addToExecution(btn)
+        		end
+        	end)
+        end
+
+        for _, child in ipairs(list:GetChildren()) do attachToggleHandler(child) end
+        for _, child in ipairs(exec:GetChildren()) do attachToggleHandler(child) end
+
+        local function initializeExistingExecution()
+        	local items = {}
+        	for _, c in ipairs(exec:GetChildren()) do
+        		if c:IsA("GuiObject") then
+        			table.insert(items, c)
+        		end
+        	end
+        	table.sort(items, function(a, b)
+        		return a.Position.Y.Scale < b.Position.Y.Scale
+        	end)
+        	executionOrder = {}
+        	for i, v in ipairs(items) do executionOrder[i] = v end
+        	updateExecutionPositions()
+        end
+        initializeExistingExecution()
+
+        list.ChildAdded:Connect(function(c) attachToggleHandler(c) end)
+        exec.ChildAdded:Connect(function(c)
+        	attachToggleHandler(c)
+        	if not indexOf(executionOrder, c) then
+        		table.insert(executionOrder, c)
+        		updateExecutionPositions()
+        	end
+        end)
+
+        -- OPEN / CLOSE logic ----------------------------------------------
+        local function tweenPosition(targetPos)
+        	local info = TweenInfo.new(TWEEN_TIME, EASING)
+        	local tween = TweenService:Create(main, info, {Position = targetPos})
+        	busyTween = true
+        	tween:Play()
+        	tween.Completed:Wait()
+        	busyTween = false
+        end
+
+        local function openMain()
+        	if busyTween or isOpen then return end
+        	busyTween = true
+        	main.Visible = true
+        	main.AnchorPoint = Vector2.new(0.5, 0.5)
+        	main.Position = UDim2.new(0.5, 0, 2, 0)
+        	local tween = TweenService:Create(main, TweenInfo.new(TWEEN_TIME, EASING), { Position = UDim2.new(0.5, 0, 0.5, 0) })
+        	tween:Play()
+        	tween.Completed:Wait()
+        	isOpen = true
+        	busyTween = false
+        end
+
+        local function closeMain()
+        	if busyTween or not isOpen then return end
+        	busyTween = true
+        	main.AnchorPoint = Vector2.new(0.5, 0.5)
+        	local curXScale, curXOffset = main.Position.X.Scale, main.Position.X.Offset
+        	local target = UDim2.new(curXScale, curXOffset, 2, 0)
+        	local tween = TweenService:Create(main, TweenInfo.new(TWEEN_TIME, EASING), { Position = target })
+        	tween:Play()
+        	tween.Completed:Wait()
+        	main.Visible = false
+        	isOpen = false
+        	busyTween = false
+        end
+
+        openBtn.MouseButton1Click:Connect(openMain)
+        closeBtn.MouseButton1Click:Connect(closeMain)
+
+        spawn(function()
+        	while true do
+        		-- guard in case buttons removed
+        		if openBtn and closeBtn then
+        			openBtn.Active = not (busyTween or isOpen)
+        			closeBtn.Active = not (busyTween or (not isOpen))
+        		end
+        		task.wait(0.05)
+        	end
+        end)
+
+        -- ======================
+        -- AUTO SYSTEM (uses executionOrder as priority)
+        -- ======================
+
+        -- helper: extract plain text
+        local function getPlainText(text)
+        	return text:gsub("<[^>]+>", "")
+        end
+
+        -- build priority list from executionOrder (top->bottom)
+        local function buildPriorityList()
+        	local listNames = {}
+        	for i = 1, #executionOrder do
+        		local btn = executionOrder[i]
+        		if btn and btn:IsA("GuiObject") then
+        			-- try to find label inside button named DisplayName (or use button.Text)
+        			local label = btn:FindFirstChild("DisplayName")
+        			local nameText
+        			if label and label:IsA("TextLabel") then
+        				nameText = getPlainText(label.Text)
+        			else
+        				-- fallback to button.Text
+        				if btn:IsA("TextButton") then
+        					nameText = getPlainText(btn.Text)
+        				end
+        			end
+        			if nameText and nameText ~= "" then
+        				table.insert(listNames, nameText)
+        			end
+        		end
+        	end
+        	return listNames
+        end
+
+        local function clickButtonAtGui(btn)
+        	local p, s = btn.AbsolutePosition, btn.AbsoluteSize
+        	local x, y = p.X + s.X/2, p.Y + s.Y/2
+        	VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 1)
+        	task.wait()
+        	VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 1)
+        end
+
+        local function getPriorityIndexFromList(priorityList, text)
+        	for i, v in ipairs(priorityList) do
+        		if v == text then
+        			return i
+        		end
+        	end
+        	return nil
+        end
+
+        -- main scanning & clicking logic (searches PlayerGui for ScreenGui -> "1" -> "2" -> DisplayName)
+        local function tryAutoClick()
+        	if not autoRunning then return end
+        	if os.clock() - lastClickTime < SCAN_INTERVAL then return end
+
+        	-- build dynamic priority from executionOrder
+        	local priorityList = buildPriorityList()
+
+        	local pgLocal = player:FindFirstChild("PlayerGui")
+        	if not pgLocal then return end
+
+        	local bestBtn, bestPriority
+        	local allValidButtons = {}
+
+        	for _, sg in ipairs(pgLocal:GetChildren()) do
+        		if not sg:IsA("ScreenGui") or not sg.Enabled then continue end
+
+        		local frame = sg:FindFirstChild("1")
+        		if not frame then continue end
+
+        		local btn = frame:FindFirstChild("2")
+        		if not btn or not btn:IsA("TextButton") or not btn.Visible or not btn.Active then
+        			continue
+        		end
+
+        		local label = btn:FindFirstChild("DisplayName")
+        		if not label or not label:IsA("TextLabel") then
+        			continue
+        		end
+
+        		table.insert(allValidButtons, btn)
+
+        		local text = getPlainText(label.Text)
+        		local priority = getPriorityIndexFromList(priorityList, text)
+
+        		if priority and (not bestPriority or priority < bestPriority) then
+        			bestPriority = priority
+        			bestBtn = btn
+        		end
+        	end
+
+        	-- click best priority found
+        	if bestBtn then
+        		lastClickTime = os.clock()
+        		clickButtonAtGui(bestBtn)
+        		return
+        	end
+
+        	-- fallback: if no priority match, but there are valid buttons, click a random one
+        	if #allValidButtons > 0 then
+        		lastClickTime = os.clock()
+        		clickButtonAtGui(allValidButtons[math.random(#allValidButtons)])
+        	end
+        end
+
+        -- Heartbeat loop to drive auto (lightweight)
+        RunService.Heartbeat:Connect(function()
+        	-- call non-blocking: tryAutoClick uses os.clock gating
+        	pcall(tryAutoClick)
+        end)
+
+        -- ADD UI BUTTON =================--
+
+        -- create Auto toggle button (btnFastAttackEnemy)
+        local btnFastAttackEnemy = HomeFrame:FindFirstChild("btnFastAttackEnemy")
+        if not btnFastAttackEnemy then
+        	btnFastAttackEnemy = Instance.new("TextButton", HomeFrame)
+        	btnFastAttackEnemy.Name = "btnFastAttackEnemy"
+        end
+        btnFastAttackEnemy.Size = UDim2.new(0, 90, 0, 30)
+        btnFastAttackEnemy.Position = UDim2.new(0, 240, 0, 160)
+        btnFastAttackEnemy.Text = "OFF"
+        btnFastAttackEnemy.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        btnFastAttackEnemy.TextColor3 = Color3.new(1, 1, 1)
+        btnFastAttackEnemy.Font = Enum.Font.SourceSansBold
+        btnFastAttackEnemy.TextSize = 30
+
+        -- create small Mode/Main toggle button (btnModeEnemy)
+        local btnModeEnemy = HomeFrame:FindFirstChild("btnModeEnemy")
+        if not btnModeEnemy then
+        	btnModeEnemy = Instance.new("TextButton", HomeFrame)
+        	btnModeEnemy.Name = "btnModeEnemy"
+        end
+        btnModeEnemy.Size = UDim2.new(0, 90, 0, 30) -- match a bit larger for clarity
+        btnModeEnemy.Position = UDim2.new(0, 190, 0, 160)
+        btnModeEnemy.Text = "Open Main"
+        btnModeEnemy.Font = Enum.Font.SourceSans
+        btnModeEnemy.TextSize = 14
+        btnModeEnemy.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        btnModeEnemy.TextColor3 = Color3.new(1,1,1)
+        btnModeEnemy.TextScaled = true
+        btnModeEnemy.TextWrapped = true
+
+        -- Auto toggle behaviour
+        local function setAutoState(on)
+        	autoRunning = on
+        	if on then
+        		btnFastAttackEnemy.Text = "ON"
+        		btnFastAttackEnemy.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        	else
+        		btnFastAttackEnemy.Text = "OFF"
+        		btnFastAttackEnemy.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        	end
+        end
+        setAutoState(false) -- default OFF
+
+        btnFastAttackEnemy.MouseButton1Click:Connect(function()
+        	-- toggle state, but prevent toggling while tweening main (optional)
+        	if busyTween then return end
+        	setAutoState(not autoRunning)
+        end)
+
+        -- Mode/Main button toggles Main open/close (uses openMain/closeMain)
+        btnModeEnemy.MouseButton1Click:Connect(function()
+        	if busyTween then return end
+        	if isOpen then
+        		closeMain()
+        		btnModeEnemy.Text = "Open Main"
+        	else
+        		openMain()
+        		btnModeEnemy.Text = "Close Main"
+        	end
+        end)
+
+        -- seed RNG once
+        math.randomseed(tick())
+    end
+    
     wait(0.2)
 
-    print("Raid tad V0.14 SUCCESS✅")
+    print("Raid tad V0.15 SUCCESS✅")
 end
