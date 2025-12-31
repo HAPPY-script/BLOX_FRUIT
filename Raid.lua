@@ -1009,6 +1009,7 @@ return function(sections)
         local stableSince = 0
         local REQUIRED_STABLE_TIME = 2
 
+        local ignoredStableGui = nil
 
         -- HELPERS UI
         local function recordOriginal(btn)
@@ -1209,25 +1210,52 @@ return function(sections)
         	end
         end)
 
-        -- AUTO: build dynamic priority map từ executionOrder (hàng 1 = priority 1)
         local function buildPriorityMap()
         	local map = {}
         	for i, btn in ipairs(executionOrder) do
         		if btn and btn:IsA("GuiObject") then
-        			-- tìm DisplayName label nếu có
         			local label = btn:FindFirstChild("DisplayName")
         			local txt = nil
         			if label and label:IsA("TextLabel") then txt = label.Text:gsub("<[^>]+>", "") end
-        			-- nếu label rỗng, thử lấy btn.Text
         			if (not txt or txt == "") and btn:IsA("TextButton") then
         				txt = tostring(btn.Text or "")
         			end
         			if txt and txt ~= "" then
-        				map[txt] = i
+        				-- giữ chỉ số nhỏ nhất nếu trùng (ưu tiên cao hơn)
+        				if not map[txt] or i < map[txt] then
+        					map[txt] = i
+        				end
         			end
         		end
         	end
         	return map
+        end
+
+        local function chooseBestFromValid(validGuis, dynMap)
+        	local bestBtn, bestGui, bestPriority
+        	for sg, meta in pairs(validGuis) do
+        		local text = meta.text
+        		-- ưu tiên dynamic map
+        		local p = dynMap[text]
+        		if p then
+        			if (not bestPriority) or p < bestPriority then
+        				bestPriority = p
+        				bestBtn = meta.btn
+        				bestGui = sg
+        			end
+        		else
+        			-- fallback: static list
+        			local sidx = getStaticIndex(text)
+        			if sidx then
+        				if (not bestPriority) or sidx < bestPriority then
+        					bestPriority = sidx
+        					bestBtn = meta.btn
+        					bestGui = sg
+        				end
+        			end
+        		end
+        	end
+        	return bestGui, bestBtn, bestPriority
         end
 
         -- static fallback priority map from TARGET_TEXTS
@@ -1271,72 +1299,61 @@ return function(sections)
         	local pgRoot = player:FindFirstChild("PlayerGui")
         	if not pgRoot then return end
 
-        	-- tìm GUI hợp lệ
-        	local foundGui, foundBtn, foundLabel
+        	-- build danh sách ScreenGui hợp lệ (không break sớm)
+        	local validGuis = {}
         	for _, sg in ipairs(pgRoot:GetChildren()) do
         		local ok, btn, label = isValidBuffGui(sg)
         		if ok then
-        			foundGui = sg
-        			foundBtn = btn
-        			foundLabel = label
-        			break
+        			local text = (label and label.Text or ""):gsub("<[^>]+>", "")
+        			validGuis[sg] = { btn = btn, label = label, text = text }
         		end
         	end
 
-        	-- chưa có GUI hợp lệ → reset
-        	if not foundGui then
+        	-- nếu không có GUI hợp lệ -> reset state
+        	local countValid = 0
+        	for _ in pairs(validGuis) do countValid += 1 end
+        	if countValid == 0 then
         		stableGui = nil
         		stableSince = 0
+        		ignoredStableGui = nil
         		return
         	end
 
-        	-- GUI mới hoặc khác GUI cũ → reset timer
-        	if stableGui ~= foundGui then
-        		stableGui = foundGui
-        		stableSince = os.clock()
-        		return
-        	end
-
-        	-- chưa đủ 2s ổn định → chờ
-        	if os.clock() - stableSince < REQUIRED_STABLE_TIME then
-        		return
-        	end
-
-        	-- ===== TỪ ĐÂY GUI ĐÃ ỔN ĐỊNH =====
-
+        	-- build mapping ưu tiên dựa trên executionOrder
         	local dynMap = buildPriorityMap()
-        	local bestBtn, bestPriority
-        	local allValid = {}
 
-        	for _, sg in ipairs(pgRoot:GetChildren()) do
-        		local ok, btn, label = isValidBuffGui(sg)
-        		if not ok then continue end
+        	-- chọn best GUI theo dynamic map -> static fallback
+        	local bestGui, bestBtn, bestPriority = chooseBestFromValid(validGuis, dynMap)
 
-        		local text = label.Text:gsub("<[^>]+>", "")
-        		table.insert(allValid, btn)
-
-        		local p = dynMap[text]
-        		if p and (not bestPriority or p < bestPriority) then
-        			bestPriority = p
-        			bestBtn = btn
-        		else
-        			local sidx = getStaticIndex(text)
-        			if sidx and (not bestPriority or sidx < bestPriority) then
-        				bestPriority = sidx
-        				bestBtn = btn
-        			end
-        		end
-        	end
-
+        	-- nếu có bestBtn thì xử lý ổn định (REQUIRE_STABLE_TIME)
         	if bestBtn then
+        		-- nếu GUI này đã bị ignore, bỏ qua
+        		if ignoredStableGui == bestGui then
+        			return
+        		end
+
+        		-- GUI thay đổi -> reset timer
+        		if stableGui ~= bestGui then
+        			stableGui = bestGui
+        			stableSince = os.clock()
+        			return
+        		end
+
+        		-- chưa đủ thời gian ổn định -> chờ
+        		if os.clock() - stableSince < REQUIRED_STABLE_TIME then
+        			return
+        		end
+
+        		-- Đủ ổn định -> click
         		lastClickTime = os.clock()
         		clickButtonAt(bestBtn)
         		return
         	end
 
-        	-- ❌ KHÔNG RANDOM NỮA KHI CÓ GUI ỔN ĐỊNH
+        	-- không tìm thấy button ưu tiên nào -> khóa GUI hiện tại
+        	ignoredStableGui = stableGui
         end
-
+        
         -- Loop auto
         RunService.Heartbeat:Connect(function(dt)
         	tryAutoClick()
@@ -1357,5 +1374,5 @@ return function(sections)
     
     wait(0.2)
 
-    print("Raid tad V0.18 SUCCESS✅")
+    print("Raid tad V0.20 SUCCESS✅")
 end
