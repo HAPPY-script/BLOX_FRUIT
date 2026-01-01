@@ -1081,9 +1081,7 @@ return function(sections)
             end
             return best
         end
-
-        -- ===== TOGGLE BUTTON (SỬA THEO MẪU CỦA BẠN) =====
-        -- NOTE: script assumes `HomeFrame` is already declared earlier in your file.
+        
         local running = false
 
         local AutoBuffSelectButton = Instance.new("TextButton", HomeFrame)
@@ -1179,7 +1177,7 @@ return function(sections)
             running = state
             AutoBuffSelectButton.Text = state and "ON" or "OFF"
             AutoBuffSelectButton.BackgroundColor3 =
-                state and Color3.fromRGB(50, 200, 50)
+                state and Color3.fromRGB(0, 255, 0)
                 or Color3.fromRGB(255, 50, 50)
         end
 
