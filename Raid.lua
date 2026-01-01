@@ -971,6 +971,20 @@ return function(sections)
         local TARGET_GUI_NAME = "AutoBuffSelectionGui" -- nơi chứa Main.Execution
         local EXEC_PATH = {"Main", "Execution"} -- trong AutoBuffSelectionGui -> Main -> Execution
 
+        local OpenUIButton = Instance.new("TextButton", HomeFrame)
+        OpenUIButton.Size = UDim2.new(0, 50, 0, 30)
+        OpenUIButton.Position = UDim2.new(0, 190, 0, 160)
+        OpenUIButton.Text = "⚙"
+        OpenUIButton.Font = Enum.Font.SourceSans
+        OpenUIButton.TextSize = 14
+        OpenUIButton.BackgroundTransparency = 1
+        OpenUIButton.TextColor3 = Color3.new(1, 1, 1)
+        OpenUIButton.TextScaled = true
+
+        OpenUIButton.MouseButton1Click:Connect(function()
+            game.ReplicatedStorage.BuffUIEvent:Fire("toggle")
+        end)
+
         -- ===== HELPERS =====
         local function normalizeText(txt)
             if not txt then return "" end
