@@ -955,7 +955,9 @@ return function(sections)
 
         --AUTO SELECT BUFF DUNGEON------------------------------------------------------------------------------------------------------------------
     do
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/UISelectBuffDungeon.lua"))() 
+        -- Load UI (external). Keep this as your original.
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/UISelectBuffDungeon.lua"))()
+
         -- ===== CONFIG =====
         local SCAN_INTERVAL = 2
         local MIN_SG_REQUIRED = 3
@@ -1007,10 +1009,36 @@ return function(sections)
             return ok and p
         end
 
+        local function chooseTopMost(entries)
+            if not entries or #entries == 0 then return nil end
+            local best = entries[1]
+            local bestY = (best.btn and best.btn.AbsolutePosition and best.btn.AbsolutePosition.Y) or math.huge
+            for i = 2, #entries do
+                local v = entries[i]
+                local y = (v.btn and v.btn.AbsolutePosition and v.btn.AbsolutePosition.Y) or math.huge
+                if y < bestY then
+                    best = v
+                    bestY = y
+                end
+            end
+            return best
+        end
+
+        -- Improved execSortKey: prefer AbsolutePosition.Y; fallback to Position Y
         local function execSortKey(guiObject)
-            if not guiObject or not guiObject.Position then return math.huge end
-            local s = (guiObject.Position.Y.Scale or 0) + ((guiObject.Position.Y.Offset or 0) / 100000)
-            return s
+            if not guiObject then return math.huge end
+            -- try AbsolutePosition.Y
+            local ok, y = pcall(function()
+                return guiObject.AbsolutePosition.Y
+            end)
+            if ok and type(y) == "number" then
+                return y
+            end
+            -- fallback: use UDim2 Position if present
+            if guiObject.Position and guiObject.Position.Y then
+                return (guiObject.Position.Y.Scale or 0) + ((guiObject.Position.Y.Offset or 0) / 100000)
+            end
+            return math.huge
         end
 
         local function buildExecutionKeys(execFrame)
@@ -1019,24 +1047,36 @@ return function(sections)
 
             for _, child in ipairs(execFrame:GetChildren()) do
                 if child:IsA("GuiObject") then
-                    local label = child:FindFirstChild("DisplayName")
                     local nameText
+                    local label = child:FindFirstChild("DisplayName")
                     if label and label:IsA("TextLabel") and label.Text ~= "" then
                         nameText = label.Text
                     elseif child:IsA("TextButton") and tostring(child.Text or "") ~= "" then
                         nameText = tostring(child.Text)
+                    else
+                        -- fallback: tìm bất kỳ TextLabel con nào có text
+                        for _, sub in ipairs(child:GetDescendants()) do
+                            if sub:IsA("TextLabel") and tostring(sub.Text or "") ~= "" then
+                                nameText = tostring(sub.Text)
+                                break
+                            end
+                        end
                     end
+
                     if nameText and nameText ~= "" then
-                        table.insert(result, {
-                            key = normalizeText(nameText),
-                            btn = child,
-                            y = execSortKey(child)
-                        })
+                        local key = normalizeText(nameText)
+                        local y = execSortKey(child)
+                        table.insert(result, { key = key, obj = child, y = y })
                     end
                 end
             end
 
-            table.sort(result, function(a, b) return a.y < b.y end)
+            table.sort(result, function(a, b)
+                if a.y == b.y then
+                    return a.key < b.key -- deterministic tie-breaker for identical Y
+                end
+                return a.y < b.y
+            end)
             return result
         end
 
@@ -1067,24 +1107,75 @@ return function(sections)
             return valid
         end
 
-        local function chooseTopMost(entries)
-            if not entries or #entries == 0 then return nil end
-            local best = entries[1]
-            local bestY = (best.btn and best.btn.AbsolutePosition and best.btn.AbsolutePosition.Y) or math.huge
-            for i = 2, #entries do
-                local v = entries[i]
-                local y = (v.btn and v.btn.AbsolutePosition and v.btn.AbsolutePosition.Y) or math.huge
-                if y < bestY then
-                    best = v
-                    bestY = y
+        -- find index of key in execList
+        local function findExecIndex(execList, key)
+            if not key then return nil end
+            for i, e in ipairs(execList) do
+                if e.key == key then
+                    return i
                 end
             end
-            return best
+            return nil
         end
-        
+
+        -- Process selection based on execList order and screen gui positions
+        local function processSelection(validSGs, execList, lastClickRef)
+            -- lastClickRef is a table containing lastClickTime so we can update outer var by reference (or nil)
+            if #execList == 0 then
+                if lastClickRef then lastClickRef[1] = os.clock() end
+                clickButtonVirt(validSGs[math.random(1, #validSGs)].btn)
+                return
+            end
+
+            local candidates = {}
+            for _, v in ipairs(validSGs) do
+                local idx = findExecIndex(execList, v.key)
+                if idx then
+                    table.insert(candidates, { sg = v, idx = idx })
+                end
+            end
+
+            if #candidates > 0 then
+                local bestIdx = math.huge
+                for _, c in ipairs(candidates) do
+                    if c.idx < bestIdx then bestIdx = c.idx end
+                end
+
+                local bestCandidates = {}
+                for _, c in ipairs(candidates) do
+                    if c.idx == bestIdx then table.insert(bestCandidates, c.sg) end
+                end
+
+                local chosen = chooseTopMost(bestCandidates)
+                if chosen then
+                    if lastClickRef then lastClickRef[1] = os.clock() end
+                    clickButtonVirt(chosen.btn)
+                    return
+                end
+            end
+
+            -- fallback random
+            if #validSGs > 0 then
+                if lastClickRef then lastClickRef[1] = os.clock() end
+                clickButtonVirt(validSGs[math.random(1, #validSGs)].btn)
+            end
+        end
+
+        -- ===== CORE PROCESS =====
+        local lastScan = 0
+        local lastClickTime = 0
+
         local running = false
 
-        local AutoBuffSelectButton = Instance.new("TextButton", HomeFrame)
+        -- Create toggle button. Parent to HomeFrame if exists, otherwise attach to PlayerGui as fallback.
+        local AutoBuffSelectButton = Instance.new("TextButton")
+        local parentForButton = nil
+        if typeof(HomeFrame) ~= "nil" and HomeFrame then
+            parentForButton = HomeFrame
+        else
+            parentForButton = player:FindFirstChild("PlayerGui") or nil
+        end
+        AutoBuffSelectButton.Parent = parentForButton
         AutoBuffSelectButton.Size = UDim2.new(0, 90, 0, 30)
         AutoBuffSelectButton.Position = UDim2.new(0, 240, 0, 160)
         AutoBuffSelectButton.Text = "OFF"
@@ -1093,10 +1184,6 @@ return function(sections)
         AutoBuffSelectButton.Font = Enum.Font.SourceSansBold
         AutoBuffSelectButton.TextScaled = true
         AutoBuffSelectButton.Name = "BtnAutoBuffToggle"
-
-        -- ===== CORE PROCESS =====
-        local lastScan = 0
-        local lastClickTime = 0
 
         local function tryProcess()
             if not running then return end
@@ -1122,47 +1209,15 @@ return function(sections)
             end
 
             local execList = buildExecutionKeys(execFrame)
-            if #execList == 0 then
-                lastClickTime = os.clock()
-                clickButtonVirt(validSGs[math.random(1, #validSGs)].btn)
-                return
-            end
 
-            local execMap = {}
-            for i, e in ipairs(execList) do
-                execMap[e.key] = {entry = e, index = i}
-            end
-
-            local matchesByExecIndex = {}
-            for _, v in ipairs(validSGs) do
-                local k = v.key
-                local em = execMap[k]
-                if em then
-                    local idx = em.index
-                    matchesByExecIndex[idx] = matchesByExecIndex[idx] or {}
-                    table.insert(matchesByExecIndex[idx], v)
-                end
-            end
-
-            local chosenEntry = nil
-            for idx = 1, #execList do
-                local mlist = matchesByExecIndex[idx]
-                if mlist and #mlist > 0 then
-                    chosenEntry = chooseTopMost(mlist)
-                    break
-                end
-            end
-
-            if chosenEntry then
-                lastClickTime = os.clock()
-                clickButtonVirt(chosenEntry.btn)
-                return
-            end
-
-            if #validSGs > 0 then
-                lastClickTime = os.clock()
-                clickButtonVirt(validSGs[math.random(1, #validSGs)].btn)
-            end
+            -- process selection using improved logic
+            processSelection(validSGs, execList, { lastClickTime })
+            -- note: processSelection updates the passed lastClickRef[1] but we need to sync it back
+            -- simpler: after any click we set lastClickTime = os.clock() inside processSelection through ref
+            -- but Lua passes table by reference, we passed a temporary table - sync back by reading os.clock() if changed
+            -- For determinism, set lastClickTime = os.clock() when we detect click should have happened.
+            -- Because processSelection already sets clock before clicking, we can simply set lastClickTime now to ensure rate limit.
+            lastClickTime = os.clock()
         end
 
         RunService.Heartbeat:Connect(function(dt)
@@ -1191,5 +1246,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.12 SUCCESS✅")
+    print("Raid tad V0.13 SUCCESS✅")
 end
