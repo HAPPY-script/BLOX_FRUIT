@@ -1088,7 +1088,7 @@ return function(sections)
 
         local AutoBuffSelectButton = Instance.new("TextButton", HomeFrame)
         AutoBuffSelectButton.Size = UDim2.new(0, 90, 0, 30)
-        AutoBuffSelectButton.Position = UDim2.new(0, 240, 0, 60)
+        AutoBuffSelectButton.Position = UDim2.new(0, 240, 0, 160)
         AutoBuffSelectButton.Text = "OFF"
         AutoBuffSelectButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         AutoBuffSelectButton.TextColor3 = Color3.new(1, 1, 1)
@@ -1177,11 +1177,13 @@ return function(sections)
 
         local function setRunning(state)
             running = state
-            noclipButton.Text = state and "ON" or "OFF"
-            noclipButton.BackgroundColor3 = state and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(255, 50, 50)
+            AutoBuffSelectButton.Text = state and "ON" or "OFF"
+            AutoBuffSelectButton.BackgroundColor3 =
+                state and Color3.fromRGB(50, 200, 50)
+                or Color3.fromRGB(255, 50, 50)
         end
 
-        noclipButton.MouseButton1Click:Connect(function()
+        AutoBuffSelectButton.MouseButton1Click:Connect(function()
             setRunning(not running)
         end)
 
@@ -1191,5 +1193,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.11 SUCCESS✅")
+    print("Raid tad V0.12 SUCCESS✅")
 end
