@@ -751,9 +751,9 @@ return function(sections)
             if movementLock then return end
             pauseForExit = true
 
-            -- 🔹 DELAY 1.5s trước khi bay tới Root (có kiểm tra priority + enemy)
+            -- 🔹 DELAY 2s trước khi bay tới Root (có kiểm tra priority + enemy)
             local waited = 0
-            while waited < 1.5 do
+            while waited < 2 do
                 if not autoDungeon then
                     pauseForExit = false
                     return
