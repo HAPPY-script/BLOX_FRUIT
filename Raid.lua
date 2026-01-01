@@ -1191,5 +1191,5 @@ return function(sections)
 
     wait(0.2)
 
-    print("Raid tad V0.10 SUCCESS✅")
+    print("Raid tad V0.11 SUCCESS✅")
 end
