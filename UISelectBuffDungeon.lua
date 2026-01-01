@@ -22,6 +22,11 @@ Main.AnchorPoint = Vector2.new(0.5, 0.5)
 Main.Visible = false
 Main.Parent = AutoBuffSelectionGui
 
+local UIAspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint.Name = "UIAspectRatioConstraint"
+UIAspectRatioConstraint.AspectRatio = 1.585
+UIAspectRatioConstraint.Parent = Main
+
 local TitleFrame = Instance.new("Frame")
 TitleFrame.Name = "TitleFrame"
 TitleFrame.Position = UDim2.new(0.5, 0, 0.025, 0)
