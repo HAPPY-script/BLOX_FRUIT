@@ -1,3 +1,9 @@
+if _G.NotificationUI then
+    warn("Script đã chạy! Không thể chạy lại.")
+    return
+end
+_G.NotificationUI = true
+
 local SelectVersion = Instance.new("ScreenGui")
 SelectVersion.Name = "SelectVersion"
 SelectVersion.ResetOnSpawn = false
