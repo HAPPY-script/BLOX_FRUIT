@@ -141,7 +141,7 @@ local screenGui = playerGui:WaitForChild("SelectVersion")
 local main = screenGui:WaitForChild("Main")
 
 local currentBtn = main:WaitForChild("Current")
-local trialBtn = main:WaitForChild("trial")
+local trialBtn = main:WaitForChild("Trial")
 
 -- URL của bạn (đổi lại theo ý bạn)
 local CURRENT_URL = "https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/main/BLOX_FRUIT.lua"
