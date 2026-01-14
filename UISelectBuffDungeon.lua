@@ -198,7 +198,7 @@ UIStroke7.Parent = Melee
 
 local UIGradient4 = Instance.new("UIGradient")
 UIGradient4.Name = "UIGradient"
-UIGradient4.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient4.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.223529, 0.419608, 0.439216)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient4.Parent = Melee
 
 local Logo = Instance.new("ImageLabel")
@@ -283,7 +283,7 @@ UIStroke9.Parent = Lifesteal
 
 local UIGradient5 = Instance.new("UIGradient")
 UIGradient5.Name = "UIGradient"
-UIGradient5.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient5.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.329412, 0.0117647, 0.0117647)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient5.Parent = Lifesteal
 
 local Logo2 = Instance.new("ImageLabel")
@@ -368,7 +368,7 @@ UIStroke11.Parent = Defense
 
 local UIGradient6 = Instance.new("UIGradient")
 UIGradient6.Name = "UIGradient"
-UIGradient6.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient6.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.470588, 0.0352941, 0.0352941)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient6.Parent = Defense
 
 local Logo3 = Instance.new("ImageLabel")
@@ -623,7 +623,7 @@ UIStroke17.Parent = Armor
 
 local UIGradient9 = Instance.new("UIGradient")
 UIGradient9.Name = "UIGradient"
-UIGradient9.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient9.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.278431, 0.137255, 0.207843)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient9.Parent = Armor
 
 local Logo6 = Instance.new("ImageLabel")
@@ -708,7 +708,7 @@ UIStroke19.Parent = Shadow
 
 local UIGradient10 = Instance.new("UIGradient")
 UIGradient10.Name = "UIGradient"
-UIGradient10.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient10.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.309804, 0, 0.364706)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient10.Parent = Shadow
 
 local Logo7 = Instance.new("ImageLabel")
@@ -793,7 +793,7 @@ UIStroke21.Parent = All_Cooldowns
 
 local UIGradient11 = Instance.new("UIGradient")
 UIGradient11.Name = "UIGradient"
-UIGradient11.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient11.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.262745, 0.262745, 0.262745)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient11.Parent = All_Cooldowns
 
 local Logo8 = Instance.new("ImageLabel")
@@ -878,7 +878,7 @@ UIStroke23.Parent = Overflow
 
 local UIGradient12 = Instance.new("UIGradient")
 UIGradient12.Name = "UIGradient"
-UIGradient12.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient12.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.0352941, 0.192157, 0.509804)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient12.Parent = Overflow
 
 local Logo9 = Instance.new("ImageLabel")
@@ -968,7 +968,7 @@ UIStroke25.Parent = Fortress
 
 local UIGradient13 = Instance.new("UIGradient")
 UIGradient13.Name = "UIGradient"
-UIGradient13.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient13.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.529412, 0.219608, 0.0941176)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient13.Parent = Fortress
 
 local Logo10 = Instance.new("ImageLabel")
@@ -1053,7 +1053,7 @@ UIStroke27.Parent = Race_Meter
 
 local UIGradient14 = Instance.new("UIGradient")
 UIGradient14.Name = "UIGradient"
-UIGradient14.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient14.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0, 0.109804, 0.239216)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient14.Parent = Race_Meter
 
 local Logo11 = Instance.new("ImageLabel")
@@ -1138,7 +1138,7 @@ UIStroke29.Parent = Fruit
 
 local UIGradient15 = Instance.new("UIGradient")
 UIGradient15.Name = "UIGradient"
-UIGradient15.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient15.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.458824, 0.309804, 0.054902)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient15.Parent = Fruit
 
 local Logo12 = Instance.new("ImageLabel")
@@ -1223,18 +1223,17 @@ UIStroke31.Parent = Fruit_M1_Speed
 
 local UIGradient16 = Instance.new("UIGradient")
 UIGradient16.Name = "UIGradient"
-UIGradient16.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient16.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.384314, 0.384314, 0.14902)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
 UIGradient16.Parent = Fruit_M1_Speed
 
 local Logo13 = Instance.new("ImageLabel")
 Logo13.Name = "Logo"
 Logo13.Position = UDim2.new(0.1, 0, 0.5, 0)
-Logo13.Size = UDim2.new(1.1, 0, 1.1, 0)
+Logo13.Size = UDim2.new(1, 0, 1, 0)
 Logo13.BackgroundColor3 = Color3.new(1, 1, 1)
 Logo13.BackgroundTransparency = 1
 Logo13.BorderSizePixel = 0
 Logo13.BorderColor3 = Color3.new(0, 0, 0)
-Logo13.Rotation = -5
 Logo13.AnchorPoint = Vector2.new(0.5, 0.5)
 Logo13.Transparency = 1
 Logo13.Image = "rbxassetid://126193746951227"
@@ -1256,7 +1255,7 @@ Name13.BorderColor3 = Color3.new(0, 0, 0)
 Name13.AnchorPoint = Vector2.new(0.5, 0.5)
 Name13.Transparency = 1
 Name13.Text = "Fruit M1 Speed"
-Name13.TextColor3 = Color3.new(1, 1, 1)
+Name13.TextColor3 = Color3.new(1, 1, 0.392157)
 Name13.TextSize = 14
 Name13.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
 Name13.TextScaled = true
