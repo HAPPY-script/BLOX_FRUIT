@@ -1357,7 +1357,7 @@ local EASING = Enum.EasingStyle.Quad
 local EXEC_ANCHOR = Vector2.new(0.5, 0)
 local EXEC_X = 0.5
 local EXEC_FIRST_Y = 0.015
-local EXEC_STEP_Y = 0.09
+local EXEC_STEP_Y = 0.07
 
 -- default state
 main.AnchorPoint = Vector2.new(0.5, 0.5)
