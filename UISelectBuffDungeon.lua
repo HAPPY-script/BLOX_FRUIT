@@ -1,5 +1,5 @@
 if _G.__BUFF_UI_LOADED__ then
-    return
+	return
 end
 _G.__BUFF_UI_LOADED__ = true
 
@@ -71,7 +71,7 @@ UIStroke2.Parent = Close
 
 local UIGradient2 = Instance.new("UIGradient")
 UIGradient2.Name = "UIGradient"
-UIGradient2.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(1, 0.196078, 0.054902)), ColorSequenceKeypoint.new(0.5, Color3.new(1, 0.47451, 0.341176)), ColorSequenceKeypoint.new(1, Color3.new(1, 0.196078, 0.054902))})
+UIGradient2.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(1, 0.196078, 0.054902)), ColorSequenceKeypoint.new(0.5, Color3.new(1, 0.45098, 0.235294)), ColorSequenceKeypoint.new(1, Color3.new(1, 0.196078, 0.054902))})
 UIGradient2.Rotation = 90
 UIGradient2.Parent = Close
 
@@ -111,17 +111,57 @@ UIStroke3.Name = "UIStroke"
 UIStroke3.Thickness = 1.5
 UIStroke3.Parent = TextLabel
 
+local Utilities = Instance.new("ImageButton")
+Utilities.Name = "Utilities"
+Utilities.Position = UDim2.new(0.05, 0, 0.5, 0)
+Utilities.Size = UDim2.new(0.8, 0, 0.8, 0)
+Utilities.BackgroundColor3 = Color3.new(1, 1, 1)
+Utilities.BorderSizePixel = 0
+Utilities.BorderColor3 = Color3.new(0, 0, 0)
+Utilities.AnchorPoint = Vector2.new(0.5, 0.5)
+Utilities.Parent = TitleFrame
+
+local UIAspectRatioConstraint2 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint2.Name = "UIAspectRatioConstraint"
+
+UIAspectRatioConstraint2.Parent = Utilities
+
 local UIStroke4 = Instance.new("UIStroke")
 UIStroke4.Name = "UIStroke"
-UIStroke4.Thickness = 2
+UIStroke4.Thickness = 1.5
 UIStroke4.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke4.Parent = Main
+UIStroke4.Parent = Utilities
+
+local ImageLabel2 = Instance.new("ImageLabel")
+ImageLabel2.Name = "ImageLabel"
+ImageLabel2.Position = UDim2.new(0.5, 0, 0.5, 0)
+ImageLabel2.Size = UDim2.new(1, 0, 1, 0)
+ImageLabel2.BackgroundColor3 = Color3.new(1, 1, 1)
+ImageLabel2.BackgroundTransparency = 1
+ImageLabel2.BorderSizePixel = 0
+ImageLabel2.BorderColor3 = Color3.new(0, 0, 0)
+ImageLabel2.AnchorPoint = Vector2.new(0.5, 0.5)
+ImageLabel2.Transparency = 1
+ImageLabel2.Image = "rbxassetid://13321880274"
+ImageLabel2.Parent = Utilities
 
 local UIGradient3 = Instance.new("UIGradient")
 UIGradient3.Name = "UIGradient"
-UIGradient3.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0, 0.027451, 0.0980392)), ColorSequenceKeypoint.new(0.728374, Color3.new(0.0980392, 0.0980392, 0.0980392)), ColorSequenceKeypoint.new(1, Color3.new(0.14902, 0.14902, 0.14902))})
+UIGradient3.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.478431, 0.0392157, 0.917647)), ColorSequenceKeypoint.new(0.5, Color3.new(0.776471, 0.215686, 1)), ColorSequenceKeypoint.new(1, Color3.new(0.478431, 0.0392157, 0.917647))})
 UIGradient3.Rotation = 90
-UIGradient3.Parent = Main
+UIGradient3.Parent = Utilities
+
+local UIStroke5 = Instance.new("UIStroke")
+UIStroke5.Name = "UIStroke"
+UIStroke5.Thickness = 2
+UIStroke5.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke5.Parent = Main
+
+local UIGradient4 = Instance.new("UIGradient")
+UIGradient4.Name = "UIGradient"
+UIGradient4.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0, 0.027451, 0.0980392)), ColorSequenceKeypoint.new(0.728374, Color3.new(0.0980392, 0.0980392, 0.0980392)), ColorSequenceKeypoint.new(1, Color3.new(0.14902, 0.14902, 0.14902))})
+UIGradient4.Rotation = 90
+UIGradient4.Parent = Main
 
 local UICorner2 = Instance.new("UICorner")
 UICorner2.Name = "UICorner"
@@ -148,11 +188,11 @@ Execution.CanvasSize = UDim2.new(0, 0, 2.5, 0)
 Execution.ScrollBarThickness = 3
 Execution.Parent = Main
 
-local UIStroke5 = Instance.new("UIStroke")
-UIStroke5.Name = "UIStroke"
-UIStroke5.Color = Color3.new(1, 0.784314, 0)
-UIStroke5.Thickness = 2
-UIStroke5.Parent = Execution
+local UIStroke6 = Instance.new("UIStroke")
+UIStroke6.Name = "UIStroke"
+UIStroke6.Color = Color3.new(1, 0.784314, 0)
+UIStroke6.Thickness = 2
+UIStroke6.Parent = Execution
 
 local List = Instance.new("ScrollingFrame")
 List.Name = "List"
@@ -169,266 +209,11 @@ List.CanvasSize = UDim2.new(0, 0, 2.5, 0)
 List.ScrollBarThickness = 3
 List.Parent = Main
 
-local UIStroke6 = Instance.new("UIStroke")
-UIStroke6.Name = "UIStroke"
-UIStroke6.Color = Color3.new(1, 0.784314, 0)
-UIStroke6.Thickness = 2
-UIStroke6.Parent = List
-
-local Melee = Instance.new("TextButton")
-Melee.Name = "Melee"
-Melee.Position = UDim2.new(0.5, 0, 0.155, 0)
-Melee.Size = UDim2.new(0.95, 0, 0.06, 0)
-Melee.BackgroundColor3 = Color3.new(1, 1, 1)
-Melee.BorderSizePixel = 0
-Melee.BorderColor3 = Color3.new(0, 0, 0)
-Melee.AnchorPoint = Vector2.new(0.5, 0)
-Melee.Text = ""
-Melee.TextColor3 = Color3.new(0, 0, 0)
-Melee.TextSize = 14
-Melee.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Melee.Parent = List
-
 local UIStroke7 = Instance.new("UIStroke")
 UIStroke7.Name = "UIStroke"
-UIStroke7.Color = Color3.new(1, 0.882353, 0)
+UIStroke7.Color = Color3.new(1, 0.784314, 0)
 UIStroke7.Thickness = 2
-UIStroke7.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke7.Parent = Melee
-
-local UIGradient4 = Instance.new("UIGradient")
-UIGradient4.Name = "UIGradient"
-UIGradient4.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.223529, 0.419608, 0.439216)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient4.Parent = Melee
-
-local Logo = Instance.new("ImageLabel")
-Logo.Name = "Logo"
-Logo.Position = UDim2.new(0.11, 0, 0.5, 0)
-Logo.Size = UDim2.new(1, 0, 1, 0)
-Logo.BackgroundColor3 = Color3.new(1, 1, 1)
-Logo.BackgroundTransparency = 1
-Logo.BorderSizePixel = 0
-Logo.BorderColor3 = Color3.new(0, 0, 0)
-Logo.AnchorPoint = Vector2.new(0.5, 0.5)
-Logo.Transparency = 1
-Logo.Image = "rbxassetid://105862822867112"
-Logo.Parent = Melee
-
-local UIAspectRatioConstraint2 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint2.Name = "UIAspectRatioConstraint"
-
-UIAspectRatioConstraint2.Parent = Logo
-
-local Name = Instance.new("TextLabel")
-Name.Name = "Name"
-Name.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name.Size = UDim2.new(0.75, 0, 0.5, 0)
-Name.BackgroundColor3 = Color3.new(1, 1, 1)
-Name.BackgroundTransparency = 1
-Name.BorderSizePixel = 0
-Name.BorderColor3 = Color3.new(0, 0, 0)
-Name.AnchorPoint = Vector2.new(0.5, 0.5)
-Name.Transparency = 1
-Name.Text = "Melee"
-Name.TextColor3 = Color3.new(1, 1, 1)
-Name.TextSize = 14
-Name.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-Name.TextScaled = true
-Name.TextWrapped = true
-Name.Parent = Melee
-
-local UIStroke8 = Instance.new("UIStroke")
-UIStroke8.Name = "UIStroke"
-UIStroke8.Thickness = 1.5
-UIStroke8.Parent = Name
-
-local Features = Instance.new("TextLabel")
-Features.Name = "Features"
-Features.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features.Size = UDim2.new(0.75, 0, 0.35, 0)
-Features.BackgroundColor3 = Color3.new(1, 1, 1)
-Features.BackgroundTransparency = 1
-Features.BorderSizePixel = 0
-Features.BorderColor3 = Color3.new(0, 0, 0)
-Features.AnchorPoint = Vector2.new(0.5, 0.5)
-Features.Transparency = 1
-Features.Text = "+500 Melee stats"
-Features.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
-Features.TextSize = 14
-Features.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
-Features.TextScaled = true
-Features.TextWrapped = true
-Features.Parent = Melee
-
-local Lifesteal = Instance.new("TextButton")
-Lifesteal.Name = "Lifesteal"
-Lifesteal.Position = UDim2.new(0.5, 0, 0.225, 0)
-Lifesteal.Size = UDim2.new(0.95, 0, 0.06, 0)
-Lifesteal.BackgroundColor3 = Color3.new(1, 1, 1)
-Lifesteal.BorderSizePixel = 0
-Lifesteal.BorderColor3 = Color3.new(0, 0, 0)
-Lifesteal.AnchorPoint = Vector2.new(0.5, 0)
-Lifesteal.Text = ""
-Lifesteal.TextColor3 = Color3.new(0, 0, 0)
-Lifesteal.TextSize = 14
-Lifesteal.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Lifesteal.Parent = List
-
-local UIStroke9 = Instance.new("UIStroke")
-UIStroke9.Name = "UIStroke"
-UIStroke9.Color = Color3.new(1, 0.882353, 0)
-UIStroke9.Thickness = 2
-UIStroke9.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke9.Parent = Lifesteal
-
-local UIGradient5 = Instance.new("UIGradient")
-UIGradient5.Name = "UIGradient"
-UIGradient5.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.329412, 0.0117647, 0.0117647)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient5.Parent = Lifesteal
-
-local Logo2 = Instance.new("ImageLabel")
-Logo2.Name = "Logo"
-Logo2.Position = UDim2.new(0.11, 0, 0.5, 0)
-Logo2.Size = UDim2.new(1, 0, 1, 0)
-Logo2.BackgroundColor3 = Color3.new(1, 1, 1)
-Logo2.BackgroundTransparency = 1
-Logo2.BorderSizePixel = 0
-Logo2.BorderColor3 = Color3.new(0, 0, 0)
-Logo2.AnchorPoint = Vector2.new(0.5, 0.5)
-Logo2.Transparency = 1
-Logo2.Image = "rbxassetid://88149768819442"
-Logo2.Parent = Lifesteal
-
-local UIAspectRatioConstraint3 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint3.Name = "UIAspectRatioConstraint"
-UIAspectRatioConstraint3.AspectRatio = 0.8999999761581421
-UIAspectRatioConstraint3.Parent = Logo2
-
-local Name2 = Instance.new("TextLabel")
-Name2.Name = "Name"
-Name2.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name2.Size = UDim2.new(0.75, 0, 0.5, 0)
-Name2.BackgroundColor3 = Color3.new(1, 1, 1)
-Name2.BackgroundTransparency = 1
-Name2.BorderSizePixel = 0
-Name2.BorderColor3 = Color3.new(0, 0, 0)
-Name2.AnchorPoint = Vector2.new(0.5, 0.5)
-Name2.Transparency = 1
-Name2.Text = "Lifesteal"
-Name2.TextColor3 = Color3.new(1, 1, 1)
-Name2.TextSize = 14
-Name2.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-Name2.TextScaled = true
-Name2.TextWrapped = true
-Name2.Parent = Lifesteal
-
-local UIStroke10 = Instance.new("UIStroke")
-UIStroke10.Name = "UIStroke"
-UIStroke10.Thickness = 1.5
-UIStroke10.Parent = Name2
-
-local Features2 = Instance.new("TextLabel")
-Features2.Name = "Features"
-Features2.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features2.Size = UDim2.new(0.75, 0, 0.5, 0)
-Features2.BackgroundColor3 = Color3.new(1, 1, 1)
-Features2.BackgroundTransparency = 1
-Features2.BorderSizePixel = 0
-Features2.BorderColor3 = Color3.new(0, 0, 0)
-Features2.AnchorPoint = Vector2.new(0.5, 0.5)
-Features2.Transparency = 1
-Features2.Text = "Heal for 10% of damage dealt to enemies."
-Features2.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
-Features2.TextSize = 14
-Features2.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
-Features2.TextScaled = true
-Features2.TextWrapped = true
-Features2.Parent = Lifesteal
-
-local Defense = Instance.new("TextButton")
-Defense.Name = "Defense"
-Defense.Position = UDim2.new(0.5, 0, 0.295, 0)
-Defense.Size = UDim2.new(0.95, 0, 0.06, 0)
-Defense.BackgroundColor3 = Color3.new(1, 1, 1)
-Defense.BorderSizePixel = 0
-Defense.BorderColor3 = Color3.new(0, 0, 0)
-Defense.AnchorPoint = Vector2.new(0.5, 0)
-Defense.Text = ""
-Defense.TextColor3 = Color3.new(0, 0, 0)
-Defense.TextSize = 14
-Defense.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Defense.Parent = List
-
-local UIStroke11 = Instance.new("UIStroke")
-UIStroke11.Name = "UIStroke"
-UIStroke11.Color = Color3.new(1, 0.882353, 0)
-UIStroke11.Thickness = 2
-UIStroke11.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke11.Parent = Defense
-
-local UIGradient6 = Instance.new("UIGradient")
-UIGradient6.Name = "UIGradient"
-UIGradient6.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.470588, 0.0352941, 0.0352941)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient6.Parent = Defense
-
-local Logo3 = Instance.new("ImageLabel")
-Logo3.Name = "Logo"
-Logo3.Position = UDim2.new(0.15, 0, 0.45, 0)
-Logo3.Size = UDim2.new(1.1, 0, 1.1, 0)
-Logo3.BackgroundColor3 = Color3.new(1, 1, 1)
-Logo3.BackgroundTransparency = 1
-Logo3.BorderSizePixel = 0
-Logo3.BorderColor3 = Color3.new(0, 0, 0)
-Logo3.AnchorPoint = Vector2.new(0.5, 0.5)
-Logo3.Transparency = 1
-Logo3.Image = "rbxassetid://92248946047126"
-Logo3.Parent = Defense
-
-local UIAspectRatioConstraint4 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint4.Name = "UIAspectRatioConstraint"
-UIAspectRatioConstraint4.AspectRatio = 1.149999976158142
-UIAspectRatioConstraint4.Parent = Logo3
-
-local Name3 = Instance.new("TextLabel")
-Name3.Name = "Name"
-Name3.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name3.Size = UDim2.new(0.75, 0, 0.5, 0)
-Name3.BackgroundColor3 = Color3.new(1, 1, 1)
-Name3.BackgroundTransparency = 1
-Name3.BorderSizePixel = 0
-Name3.BorderColor3 = Color3.new(0, 0, 0)
-Name3.AnchorPoint = Vector2.new(0.5, 0.5)
-Name3.Transparency = 1
-Name3.Text = "Defense"
-Name3.TextColor3 = Color3.new(1, 1, 1)
-Name3.TextSize = 14
-Name3.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-Name3.TextScaled = true
-Name3.TextWrapped = true
-Name3.Parent = Defense
-
-local UIStroke12 = Instance.new("UIStroke")
-UIStroke12.Name = "UIStroke"
-UIStroke12.Thickness = 1.5
-UIStroke12.Parent = Name3
-
-local Features3 = Instance.new("TextLabel")
-Features3.Name = "Features"
-Features3.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features3.Size = UDim2.new(0.75, 0, 0.35, 0)
-Features3.BackgroundColor3 = Color3.new(1, 1, 1)
-Features3.BackgroundTransparency = 1
-Features3.BorderSizePixel = 0
-Features3.BorderColor3 = Color3.new(0, 0, 0)
-Features3.AnchorPoint = Vector2.new(0.5, 0.5)
-Features3.Transparency = 1
-Features3.Text = "+500 Defense stats"
-Features3.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
-Features3.TextSize = 14
-Features3.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
-Features3.TextScaled = true
-Features3.TextWrapped = true
-Features3.Parent = Defense
+UIStroke7.Parent = List
 
 local Sword = Instance.new("TextButton")
 Sword.Name = "Sword"
@@ -444,76 +229,76 @@ Sword.TextSize = 14
 Sword.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 Sword.Parent = List
 
-local UIStroke13 = Instance.new("UIStroke")
-UIStroke13.Name = "UIStroke"
-UIStroke13.Color = Color3.new(1, 0.882353, 0)
-UIStroke13.Thickness = 2
-UIStroke13.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke13.Parent = Sword
+local UIStroke8 = Instance.new("UIStroke")
+UIStroke8.Name = "UIStroke"
+UIStroke8.Color = Color3.new(1, 0.882353, 0)
+UIStroke8.Thickness = 2
+UIStroke8.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke8.Parent = Sword
 
-local UIGradient7 = Instance.new("UIGradient")
-UIGradient7.Name = "UIGradient"
-UIGradient7.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient7.Parent = Sword
+local UIGradient5 = Instance.new("UIGradient")
+UIGradient5.Name = "UIGradient"
+UIGradient5.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient5.Parent = Sword
 
-local Logo4 = Instance.new("ImageLabel")
-Logo4.Name = "Logo"
-Logo4.Position = UDim2.new(0.1, 0, 0.5, 0)
-Logo4.Size = UDim2.new(1.3, 0, 1.3, 0)
-Logo4.BackgroundColor3 = Color3.new(1, 1, 1)
-Logo4.BackgroundTransparency = 1
-Logo4.BorderSizePixel = 0
-Logo4.BorderColor3 = Color3.new(0, 0, 0)
-Logo4.AnchorPoint = Vector2.new(0.5, 0.5)
-Logo4.Transparency = 1
-Logo4.Image = "rbxassetid://105688057956034"
-Logo4.Parent = Sword
+local Logo = Instance.new("ImageLabel")
+Logo.Name = "Logo"
+Logo.Position = UDim2.new(0.1, 0, 0.5, 0)
+Logo.Size = UDim2.new(1.3, 0, 1.3, 0)
+Logo.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo.BackgroundTransparency = 1
+Logo.BorderSizePixel = 0
+Logo.BorderColor3 = Color3.new(0, 0, 0)
+Logo.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo.Transparency = 1
+Logo.Image = "rbxassetid://105688057956034"
+Logo.Parent = Sword
 
-local UIAspectRatioConstraint5 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint5.Name = "UIAspectRatioConstraint"
+local UIAspectRatioConstraint3 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint3.Name = "UIAspectRatioConstraint"
 
-UIAspectRatioConstraint5.Parent = Logo4
+UIAspectRatioConstraint3.Parent = Logo
 
-local Name4 = Instance.new("TextLabel")
-Name4.Name = "Name"
-Name4.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name4.Size = UDim2.new(0.75, 0, 0.5, 0)
-Name4.BackgroundColor3 = Color3.new(1, 1, 1)
-Name4.BackgroundTransparency = 1
-Name4.BorderSizePixel = 0
-Name4.BorderColor3 = Color3.new(0, 0, 0)
-Name4.AnchorPoint = Vector2.new(0.5, 0.5)
-Name4.Transparency = 1
-Name4.Text = "Sword"
-Name4.TextColor3 = Color3.new(1, 1, 1)
-Name4.TextSize = 14
-Name4.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-Name4.TextScaled = true
-Name4.TextWrapped = true
-Name4.Parent = Sword
+local Name = Instance.new("TextLabel")
+Name.Name = "Name"
+Name.Position = UDim2.new(0.5, 0, 0.25, 0)
+Name.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name.BackgroundColor3 = Color3.new(1, 1, 1)
+Name.BackgroundTransparency = 1
+Name.BorderSizePixel = 0
+Name.BorderColor3 = Color3.new(0, 0, 0)
+Name.AnchorPoint = Vector2.new(0.5, 0.5)
+Name.Transparency = 1
+Name.Text = "Sword"
+Name.TextColor3 = Color3.new(1, 1, 1)
+Name.TextSize = 14
+Name.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name.TextScaled = true
+Name.TextWrapped = true
+Name.Parent = Sword
 
-local UIStroke14 = Instance.new("UIStroke")
-UIStroke14.Name = "UIStroke"
-UIStroke14.Thickness = 1.5
-UIStroke14.Parent = Name4
+local UIStroke9 = Instance.new("UIStroke")
+UIStroke9.Name = "UIStroke"
+UIStroke9.Thickness = 1.5
+UIStroke9.Parent = Name
 
-local Features4 = Instance.new("TextLabel")
-Features4.Name = "Features"
-Features4.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features4.Size = UDim2.new(0.75, 0, 0.35, 0)
-Features4.BackgroundColor3 = Color3.new(1, 1, 1)
-Features4.BackgroundTransparency = 1
-Features4.BorderSizePixel = 0
-Features4.BorderColor3 = Color3.new(0, 0, 0)
-Features4.AnchorPoint = Vector2.new(0.5, 0.5)
-Features4.Transparency = 1
-Features4.Text = "+500 Sword stats"
-Features4.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
-Features4.TextSize = 14
-Features4.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
-Features4.TextScaled = true
-Features4.TextWrapped = true
-Features4.Parent = Sword
+local Features = Instance.new("TextLabel")
+Features.Name = "Features"
+Features.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features.Size = UDim2.new(0.75, 0, 0.35, 0)
+Features.BackgroundColor3 = Color3.new(1, 1, 1)
+Features.BackgroundTransparency = 1
+Features.BorderSizePixel = 0
+Features.BorderColor3 = Color3.new(0, 0, 0)
+Features.AnchorPoint = Vector2.new(0.5, 0.5)
+Features.Transparency = 1
+Features.Text = "+500 Sword stats"
+Features.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features.TextSize = 14
+Features.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features.TextScaled = true
+Features.TextWrapped = true
+Features.Parent = Sword
 
 local HYPER_ = Instance.new("TextButton")
 HYPER_.Name = "HYPER!"
@@ -529,421 +314,76 @@ HYPER_.TextSize = 14
 HYPER_.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 HYPER_.Parent = List
 
-local UIStroke15 = Instance.new("UIStroke")
-UIStroke15.Name = "UIStroke"
-UIStroke15.Color = Color3.new(1, 0.882353, 0)
-UIStroke15.Thickness = 2
-UIStroke15.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke15.Parent = HYPER_
+local UIStroke10 = Instance.new("UIStroke")
+UIStroke10.Name = "UIStroke"
+UIStroke10.Color = Color3.new(1, 0.882353, 0)
+UIStroke10.Thickness = 2
+UIStroke10.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke10.Parent = HYPER_
 
-local UIGradient8 = Instance.new("UIGradient")
-UIGradient8.Name = "UIGradient"
-UIGradient8.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient8.Parent = HYPER_
+local UIGradient6 = Instance.new("UIGradient")
+UIGradient6.Name = "UIGradient"
+UIGradient6.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient6.Parent = HYPER_
 
-local Logo5 = Instance.new("ImageLabel")
-Logo5.Name = "Logo"
-Logo5.Position = UDim2.new(0.11, 0, 0.5, 0)
-Logo5.Size = UDim2.new(1.3, 0, 1.3, 0)
-Logo5.BackgroundColor3 = Color3.new(1, 1, 1)
-Logo5.BackgroundTransparency = 1
-Logo5.BorderSizePixel = 0
-Logo5.BorderColor3 = Color3.new(0, 0, 0)
-Logo5.AnchorPoint = Vector2.new(0.5, 0.5)
-Logo5.Transparency = 1
-Logo5.Image = "rbxassetid://119569121742874"
-Logo5.Parent = HYPER_
+local Logo2 = Instance.new("ImageLabel")
+Logo2.Name = "Logo"
+Logo2.Position = UDim2.new(0.11, 0, 0.5, 0)
+Logo2.Size = UDim2.new(1.3, 0, 1.3, 0)
+Logo2.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo2.BackgroundTransparency = 1
+Logo2.BorderSizePixel = 0
+Logo2.BorderColor3 = Color3.new(0, 0, 0)
+Logo2.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo2.Transparency = 1
+Logo2.Image = "rbxassetid://119569121742874"
+Logo2.Parent = HYPER_
 
-local UIAspectRatioConstraint6 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint6.Name = "UIAspectRatioConstraint"
+local UIAspectRatioConstraint4 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint4.Name = "UIAspectRatioConstraint"
 
-UIAspectRatioConstraint6.Parent = Logo5
+UIAspectRatioConstraint4.Parent = Logo2
 
-local Name5 = Instance.new("TextLabel")
-Name5.Name = "Name"
-Name5.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name5.Size = UDim2.new(0.75, 0, 0.5, 0)
-Name5.BackgroundColor3 = Color3.new(1, 1, 1)
-Name5.BackgroundTransparency = 1
-Name5.BorderSizePixel = 0
-Name5.BorderColor3 = Color3.new(0, 0, 0)
-Name5.AnchorPoint = Vector2.new(0.5, 0.5)
-Name5.Transparency = 1
-Name5.Text = "HYPER!"
-Name5.TextColor3 = Color3.new(1, 0.784314, 0)
-Name5.TextSize = 14
-Name5.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-Name5.TextScaled = true
-Name5.TextWrapped = true
-Name5.Parent = HYPER_
+local Name2 = Instance.new("TextLabel")
+Name2.Name = "Name"
+Name2.Position = UDim2.new(0.5, 0, 0.25, 0)
+Name2.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name2.BackgroundColor3 = Color3.new(1, 1, 1)
+Name2.BackgroundTransparency = 1
+Name2.BorderSizePixel = 0
+Name2.BorderColor3 = Color3.new(0, 0, 0)
+Name2.AnchorPoint = Vector2.new(0.5, 0.5)
+Name2.Transparency = 1
+Name2.Text = "HYPER!"
+Name2.TextColor3 = Color3.new(1, 0.784314, 0)
+Name2.TextSize = 14
+Name2.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name2.TextScaled = true
+Name2.TextWrapped = true
+Name2.Parent = HYPER_
 
-local UIStroke16 = Instance.new("UIStroke")
-UIStroke16.Name = "UIStroke"
-UIStroke16.Thickness = 1.5
-UIStroke16.Parent = Name5
+local UIStroke11 = Instance.new("UIStroke")
+UIStroke11.Name = "UIStroke"
+UIStroke11.Thickness = 1.5
+UIStroke11.Parent = Name2
 
-local Features5 = Instance.new("TextLabel")
-Features5.Name = "Features"
-Features5.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features5.Size = UDim2.new(0.75, 0, 0.35, 0)
-Features5.BackgroundColor3 = Color3.new(1, 1, 1)
-Features5.BackgroundTransparency = 1
-Features5.BorderSizePixel = 0
-Features5.BorderColor3 = Color3.new(0, 0, 0)
-Features5.AnchorPoint = Vector2.new(0.5, 0.5)
-Features5.Transparency = 1
-Features5.Text = "Increases attack speed by 35%"
-Features5.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
-Features5.TextSize = 14
-Features5.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
-Features5.TextScaled = true
-Features5.TextWrapped = true
-Features5.Parent = HYPER_
-
-local Armor = Instance.new("TextButton")
-Armor.Name = "Armor"
-Armor.Position = UDim2.new(0.5, 0, 0.645, 0)
-Armor.Size = UDim2.new(0.95, 0, 0.06, 0)
-Armor.BackgroundColor3 = Color3.new(1, 1, 1)
-Armor.BorderSizePixel = 0
-Armor.BorderColor3 = Color3.new(0, 0, 0)
-Armor.AnchorPoint = Vector2.new(0.5, 0)
-Armor.Text = ""
-Armor.TextColor3 = Color3.new(0, 0, 0)
-Armor.TextSize = 14
-Armor.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Armor.Parent = List
-
-local UIStroke17 = Instance.new("UIStroke")
-UIStroke17.Name = "UIStroke"
-UIStroke17.Color = Color3.new(1, 0.882353, 0)
-UIStroke17.Thickness = 2
-UIStroke17.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke17.Parent = Armor
-
-local UIGradient9 = Instance.new("UIGradient")
-UIGradient9.Name = "UIGradient"
-UIGradient9.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.278431, 0.137255, 0.207843)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient9.Parent = Armor
-
-local Logo6 = Instance.new("ImageLabel")
-Logo6.Name = "Logo"
-Logo6.Position = UDim2.new(0.11, 0, 0.5, 0)
-Logo6.Size = UDim2.new(1, 0, 1, 0)
-Logo6.BackgroundColor3 = Color3.new(1, 1, 1)
-Logo6.BackgroundTransparency = 1
-Logo6.BorderSizePixel = 0
-Logo6.BorderColor3 = Color3.new(0, 0, 0)
-Logo6.AnchorPoint = Vector2.new(0.5, 0.5)
-Logo6.Transparency = 1
-Logo6.Image = "rbxassetid://72071066664937"
-Logo6.Parent = Armor
-
-local UIAspectRatioConstraint7 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint7.Name = "UIAspectRatioConstraint"
-
-UIAspectRatioConstraint7.Parent = Logo6
-
-local Name6 = Instance.new("TextLabel")
-Name6.Name = "Name"
-Name6.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name6.Size = UDim2.new(0.75, 0, 0.5, 0)
-Name6.BackgroundColor3 = Color3.new(1, 1, 1)
-Name6.BackgroundTransparency = 1
-Name6.BorderSizePixel = 0
-Name6.BorderColor3 = Color3.new(0, 0, 0)
-Name6.AnchorPoint = Vector2.new(0.5, 0.5)
-Name6.Transparency = 1
-Name6.Text = "Armor"
-Name6.TextColor3 = Color3.new(1, 1, 1)
-Name6.TextSize = 14
-Name6.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-Name6.TextScaled = true
-Name6.TextWrapped = true
-Name6.Parent = Armor
-
-local UIStroke18 = Instance.new("UIStroke")
-UIStroke18.Name = "UIStroke"
-UIStroke18.Thickness = 1.5
-UIStroke18.Parent = Name6
-
-local Features6 = Instance.new("TextLabel")
-Features6.Name = "Features"
-Features6.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features6.Size = UDim2.new(0.75, 0, 0.35, 0)
-Features6.BackgroundColor3 = Color3.new(1, 1, 1)
-Features6.BackgroundTransparency = 1
-Features6.BorderSizePixel = 0
-Features6.BorderColor3 = Color3.new(0, 0, 0)
-Features6.AnchorPoint = Vector2.new(0.5, 0.5)
-Features6.Transparency = 1
-Features6.Text = "+10% Armor (-1% for each bonus)"
-Features6.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
-Features6.TextSize = 14
-Features6.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
-Features6.TextScaled = true
-Features6.TextWrapped = true
-Features6.Parent = Armor
-
-local Shadow = Instance.new("TextButton")
-Shadow.Name = "Shadow"
-Shadow.Position = UDim2.new(0.5, 0, 0.575, 0)
-Shadow.Size = UDim2.new(0.95, 0, 0.06, 0)
-Shadow.BackgroundColor3 = Color3.new(1, 1, 1)
-Shadow.BorderSizePixel = 0
-Shadow.BorderColor3 = Color3.new(0, 0, 0)
-Shadow.AnchorPoint = Vector2.new(0.5, 0)
-Shadow.Text = ""
-Shadow.TextColor3 = Color3.new(0, 0, 0)
-Shadow.TextSize = 14
-Shadow.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Shadow.Parent = List
-
-local UIStroke19 = Instance.new("UIStroke")
-UIStroke19.Name = "UIStroke"
-UIStroke19.Color = Color3.new(1, 0.882353, 0)
-UIStroke19.Thickness = 2
-UIStroke19.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke19.Parent = Shadow
-
-local UIGradient10 = Instance.new("UIGradient")
-UIGradient10.Name = "UIGradient"
-UIGradient10.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.309804, 0, 0.364706)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient10.Parent = Shadow
-
-local Logo7 = Instance.new("ImageLabel")
-Logo7.Name = "Logo"
-Logo7.Position = UDim2.new(0.11, 0, 0.5, 0)
-Logo7.Size = UDim2.new(1.3, 0, 1.3, 0)
-Logo7.BackgroundColor3 = Color3.new(1, 1, 1)
-Logo7.BackgroundTransparency = 1
-Logo7.BorderSizePixel = 0
-Logo7.BorderColor3 = Color3.new(0, 0, 0)
-Logo7.AnchorPoint = Vector2.new(0.5, 0.5)
-Logo7.Transparency = 1
-Logo7.Image = "rbxassetid://90433393676384"
-Logo7.Parent = Shadow
-
-local UIAspectRatioConstraint8 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint8.Name = "UIAspectRatioConstraint"
-
-UIAspectRatioConstraint8.Parent = Logo7
-
-local Name7 = Instance.new("TextLabel")
-Name7.Name = "Name"
-Name7.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name7.Size = UDim2.new(0.75, 0, 0.5, 0)
-Name7.BackgroundColor3 = Color3.new(1, 1, 1)
-Name7.BackgroundTransparency = 1
-Name7.BorderSizePixel = 0
-Name7.BorderColor3 = Color3.new(0, 0, 0)
-Name7.AnchorPoint = Vector2.new(0.5, 0.5)
-Name7.Transparency = 1
-Name7.Text = "Shadow"
-Name7.TextColor3 = Color3.new(0.705882, 0, 1)
-Name7.TextSize = 14
-Name7.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-Name7.TextScaled = true
-Name7.TextWrapped = true
-Name7.Parent = Shadow
-
-local UIStroke20 = Instance.new("UIStroke")
-UIStroke20.Name = "UIStroke"
-UIStroke20.Thickness = 1.5
-UIStroke20.Parent = Name7
-
-local Features7 = Instance.new("TextLabel")
-Features7.Name = "Features"
-Features7.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features7.Size = UDim2.new(0.75, 0, 0.35, 0)
-Features7.BackgroundColor3 = Color3.new(1, 1, 1)
-Features7.BackgroundTransparency = 1
-Features7.BorderSizePixel = 0
-Features7.BorderColor3 = Color3.new(0, 0, 0)
-Features7.AnchorPoint = Vector2.new(0.5, 0.5)
-Features7.Transparency = 1
-Features7.Text = "Every 60 seconds, a shadow is born."
-Features7.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
-Features7.TextSize = 14
-Features7.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
-Features7.TextScaled = true
-Features7.TextWrapped = true
-Features7.Parent = Shadow
-
-local All_Cooldowns = Instance.new("TextButton")
-All_Cooldowns.Name = "All Cooldowns"
-All_Cooldowns.Position = UDim2.new(0.5, 0, 0.505, 0)
-All_Cooldowns.Size = UDim2.new(0.95, 0, 0.06, 0)
-All_Cooldowns.BackgroundColor3 = Color3.new(1, 1, 1)
-All_Cooldowns.BorderSizePixel = 0
-All_Cooldowns.BorderColor3 = Color3.new(0, 0, 0)
-All_Cooldowns.AnchorPoint = Vector2.new(0.5, 0)
-All_Cooldowns.Text = ""
-All_Cooldowns.TextColor3 = Color3.new(0, 0, 0)
-All_Cooldowns.TextSize = 14
-All_Cooldowns.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-All_Cooldowns.Parent = List
-
-local UIStroke21 = Instance.new("UIStroke")
-UIStroke21.Name = "UIStroke"
-UIStroke21.Color = Color3.new(1, 0.882353, 0)
-UIStroke21.Thickness = 2
-UIStroke21.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke21.Parent = All_Cooldowns
-
-local UIGradient11 = Instance.new("UIGradient")
-UIGradient11.Name = "UIGradient"
-UIGradient11.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.262745, 0.262745, 0.262745)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient11.Parent = All_Cooldowns
-
-local Logo8 = Instance.new("ImageLabel")
-Logo8.Name = "Logo"
-Logo8.Position = UDim2.new(0.11, 0, 0.5, 0)
-Logo8.Size = UDim2.new(1, 0, 1, 0)
-Logo8.BackgroundColor3 = Color3.new(1, 1, 1)
-Logo8.BackgroundTransparency = 1
-Logo8.BorderSizePixel = 0
-Logo8.BorderColor3 = Color3.new(0, 0, 0)
-Logo8.AnchorPoint = Vector2.new(0.5, 0.5)
-Logo8.Transparency = 1
-Logo8.Image = "rbxassetid://135833090144444"
-Logo8.Parent = All_Cooldowns
-
-local UIAspectRatioConstraint9 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint9.Name = "UIAspectRatioConstraint"
-UIAspectRatioConstraint9.AspectRatio = 0.8999999761581421
-UIAspectRatioConstraint9.Parent = Logo8
-
-local Name8 = Instance.new("TextLabel")
-Name8.Name = "Name"
-Name8.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name8.Size = UDim2.new(0.75, 0, 0.5, 0)
-Name8.BackgroundColor3 = Color3.new(1, 1, 1)
-Name8.BackgroundTransparency = 1
-Name8.BorderSizePixel = 0
-Name8.BorderColor3 = Color3.new(0, 0, 0)
-Name8.AnchorPoint = Vector2.new(0.5, 0.5)
-Name8.Transparency = 1
-Name8.Text = "All Cooldowns"
-Name8.TextColor3 = Color3.new(1, 1, 1)
-Name8.TextSize = 14
-Name8.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-Name8.TextScaled = true
-Name8.TextWrapped = true
-Name8.Parent = All_Cooldowns
-
-local UIStroke22 = Instance.new("UIStroke")
-UIStroke22.Name = "UIStroke"
-UIStroke22.Thickness = 1.5
-UIStroke22.Parent = Name8
-
-local Features8 = Instance.new("TextLabel")
-Features8.Name = "Features"
-Features8.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features8.Size = UDim2.new(0.75, 0, 0.35, 0)
-Features8.BackgroundColor3 = Color3.new(1, 1, 1)
-Features8.BackgroundTransparency = 1
-Features8.BorderSizePixel = 0
-Features8.BorderColor3 = Color3.new(0, 0, 0)
-Features8.AnchorPoint = Vector2.new(0.5, 0.5)
-Features8.Transparency = 1
-Features8.Text = "All Cooldowns increased by 10%."
-Features8.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
-Features8.TextSize = 14
-Features8.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
-Features8.TextScaled = true
-Features8.TextWrapped = true
-Features8.Parent = All_Cooldowns
-
-local Overflow = Instance.new("TextButton")
-Overflow.Name = "Overflow"
-Overflow.Position = UDim2.new(0.5, 0, 0.715, 0)
-Overflow.Size = UDim2.new(0.95, 0, 0.06, 0)
-Overflow.BackgroundColor3 = Color3.new(1, 1, 1)
-Overflow.BorderSizePixel = 0
-Overflow.BorderColor3 = Color3.new(0, 0, 0)
-Overflow.AnchorPoint = Vector2.new(0.5, 0)
-Overflow.Text = ""
-Overflow.TextColor3 = Color3.new(0, 0, 0)
-Overflow.TextSize = 14
-Overflow.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Overflow.Parent = List
-
-local UIStroke23 = Instance.new("UIStroke")
-UIStroke23.Name = "UIStroke"
-UIStroke23.Color = Color3.new(1, 0.882353, 0)
-UIStroke23.Thickness = 2
-UIStroke23.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke23.Parent = Overflow
-
-local UIGradient12 = Instance.new("UIGradient")
-UIGradient12.Name = "UIGradient"
-UIGradient12.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.0352941, 0.192157, 0.509804)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient12.Parent = Overflow
-
-local Logo9 = Instance.new("ImageLabel")
-Logo9.Name = "Logo"
-Logo9.Position = UDim2.new(0.11, 0, 0.5, 0)
-Logo9.Size = UDim2.new(1, 0, 1, 0)
-Logo9.BackgroundColor3 = Color3.new(1, 1, 1)
-Logo9.BackgroundTransparency = 1
-Logo9.BorderSizePixel = 0
-Logo9.BorderColor3 = Color3.new(0, 0, 0)
-Logo9.AnchorPoint = Vector2.new(0.5, 0.5)
-Logo9.Transparency = 1
-Logo9.Image = "rbxassetid://112128389041636"
-Logo9.Parent = Overflow
-
-local UIAspectRatioConstraint10 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint10.Name = "UIAspectRatioConstraint"
-
-UIAspectRatioConstraint10.Parent = Logo9
-
-local FLAME_FRUIT_BLOX_FRUITS = Instance.new("Decal")
-FLAME_FRUIT_BLOX_FRUITS.Name = "FLAME FRUIT BLOX FRUITS"
-
-FLAME_FRUIT_BLOX_FRUITS.Parent = Logo9
-
-local Name9 = Instance.new("TextLabel")
-Name9.Name = "Name"
-Name9.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name9.Size = UDim2.new(0.75, 0, 0.5, 0)
-Name9.BackgroundColor3 = Color3.new(1, 1, 1)
-Name9.BackgroundTransparency = 1
-Name9.BorderSizePixel = 0
-Name9.BorderColor3 = Color3.new(0, 0, 0)
-Name9.AnchorPoint = Vector2.new(0.5, 0.5)
-Name9.Transparency = 1
-Name9.Text = "Overflow"
-Name9.TextColor3 = Color3.new(0.290196, 0.858824, 1)
-Name9.TextSize = 14
-Name9.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-Name9.TextScaled = true
-Name9.TextWrapped = true
-Name9.Parent = Overflow
-
-local UIStroke24 = Instance.new("UIStroke")
-UIStroke24.Name = "UIStroke"
-UIStroke24.Thickness = 1.5
-UIStroke24.Parent = Name9
-
-local Features9 = Instance.new("TextLabel")
-Features9.Name = "Features"
-Features9.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features9.Size = UDim2.new(0.75, 0, 0.5, 0)
-Features9.BackgroundColor3 = Color3.new(1, 1, 1)
-Features9.BackgroundTransparency = 1
-Features9.BorderSizePixel = 0
-Features9.BorderColor3 = Color3.new(0, 0, 0)
-Features9.AnchorPoint = Vector2.new(0.5, 0.5)
-Features9.Transparency = 1
-Features9.Text = "Every 15 seconds, gain 6000 Overflow health."
-Features9.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
-Features9.TextSize = 14
-Features9.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
-Features9.TextScaled = true
-Features9.TextWrapped = true
-Features9.Parent = Overflow
+local Features2 = Instance.new("TextLabel")
+Features2.Name = "Features"
+Features2.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features2.Size = UDim2.new(0.75, 0, 0.35, 0)
+Features2.BackgroundColor3 = Color3.new(1, 1, 1)
+Features2.BackgroundTransparency = 1
+Features2.BorderSizePixel = 0
+Features2.BorderColor3 = Color3.new(0, 0, 0)
+Features2.AnchorPoint = Vector2.new(0.5, 0.5)
+Features2.Transparency = 1
+Features2.Text = "Increases attack speed by 35%"
+Features2.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features2.TextSize = 14
+Features2.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features2.TextScaled = true
+Features2.TextWrapped = true
+Features2.Parent = HYPER_
 
 local Fortress = Instance.new("TextButton")
 Fortress.Name = "Fortress"
@@ -959,76 +399,331 @@ Fortress.TextSize = 14
 Fortress.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 Fortress.Parent = List
 
-local UIStroke25 = Instance.new("UIStroke")
-UIStroke25.Name = "UIStroke"
-UIStroke25.Color = Color3.new(1, 0.882353, 0)
-UIStroke25.Thickness = 2
-UIStroke25.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke25.Parent = Fortress
+local UIStroke12 = Instance.new("UIStroke")
+UIStroke12.Name = "UIStroke"
+UIStroke12.Color = Color3.new(1, 0.882353, 0)
+UIStroke12.Thickness = 2
+UIStroke12.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke12.Parent = Fortress
 
-local UIGradient13 = Instance.new("UIGradient")
-UIGradient13.Name = "UIGradient"
-UIGradient13.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.529412, 0.219608, 0.0941176)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient13.Parent = Fortress
+local UIGradient7 = Instance.new("UIGradient")
+UIGradient7.Name = "UIGradient"
+UIGradient7.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.529412, 0.219608, 0.0941176)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient7.Parent = Fortress
 
-local Logo10 = Instance.new("ImageLabel")
-Logo10.Name = "Logo"
-Logo10.Position = UDim2.new(0.145, 0, 0.5, 0)
-Logo10.Size = UDim2.new(1.125, 0, 1.125, 0)
-Logo10.BackgroundColor3 = Color3.new(1, 1, 1)
-Logo10.BackgroundTransparency = 1
-Logo10.BorderSizePixel = 0
-Logo10.BorderColor3 = Color3.new(0, 0, 0)
-Logo10.AnchorPoint = Vector2.new(0.5, 0.5)
-Logo10.Transparency = 1
-Logo10.Image = "rbxassetid://122470677660883"
-Logo10.Parent = Fortress
+local Logo3 = Instance.new("ImageLabel")
+Logo3.Name = "Logo"
+Logo3.Position = UDim2.new(0.145, 0, 0.5, 0)
+Logo3.Size = UDim2.new(1.125, 0, 1.125, 0)
+Logo3.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo3.BackgroundTransparency = 1
+Logo3.BorderSizePixel = 0
+Logo3.BorderColor3 = Color3.new(0, 0, 0)
+Logo3.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo3.Transparency = 1
+Logo3.Image = "rbxassetid://122470677660883"
+Logo3.Parent = Fortress
 
-local UIAspectRatioConstraint11 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint11.Name = "UIAspectRatioConstraint"
-UIAspectRatioConstraint11.AspectRatio = 1.2999999523162842
-UIAspectRatioConstraint11.Parent = Logo10
+local UIAspectRatioConstraint5 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint5.Name = "UIAspectRatioConstraint"
+UIAspectRatioConstraint5.AspectRatio = 1.2999999523162842
+UIAspectRatioConstraint5.Parent = Logo3
 
-local Name10 = Instance.new("TextLabel")
-Name10.Name = "Name"
-Name10.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name10.Size = UDim2.new(0.75, 0, 0.5, 0)
-Name10.BackgroundColor3 = Color3.new(1, 1, 1)
-Name10.BackgroundTransparency = 1
-Name10.BorderSizePixel = 0
-Name10.BorderColor3 = Color3.new(0, 0, 0)
-Name10.AnchorPoint = Vector2.new(0.5, 0.5)
-Name10.Transparency = 1
-Name10.Text = "Fortress"
-Name10.TextColor3 = Color3.new(1, 1, 1)
-Name10.TextSize = 14
-Name10.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-Name10.TextScaled = true
-Name10.TextWrapped = true
-Name10.Parent = Fortress
+local Name3 = Instance.new("TextLabel")
+Name3.Name = "Name"
+Name3.Position = UDim2.new(0.5, 0, 0.25, 0)
+Name3.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name3.BackgroundColor3 = Color3.new(1, 1, 1)
+Name3.BackgroundTransparency = 1
+Name3.BorderSizePixel = 0
+Name3.BorderColor3 = Color3.new(0, 0, 0)
+Name3.AnchorPoint = Vector2.new(0.5, 0.5)
+Name3.Transparency = 1
+Name3.Text = "Fortress"
+Name3.TextColor3 = Color3.new(1, 1, 1)
+Name3.TextSize = 14
+Name3.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name3.TextScaled = true
+Name3.TextWrapped = true
+Name3.Parent = Fortress
 
-local UIStroke26 = Instance.new("UIStroke")
-UIStroke26.Name = "UIStroke"
-UIStroke26.Thickness = 1.5
-UIStroke26.Parent = Name10
+local UIStroke13 = Instance.new("UIStroke")
+UIStroke13.Name = "UIStroke"
+UIStroke13.Thickness = 1.5
+UIStroke13.Parent = Name3
 
-local Features10 = Instance.new("TextLabel")
-Features10.Name = "Features"
-Features10.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features10.Size = UDim2.new(0.75, 0, 0.35, 0)
-Features10.BackgroundColor3 = Color3.new(1, 1, 1)
-Features10.BackgroundTransparency = 1
-Features10.BorderSizePixel = 0
-Features10.BorderColor3 = Color3.new(0, 0, 0)
-Features10.AnchorPoint = Vector2.new(0.5, 0.5)
-Features10.Transparency = 1
-Features10.Text = "Stuns no longer apply to you."
-Features10.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
-Features10.TextSize = 14
-Features10.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
-Features10.TextScaled = true
-Features10.TextWrapped = true
-Features10.Parent = Fortress
+local Features3 = Instance.new("TextLabel")
+Features3.Name = "Features"
+Features3.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features3.Size = UDim2.new(0.75, 0, 0.35, 0)
+Features3.BackgroundColor3 = Color3.new(1, 1, 1)
+Features3.BackgroundTransparency = 1
+Features3.BorderSizePixel = 0
+Features3.BorderColor3 = Color3.new(0, 0, 0)
+Features3.AnchorPoint = Vector2.new(0.5, 0.5)
+Features3.Transparency = 1
+Features3.Text = "Stuns no longer apply to you."
+Features3.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features3.TextSize = 14
+Features3.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features3.TextScaled = true
+Features3.TextWrapped = true
+Features3.Parent = Fortress
+
+local Lifesteal = Instance.new("TextButton")
+Lifesteal.Name = "Lifesteal"
+Lifesteal.Position = UDim2.new(0.5, 0, 0.225, 0)
+Lifesteal.Size = UDim2.new(0.95, 0, 0.06, 0)
+Lifesteal.BackgroundColor3 = Color3.new(1, 1, 1)
+Lifesteal.BorderSizePixel = 0
+Lifesteal.BorderColor3 = Color3.new(0, 0, 0)
+Lifesteal.AnchorPoint = Vector2.new(0.5, 0)
+Lifesteal.Text = ""
+Lifesteal.TextColor3 = Color3.new(0, 0, 0)
+Lifesteal.TextSize = 14
+Lifesteal.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Lifesteal.Parent = List
+
+local UIStroke14 = Instance.new("UIStroke")
+UIStroke14.Name = "UIStroke"
+UIStroke14.Color = Color3.new(1, 0.882353, 0)
+UIStroke14.Thickness = 2
+UIStroke14.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke14.Parent = Lifesteal
+
+local UIGradient8 = Instance.new("UIGradient")
+UIGradient8.Name = "UIGradient"
+UIGradient8.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.329412, 0.0117647, 0.0117647)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient8.Parent = Lifesteal
+
+local Logo4 = Instance.new("ImageLabel")
+Logo4.Name = "Logo"
+Logo4.Position = UDim2.new(0.11, 0, 0.5, 0)
+Logo4.Size = UDim2.new(1, 0, 1, 0)
+Logo4.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo4.BackgroundTransparency = 1
+Logo4.BorderSizePixel = 0
+Logo4.BorderColor3 = Color3.new(0, 0, 0)
+Logo4.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo4.Transparency = 1
+Logo4.Image = "rbxassetid://88149768819442"
+Logo4.Parent = Lifesteal
+
+local UIAspectRatioConstraint6 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint6.Name = "UIAspectRatioConstraint"
+UIAspectRatioConstraint6.AspectRatio = 0.8999999761581421
+UIAspectRatioConstraint6.Parent = Logo4
+
+local Name4 = Instance.new("TextLabel")
+Name4.Name = "Name"
+Name4.Position = UDim2.new(0.5, 0, 0.25, 0)
+Name4.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name4.BackgroundColor3 = Color3.new(1, 1, 1)
+Name4.BackgroundTransparency = 1
+Name4.BorderSizePixel = 0
+Name4.BorderColor3 = Color3.new(0, 0, 0)
+Name4.AnchorPoint = Vector2.new(0.5, 0.5)
+Name4.Transparency = 1
+Name4.Text = "Lifesteal"
+Name4.TextColor3 = Color3.new(1, 1, 1)
+Name4.TextSize = 14
+Name4.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name4.TextScaled = true
+Name4.TextWrapped = true
+Name4.Parent = Lifesteal
+
+local UIStroke15 = Instance.new("UIStroke")
+UIStroke15.Name = "UIStroke"
+UIStroke15.Thickness = 1.5
+UIStroke15.Parent = Name4
+
+local Features4 = Instance.new("TextLabel")
+Features4.Name = "Features"
+Features4.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features4.Size = UDim2.new(0.75, 0, 0.5, 0)
+Features4.BackgroundColor3 = Color3.new(1, 1, 1)
+Features4.BackgroundTransparency = 1
+Features4.BorderSizePixel = 0
+Features4.BorderColor3 = Color3.new(0, 0, 0)
+Features4.AnchorPoint = Vector2.new(0.5, 0.5)
+Features4.Transparency = 1
+Features4.Text = "Heal for 10% of damage dealt to enemies."
+Features4.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features4.TextSize = 14
+Features4.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features4.TextScaled = true
+Features4.TextWrapped = true
+Features4.Parent = Lifesteal
+
+local Armor = Instance.new("TextButton")
+Armor.Name = "Armor"
+Armor.Position = UDim2.new(0.5, 0, 0.645, 0)
+Armor.Size = UDim2.new(0.95, 0, 0.06, 0)
+Armor.BackgroundColor3 = Color3.new(1, 1, 1)
+Armor.BorderSizePixel = 0
+Armor.BorderColor3 = Color3.new(0, 0, 0)
+Armor.AnchorPoint = Vector2.new(0.5, 0)
+Armor.Text = ""
+Armor.TextColor3 = Color3.new(0, 0, 0)
+Armor.TextSize = 14
+Armor.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Armor.Parent = List
+
+local UIStroke16 = Instance.new("UIStroke")
+UIStroke16.Name = "UIStroke"
+UIStroke16.Color = Color3.new(1, 0.882353, 0)
+UIStroke16.Thickness = 2
+UIStroke16.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke16.Parent = Armor
+
+local UIGradient9 = Instance.new("UIGradient")
+UIGradient9.Name = "UIGradient"
+UIGradient9.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.278431, 0.137255, 0.207843)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient9.Parent = Armor
+
+local Logo5 = Instance.new("ImageLabel")
+Logo5.Name = "Logo"
+Logo5.Position = UDim2.new(0.11, 0, 0.5, 0)
+Logo5.Size = UDim2.new(1, 0, 1, 0)
+Logo5.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo5.BackgroundTransparency = 1
+Logo5.BorderSizePixel = 0
+Logo5.BorderColor3 = Color3.new(0, 0, 0)
+Logo5.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo5.Transparency = 1
+Logo5.Image = "rbxassetid://72071066664937"
+Logo5.Parent = Armor
+
+local UIAspectRatioConstraint7 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint7.Name = "UIAspectRatioConstraint"
+
+UIAspectRatioConstraint7.Parent = Logo5
+
+local Name5 = Instance.new("TextLabel")
+Name5.Name = "Name"
+Name5.Position = UDim2.new(0.5, 0, 0.25, 0)
+Name5.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name5.BackgroundColor3 = Color3.new(1, 1, 1)
+Name5.BackgroundTransparency = 1
+Name5.BorderSizePixel = 0
+Name5.BorderColor3 = Color3.new(0, 0, 0)
+Name5.AnchorPoint = Vector2.new(0.5, 0.5)
+Name5.Transparency = 1
+Name5.Text = "Armor"
+Name5.TextColor3 = Color3.new(1, 1, 1)
+Name5.TextSize = 14
+Name5.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name5.TextScaled = true
+Name5.TextWrapped = true
+Name5.Parent = Armor
+
+local UIStroke17 = Instance.new("UIStroke")
+UIStroke17.Name = "UIStroke"
+UIStroke17.Thickness = 1.5
+UIStroke17.Parent = Name5
+
+local Features5 = Instance.new("TextLabel")
+Features5.Name = "Features"
+Features5.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features5.Size = UDim2.new(0.75, 0, 0.35, 0)
+Features5.BackgroundColor3 = Color3.new(1, 1, 1)
+Features5.BackgroundTransparency = 1
+Features5.BorderSizePixel = 0
+Features5.BorderColor3 = Color3.new(0, 0, 0)
+Features5.AnchorPoint = Vector2.new(0.5, 0.5)
+Features5.Transparency = 1
+Features5.Text = "+10% Armor (-1% for each bonus)"
+Features5.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features5.TextSize = 14
+Features5.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features5.TextScaled = true
+Features5.TextWrapped = true
+Features5.Parent = Armor
+
+local Defense = Instance.new("TextButton")
+Defense.Name = "Defense"
+Defense.Position = UDim2.new(0.5, 0, 0.295, 0)
+Defense.Size = UDim2.new(0.95, 0, 0.06, 0)
+Defense.BackgroundColor3 = Color3.new(1, 1, 1)
+Defense.BorderSizePixel = 0
+Defense.BorderColor3 = Color3.new(0, 0, 0)
+Defense.AnchorPoint = Vector2.new(0.5, 0)
+Defense.Text = ""
+Defense.TextColor3 = Color3.new(0, 0, 0)
+Defense.TextSize = 14
+Defense.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Defense.Parent = List
+
+local UIStroke18 = Instance.new("UIStroke")
+UIStroke18.Name = "UIStroke"
+UIStroke18.Color = Color3.new(1, 0.882353, 0)
+UIStroke18.Thickness = 2
+UIStroke18.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke18.Parent = Defense
+
+local UIGradient10 = Instance.new("UIGradient")
+UIGradient10.Name = "UIGradient"
+UIGradient10.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.470588, 0.0352941, 0.0352941)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient10.Parent = Defense
+
+local Logo6 = Instance.new("ImageLabel")
+Logo6.Name = "Logo"
+Logo6.Position = UDim2.new(0.15, 0, 0.45, 0)
+Logo6.Size = UDim2.new(1.1, 0, 1.1, 0)
+Logo6.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo6.BackgroundTransparency = 1
+Logo6.BorderSizePixel = 0
+Logo6.BorderColor3 = Color3.new(0, 0, 0)
+Logo6.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo6.Transparency = 1
+Logo6.Image = "rbxassetid://92248946047126"
+Logo6.Parent = Defense
+
+local UIAspectRatioConstraint8 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint8.Name = "UIAspectRatioConstraint"
+UIAspectRatioConstraint8.AspectRatio = 1.149999976158142
+UIAspectRatioConstraint8.Parent = Logo6
+
+local Name6 = Instance.new("TextLabel")
+Name6.Name = "Name"
+Name6.Position = UDim2.new(0.5, 0, 0.25, 0)
+Name6.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name6.BackgroundColor3 = Color3.new(1, 1, 1)
+Name6.BackgroundTransparency = 1
+Name6.BorderSizePixel = 0
+Name6.BorderColor3 = Color3.new(0, 0, 0)
+Name6.AnchorPoint = Vector2.new(0.5, 0.5)
+Name6.Transparency = 1
+Name6.Text = "Defense"
+Name6.TextColor3 = Color3.new(1, 1, 1)
+Name6.TextSize = 14
+Name6.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name6.TextScaled = true
+Name6.TextWrapped = true
+Name6.Parent = Defense
+
+local UIStroke19 = Instance.new("UIStroke")
+UIStroke19.Name = "UIStroke"
+UIStroke19.Thickness = 1.5
+UIStroke19.Parent = Name6
+
+local Features6 = Instance.new("TextLabel")
+Features6.Name = "Features"
+Features6.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features6.Size = UDim2.new(0.75, 0, 0.35, 0)
+Features6.BackgroundColor3 = Color3.new(1, 1, 1)
+Features6.BackgroundTransparency = 1
+Features6.BorderSizePixel = 0
+Features6.BorderColor3 = Color3.new(0, 0, 0)
+Features6.AnchorPoint = Vector2.new(0.5, 0.5)
+Features6.Transparency = 1
+Features6.Text = "+500 Defense stats"
+Features6.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features6.TextSize = 14
+Features6.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features6.TextScaled = true
+Features6.TextWrapped = true
+Features6.Parent = Defense
 
 local Race_Meter = Instance.new("TextButton")
 Race_Meter.Name = "Race Meter"
@@ -1044,76 +739,421 @@ Race_Meter.TextSize = 14
 Race_Meter.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 Race_Meter.Parent = List
 
-local UIStroke27 = Instance.new("UIStroke")
-UIStroke27.Name = "UIStroke"
-UIStroke27.Color = Color3.new(1, 0.882353, 0)
-UIStroke27.Thickness = 2
-UIStroke27.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke27.Parent = Race_Meter
+local UIStroke20 = Instance.new("UIStroke")
+UIStroke20.Name = "UIStroke"
+UIStroke20.Color = Color3.new(1, 0.882353, 0)
+UIStroke20.Thickness = 2
+UIStroke20.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke20.Parent = Race_Meter
+
+local UIGradient11 = Instance.new("UIGradient")
+UIGradient11.Name = "UIGradient"
+UIGradient11.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0, 0.109804, 0.239216)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient11.Parent = Race_Meter
+
+local Logo7 = Instance.new("ImageLabel")
+Logo7.Name = "Logo"
+Logo7.Position = UDim2.new(0.135, 0, 0.5, 0)
+Logo7.Size = UDim2.new(1.2, 0, 1.2, 0)
+Logo7.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo7.BackgroundTransparency = 1
+Logo7.BorderSizePixel = 0
+Logo7.BorderColor3 = Color3.new(0, 0, 0)
+Logo7.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo7.Transparency = 1
+Logo7.Image = "rbxassetid://78950127265032"
+Logo7.Parent = Race_Meter
+
+local UIAspectRatioConstraint9 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint9.Name = "UIAspectRatioConstraint"
+UIAspectRatioConstraint9.AspectRatio = 1.2000000476837158
+UIAspectRatioConstraint9.Parent = Logo7
+
+local Name7 = Instance.new("TextLabel")
+Name7.Name = "Name"
+Name7.Position = UDim2.new(0.5, 0, 0.25, 0)
+Name7.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name7.BackgroundColor3 = Color3.new(1, 1, 1)
+Name7.BackgroundTransparency = 1
+Name7.BorderSizePixel = 0
+Name7.BorderColor3 = Color3.new(0, 0, 0)
+Name7.AnchorPoint = Vector2.new(0.5, 0.5)
+Name7.Transparency = 1
+Name7.Text = "Race Meter"
+Name7.TextColor3 = Color3.new(1, 1, 1)
+Name7.TextSize = 14
+Name7.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name7.TextScaled = true
+Name7.TextWrapped = true
+Name7.Parent = Race_Meter
+
+local UIStroke21 = Instance.new("UIStroke")
+UIStroke21.Name = "UIStroke"
+UIStroke21.Thickness = 1.5
+UIStroke21.Parent = Name7
+
+local Features7 = Instance.new("TextLabel")
+Features7.Name = "Features"
+Features7.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features7.Size = UDim2.new(0.75, 0, 0.5, 0)
+Features7.BackgroundColor3 = Color3.new(1, 1, 1)
+Features7.BackgroundTransparency = 1
+Features7.BorderSizePixel = 0
+Features7.BorderColor3 = Color3.new(0, 0, 0)
+Features7.AnchorPoint = Vector2.new(0.5, 0.5)
+Features7.Transparency = 1
+Features7.Text = "Gain 20% additional race meter from all sources."
+Features7.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features7.TextSize = 14
+Features7.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features7.TextScaled = true
+Features7.TextWrapped = true
+Features7.Parent = Race_Meter
+
+local Overflow = Instance.new("TextButton")
+Overflow.Name = "Overflow"
+Overflow.Position = UDim2.new(0.5, 0, 0.715, 0)
+Overflow.Size = UDim2.new(0.95, 0, 0.06, 0)
+Overflow.BackgroundColor3 = Color3.new(1, 1, 1)
+Overflow.BorderSizePixel = 0
+Overflow.BorderColor3 = Color3.new(0, 0, 0)
+Overflow.AnchorPoint = Vector2.new(0.5, 0)
+Overflow.Text = ""
+Overflow.TextColor3 = Color3.new(0, 0, 0)
+Overflow.TextSize = 14
+Overflow.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Overflow.Parent = List
+
+local UIStroke22 = Instance.new("UIStroke")
+UIStroke22.Name = "UIStroke"
+UIStroke22.Color = Color3.new(1, 0.882353, 0)
+UIStroke22.Thickness = 2
+UIStroke22.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke22.Parent = Overflow
+
+local UIGradient12 = Instance.new("UIGradient")
+UIGradient12.Name = "UIGradient"
+UIGradient12.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.0352941, 0.192157, 0.509804)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient12.Parent = Overflow
+
+local Logo8 = Instance.new("ImageLabel")
+Logo8.Name = "Logo"
+Logo8.Position = UDim2.new(0.11, 0, 0.5, 0)
+Logo8.Size = UDim2.new(1, 0, 1, 0)
+Logo8.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo8.BackgroundTransparency = 1
+Logo8.BorderSizePixel = 0
+Logo8.BorderColor3 = Color3.new(0, 0, 0)
+Logo8.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo8.Transparency = 1
+Logo8.Image = "rbxassetid://112128389041636"
+Logo8.Parent = Overflow
+
+local UIAspectRatioConstraint10 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint10.Name = "UIAspectRatioConstraint"
+
+UIAspectRatioConstraint10.Parent = Logo8
+
+local FLAME_FRUIT_BLOX_FRUITS = Instance.new("Decal")
+FLAME_FRUIT_BLOX_FRUITS.Name = "FLAME FRUIT BLOX FRUITS"
+
+FLAME_FRUIT_BLOX_FRUITS.Parent = Logo8
+
+local Name8 = Instance.new("TextLabel")
+Name8.Name = "Name"
+Name8.Position = UDim2.new(0.5, 0, 0.25, 0)
+Name8.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name8.BackgroundColor3 = Color3.new(1, 1, 1)
+Name8.BackgroundTransparency = 1
+Name8.BorderSizePixel = 0
+Name8.BorderColor3 = Color3.new(0, 0, 0)
+Name8.AnchorPoint = Vector2.new(0.5, 0.5)
+Name8.Transparency = 1
+Name8.Text = "Overflow"
+Name8.TextColor3 = Color3.new(0.290196, 0.858824, 1)
+Name8.TextSize = 14
+Name8.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name8.TextScaled = true
+Name8.TextWrapped = true
+Name8.Parent = Overflow
+
+local UIStroke23 = Instance.new("UIStroke")
+UIStroke23.Name = "UIStroke"
+UIStroke23.Thickness = 1.5
+UIStroke23.Parent = Name8
+
+local Features8 = Instance.new("TextLabel")
+Features8.Name = "Features"
+Features8.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features8.Size = UDim2.new(0.75, 0, 0.5, 0)
+Features8.BackgroundColor3 = Color3.new(1, 1, 1)
+Features8.BackgroundTransparency = 1
+Features8.BorderSizePixel = 0
+Features8.BorderColor3 = Color3.new(0, 0, 0)
+Features8.AnchorPoint = Vector2.new(0.5, 0.5)
+Features8.Transparency = 1
+Features8.Text = "Every 15 seconds, gain 6000 Overflow health."
+Features8.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features8.TextSize = 14
+Features8.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features8.TextScaled = true
+Features8.TextWrapped = true
+Features8.Parent = Overflow
+
+local Shadow = Instance.new("TextButton")
+Shadow.Name = "Shadow"
+Shadow.Position = UDim2.new(0.5, 0, 0.575, 0)
+Shadow.Size = UDim2.new(0.95, 0, 0.06, 0)
+Shadow.BackgroundColor3 = Color3.new(1, 1, 1)
+Shadow.BorderSizePixel = 0
+Shadow.BorderColor3 = Color3.new(0, 0, 0)
+Shadow.AnchorPoint = Vector2.new(0.5, 0)
+Shadow.Text = ""
+Shadow.TextColor3 = Color3.new(0, 0, 0)
+Shadow.TextSize = 14
+Shadow.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Shadow.Parent = List
+
+local UIStroke24 = Instance.new("UIStroke")
+UIStroke24.Name = "UIStroke"
+UIStroke24.Color = Color3.new(1, 0.882353, 0)
+UIStroke24.Thickness = 2
+UIStroke24.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke24.Parent = Shadow
+
+local UIGradient13 = Instance.new("UIGradient")
+UIGradient13.Name = "UIGradient"
+UIGradient13.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.309804, 0, 0.364706)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient13.Parent = Shadow
+
+local Logo9 = Instance.new("ImageLabel")
+Logo9.Name = "Logo"
+Logo9.Position = UDim2.new(0.11, 0, 0.5, 0)
+Logo9.Size = UDim2.new(1.3, 0, 1.3, 0)
+Logo9.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo9.BackgroundTransparency = 1
+Logo9.BorderSizePixel = 0
+Logo9.BorderColor3 = Color3.new(0, 0, 0)
+Logo9.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo9.Transparency = 1
+Logo9.Image = "rbxassetid://90433393676384"
+Logo9.Parent = Shadow
+
+local UIAspectRatioConstraint11 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint11.Name = "UIAspectRatioConstraint"
+
+UIAspectRatioConstraint11.Parent = Logo9
+
+local Name9 = Instance.new("TextLabel")
+Name9.Name = "Name"
+Name9.Position = UDim2.new(0.5, 0, 0.25, 0)
+Name9.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name9.BackgroundColor3 = Color3.new(1, 1, 1)
+Name9.BackgroundTransparency = 1
+Name9.BorderSizePixel = 0
+Name9.BorderColor3 = Color3.new(0, 0, 0)
+Name9.AnchorPoint = Vector2.new(0.5, 0.5)
+Name9.Transparency = 1
+Name9.Text = "Shadow"
+Name9.TextColor3 = Color3.new(0.705882, 0, 1)
+Name9.TextSize = 14
+Name9.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name9.TextScaled = true
+Name9.TextWrapped = true
+Name9.Parent = Shadow
+
+local UIStroke25 = Instance.new("UIStroke")
+UIStroke25.Name = "UIStroke"
+UIStroke25.Thickness = 1.5
+UIStroke25.Parent = Name9
+
+local Features9 = Instance.new("TextLabel")
+Features9.Name = "Features"
+Features9.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features9.Size = UDim2.new(0.75, 0, 0.35, 0)
+Features9.BackgroundColor3 = Color3.new(1, 1, 1)
+Features9.BackgroundTransparency = 1
+Features9.BorderSizePixel = 0
+Features9.BorderColor3 = Color3.new(0, 0, 0)
+Features9.AnchorPoint = Vector2.new(0.5, 0.5)
+Features9.Transparency = 1
+Features9.Text = "Every 60 seconds, a shadow is born."
+Features9.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features9.TextSize = 14
+Features9.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features9.TextScaled = true
+Features9.TextWrapped = true
+Features9.Parent = Shadow
+
+local Melee = Instance.new("TextButton")
+Melee.Name = "Melee"
+Melee.Position = UDim2.new(0.5, 0, 0.155, 0)
+Melee.Size = UDim2.new(0.95, 0, 0.06, 0)
+Melee.BackgroundColor3 = Color3.new(1, 1, 1)
+Melee.BorderSizePixel = 0
+Melee.BorderColor3 = Color3.new(0, 0, 0)
+Melee.AnchorPoint = Vector2.new(0.5, 0)
+Melee.Text = ""
+Melee.TextColor3 = Color3.new(0, 0, 0)
+Melee.TextSize = 14
+Melee.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Melee.Parent = List
+
+local UIStroke26 = Instance.new("UIStroke")
+UIStroke26.Name = "UIStroke"
+UIStroke26.Color = Color3.new(1, 0.882353, 0)
+UIStroke26.Thickness = 2
+UIStroke26.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke26.Parent = Melee
 
 local UIGradient14 = Instance.new("UIGradient")
 UIGradient14.Name = "UIGradient"
-UIGradient14.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0, 0.109804, 0.239216)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient14.Parent = Race_Meter
+UIGradient14.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.223529, 0.419608, 0.439216)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient14.Parent = Melee
+
+local Logo10 = Instance.new("ImageLabel")
+Logo10.Name = "Logo"
+Logo10.Position = UDim2.new(0.11, 0, 0.5, 0)
+Logo10.Size = UDim2.new(1, 0, 1, 0)
+Logo10.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo10.BackgroundTransparency = 1
+Logo10.BorderSizePixel = 0
+Logo10.BorderColor3 = Color3.new(0, 0, 0)
+Logo10.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo10.Transparency = 1
+Logo10.Image = "rbxassetid://105862822867112"
+Logo10.Parent = Melee
+
+local UIAspectRatioConstraint12 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint12.Name = "UIAspectRatioConstraint"
+
+UIAspectRatioConstraint12.Parent = Logo10
+
+local Name10 = Instance.new("TextLabel")
+Name10.Name = "Name"
+Name10.Position = UDim2.new(0.5, 0, 0.25, 0)
+Name10.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name10.BackgroundColor3 = Color3.new(1, 1, 1)
+Name10.BackgroundTransparency = 1
+Name10.BorderSizePixel = 0
+Name10.BorderColor3 = Color3.new(0, 0, 0)
+Name10.AnchorPoint = Vector2.new(0.5, 0.5)
+Name10.Transparency = 1
+Name10.Text = "Melee"
+Name10.TextColor3 = Color3.new(1, 1, 1)
+Name10.TextSize = 14
+Name10.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name10.TextScaled = true
+Name10.TextWrapped = true
+Name10.Parent = Melee
+
+local UIStroke27 = Instance.new("UIStroke")
+UIStroke27.Name = "UIStroke"
+UIStroke27.Thickness = 1.5
+UIStroke27.Parent = Name10
+
+local Features10 = Instance.new("TextLabel")
+Features10.Name = "Features"
+Features10.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features10.Size = UDim2.new(0.75, 0, 0.35, 0)
+Features10.BackgroundColor3 = Color3.new(1, 1, 1)
+Features10.BackgroundTransparency = 1
+Features10.BorderSizePixel = 0
+Features10.BorderColor3 = Color3.new(0, 0, 0)
+Features10.AnchorPoint = Vector2.new(0.5, 0.5)
+Features10.Transparency = 1
+Features10.Text = "+500 Melee stats"
+Features10.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features10.TextSize = 14
+Features10.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features10.TextScaled = true
+Features10.TextWrapped = true
+Features10.Parent = Melee
+
+local Fruit_M1_Speed = Instance.new("TextButton")
+Fruit_M1_Speed.Name = "Fruit M1 Speed"
+Fruit_M1_Speed.Position = UDim2.new(0.5, 0, 0.435, 0)
+Fruit_M1_Speed.Size = UDim2.new(0.95, 0, 0.06, 0)
+Fruit_M1_Speed.BackgroundColor3 = Color3.new(1, 1, 1)
+Fruit_M1_Speed.BorderSizePixel = 0
+Fruit_M1_Speed.BorderColor3 = Color3.new(0, 0, 0)
+Fruit_M1_Speed.AnchorPoint = Vector2.new(0.5, 0)
+Fruit_M1_Speed.Text = ""
+Fruit_M1_Speed.TextColor3 = Color3.new(0, 0, 0)
+Fruit_M1_Speed.TextSize = 14
+Fruit_M1_Speed.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Fruit_M1_Speed.Parent = List
+
+local UIStroke28 = Instance.new("UIStroke")
+UIStroke28.Name = "UIStroke"
+UIStroke28.Color = Color3.new(1, 0.882353, 0)
+UIStroke28.Thickness = 2
+UIStroke28.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke28.Parent = Fruit_M1_Speed
+
+local UIGradient15 = Instance.new("UIGradient")
+UIGradient15.Name = "UIGradient"
+UIGradient15.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.384314, 0.384314, 0.14902)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient15.Parent = Fruit_M1_Speed
 
 local Logo11 = Instance.new("ImageLabel")
 Logo11.Name = "Logo"
-Logo11.Position = UDim2.new(0.135, 0, 0.5, 0)
-Logo11.Size = UDim2.new(1.2, 0, 1.2, 0)
+Logo11.Position = UDim2.new(0.1, 0, 0.5, 0)
+Logo11.Size = UDim2.new(1, 0, 1, 0)
 Logo11.BackgroundColor3 = Color3.new(1, 1, 1)
 Logo11.BackgroundTransparency = 1
 Logo11.BorderSizePixel = 0
 Logo11.BorderColor3 = Color3.new(0, 0, 0)
 Logo11.AnchorPoint = Vector2.new(0.5, 0.5)
 Logo11.Transparency = 1
-Logo11.Image = "rbxassetid://78950127265032"
-Logo11.Parent = Race_Meter
+Logo11.Image = "rbxassetid://126193746951227"
+Logo11.Parent = Fruit_M1_Speed
 
-local UIAspectRatioConstraint12 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint12.Name = "UIAspectRatioConstraint"
-UIAspectRatioConstraint12.AspectRatio = 1.2000000476837158
-UIAspectRatioConstraint12.Parent = Logo11
+local UIAspectRatioConstraint13 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint13.Name = "UIAspectRatioConstraint"
+
+UIAspectRatioConstraint13.Parent = Logo11
 
 local Name11 = Instance.new("TextLabel")
 Name11.Name = "Name"
 Name11.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name11.Size = UDim2.new(0.75, 0, 0.5, 0)
+Name11.Size = UDim2.new(0.75, 0, 0.45, 0)
 Name11.BackgroundColor3 = Color3.new(1, 1, 1)
 Name11.BackgroundTransparency = 1
 Name11.BorderSizePixel = 0
 Name11.BorderColor3 = Color3.new(0, 0, 0)
 Name11.AnchorPoint = Vector2.new(0.5, 0.5)
 Name11.Transparency = 1
-Name11.Text = "Race Meter"
-Name11.TextColor3 = Color3.new(1, 1, 1)
+Name11.Text = "Fruit M1 Speed"
+Name11.TextColor3 = Color3.new(1, 1, 0.392157)
 Name11.TextSize = 14
 Name11.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
 Name11.TextScaled = true
 Name11.TextWrapped = true
-Name11.Parent = Race_Meter
+Name11.Parent = Fruit_M1_Speed
 
-local UIStroke28 = Instance.new("UIStroke")
-UIStroke28.Name = "UIStroke"
-UIStroke28.Thickness = 1.5
-UIStroke28.Parent = Name11
+local UIStroke29 = Instance.new("UIStroke")
+UIStroke29.Name = "UIStroke"
+UIStroke29.Thickness = 1.5
+UIStroke29.Parent = Name11
 
 local Features11 = Instance.new("TextLabel")
 Features11.Name = "Features"
 Features11.Position = UDim2.new(0.6, 0, 0.75, 0)
-Features11.Size = UDim2.new(0.75, 0, 0.5, 0)
+Features11.Size = UDim2.new(0.75, 0, 0.35, 0)
 Features11.BackgroundColor3 = Color3.new(1, 1, 1)
 Features11.BackgroundTransparency = 1
 Features11.BorderSizePixel = 0
 Features11.BorderColor3 = Color3.new(0, 0, 0)
 Features11.AnchorPoint = Vector2.new(0.5, 0.5)
 Features11.Transparency = 1
-Features11.Text = "Gain 20% additional race meter from all sources."
+Features11.Text = "15% more Fruit M1 Speed"
 Features11.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
 Features11.TextSize = 14
 Features11.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
 Features11.TextScaled = true
 Features11.TextWrapped = true
-Features11.Parent = Race_Meter
+Features11.Parent = Fruit_M1_Speed
 
 local Fruit = Instance.new("TextButton")
 Fruit.Name = "Fruit"
@@ -1129,17 +1169,17 @@ Fruit.TextSize = 14
 Fruit.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 Fruit.Parent = List
 
-local UIStroke29 = Instance.new("UIStroke")
-UIStroke29.Name = "UIStroke"
-UIStroke29.Color = Color3.new(1, 0.882353, 0)
-UIStroke29.Thickness = 2
-UIStroke29.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke29.Parent = Fruit
+local UIStroke30 = Instance.new("UIStroke")
+UIStroke30.Name = "UIStroke"
+UIStroke30.Color = Color3.new(1, 0.882353, 0)
+UIStroke30.Thickness = 2
+UIStroke30.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke30.Parent = Fruit
 
-local UIGradient15 = Instance.new("UIGradient")
-UIGradient15.Name = "UIGradient"
-UIGradient15.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.458824, 0.309804, 0.054902)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient15.Parent = Fruit
+local UIGradient16 = Instance.new("UIGradient")
+UIGradient16.Name = "UIGradient"
+UIGradient16.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.458824, 0.309804, 0.054902)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient16.Parent = Fruit
 
 local Logo12 = Instance.new("ImageLabel")
 Logo12.Name = "Logo"
@@ -1154,10 +1194,10 @@ Logo12.Transparency = 1
 Logo12.Image = "rbxassetid://98202085662608"
 Logo12.Parent = Fruit
 
-local UIAspectRatioConstraint13 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint13.Name = "UIAspectRatioConstraint"
+local UIAspectRatioConstraint14 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint14.Name = "UIAspectRatioConstraint"
 
-UIAspectRatioConstraint13.Parent = Logo12
+UIAspectRatioConstraint14.Parent = Logo12
 
 local Name12 = Instance.new("TextLabel")
 Name12.Name = "Name"
@@ -1177,10 +1217,10 @@ Name12.TextScaled = true
 Name12.TextWrapped = true
 Name12.Parent = Fruit
 
-local UIStroke30 = Instance.new("UIStroke")
-UIStroke30.Name = "UIStroke"
-UIStroke30.Thickness = 1.5
-UIStroke30.Parent = Name12
+local UIStroke31 = Instance.new("UIStroke")
+UIStroke31.Name = "UIStroke"
+UIStroke31.Thickness = 1.5
+UIStroke31.Parent = Name12
 
 local Features12 = Instance.new("TextLabel")
 Features12.Name = "Features"
@@ -1200,35 +1240,35 @@ Features12.TextScaled = true
 Features12.TextWrapped = true
 Features12.Parent = Fruit
 
-local Fruit_M1_Speed = Instance.new("TextButton")
-Fruit_M1_Speed.Name = "Fruit M1 Speed"
-Fruit_M1_Speed.Position = UDim2.new(0.5, 0, 0.435, 0)
-Fruit_M1_Speed.Size = UDim2.new(0.95, 0, 0.06, 0)
-Fruit_M1_Speed.BackgroundColor3 = Color3.new(1, 1, 1)
-Fruit_M1_Speed.BorderSizePixel = 0
-Fruit_M1_Speed.BorderColor3 = Color3.new(0, 0, 0)
-Fruit_M1_Speed.AnchorPoint = Vector2.new(0.5, 0)
-Fruit_M1_Speed.Text = ""
-Fruit_M1_Speed.TextColor3 = Color3.new(0, 0, 0)
-Fruit_M1_Speed.TextSize = 14
-Fruit_M1_Speed.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-Fruit_M1_Speed.Parent = List
+local All_Cooldowns = Instance.new("TextButton")
+All_Cooldowns.Name = "All Cooldowns"
+All_Cooldowns.Position = UDim2.new(0.5, 0, 0.505, 0)
+All_Cooldowns.Size = UDim2.new(0.95, 0, 0.06, 0)
+All_Cooldowns.BackgroundColor3 = Color3.new(1, 1, 1)
+All_Cooldowns.BorderSizePixel = 0
+All_Cooldowns.BorderColor3 = Color3.new(0, 0, 0)
+All_Cooldowns.AnchorPoint = Vector2.new(0.5, 0)
+All_Cooldowns.Text = ""
+All_Cooldowns.TextColor3 = Color3.new(0, 0, 0)
+All_Cooldowns.TextSize = 14
+All_Cooldowns.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+All_Cooldowns.Parent = List
 
-local UIStroke31 = Instance.new("UIStroke")
-UIStroke31.Name = "UIStroke"
-UIStroke31.Color = Color3.new(1, 0.882353, 0)
-UIStroke31.Thickness = 2
-UIStroke31.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-UIStroke31.Parent = Fruit_M1_Speed
+local UIStroke32 = Instance.new("UIStroke")
+UIStroke32.Name = "UIStroke"
+UIStroke32.Color = Color3.new(1, 0.882353, 0)
+UIStroke32.Thickness = 2
+UIStroke32.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke32.Parent = All_Cooldowns
 
-local UIGradient16 = Instance.new("UIGradient")
-UIGradient16.Name = "UIGradient"
-UIGradient16.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.384314, 0.384314, 0.14902)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
-UIGradient16.Parent = Fruit_M1_Speed
+local UIGradient17 = Instance.new("UIGradient")
+UIGradient17.Name = "UIGradient"
+UIGradient17.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.262745, 0.262745, 0.262745)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient17.Parent = All_Cooldowns
 
 local Logo13 = Instance.new("ImageLabel")
 Logo13.Name = "Logo"
-Logo13.Position = UDim2.new(0.1, 0, 0.5, 0)
+Logo13.Position = UDim2.new(0.11, 0, 0.5, 0)
 Logo13.Size = UDim2.new(1, 0, 1, 0)
 Logo13.BackgroundColor3 = Color3.new(1, 1, 1)
 Logo13.BackgroundTransparency = 1
@@ -1236,36 +1276,36 @@ Logo13.BorderSizePixel = 0
 Logo13.BorderColor3 = Color3.new(0, 0, 0)
 Logo13.AnchorPoint = Vector2.new(0.5, 0.5)
 Logo13.Transparency = 1
-Logo13.Image = "rbxassetid://126193746951227"
-Logo13.Parent = Fruit_M1_Speed
+Logo13.Image = "rbxassetid://135833090144444"
+Logo13.Parent = All_Cooldowns
 
-local UIAspectRatioConstraint14 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint14.Name = "UIAspectRatioConstraint"
-
-UIAspectRatioConstraint14.Parent = Logo13
+local UIAspectRatioConstraint15 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint15.Name = "UIAspectRatioConstraint"
+UIAspectRatioConstraint15.AspectRatio = 0.8999999761581421
+UIAspectRatioConstraint15.Parent = Logo13
 
 local Name13 = Instance.new("TextLabel")
 Name13.Name = "Name"
 Name13.Position = UDim2.new(0.5, 0, 0.25, 0)
-Name13.Size = UDim2.new(0.75, 0, 0.45, 0)
+Name13.Size = UDim2.new(0.75, 0, 0.5, 0)
 Name13.BackgroundColor3 = Color3.new(1, 1, 1)
 Name13.BackgroundTransparency = 1
 Name13.BorderSizePixel = 0
 Name13.BorderColor3 = Color3.new(0, 0, 0)
 Name13.AnchorPoint = Vector2.new(0.5, 0.5)
 Name13.Transparency = 1
-Name13.Text = "Fruit M1 Speed"
-Name13.TextColor3 = Color3.new(1, 1, 0.392157)
+Name13.Text = "All Cooldowns"
+Name13.TextColor3 = Color3.new(1, 1, 1)
 Name13.TextSize = 14
 Name13.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
 Name13.TextScaled = true
 Name13.TextWrapped = true
-Name13.Parent = Fruit_M1_Speed
+Name13.Parent = All_Cooldowns
 
-local UIStroke32 = Instance.new("UIStroke")
-UIStroke32.Name = "UIStroke"
-UIStroke32.Thickness = 1.5
-UIStroke32.Parent = Name13
+local UIStroke33 = Instance.new("UIStroke")
+UIStroke33.Name = "UIStroke"
+UIStroke33.Thickness = 1.5
+UIStroke33.Parent = Name13
 
 local Features13 = Instance.new("TextLabel")
 Features13.Name = "Features"
@@ -1277,13 +1317,13 @@ Features13.BorderSizePixel = 0
 Features13.BorderColor3 = Color3.new(0, 0, 0)
 Features13.AnchorPoint = Vector2.new(0.5, 0.5)
 Features13.Transparency = 1
-Features13.Text = "15% more Fruit M1 Speed"
+Features13.Text = "All Cooldowns increased by 10%."
 Features13.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
 Features13.TextSize = 14
 Features13.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
 Features13.TextScaled = true
 Features13.TextWrapped = true
-Features13.Parent = Fruit_M1_Speed
+Features13.Parent = All_Cooldowns
 
 local ExecutionTitle = Instance.new("TextLabel")
 ExecutionTitle.Name = "ExecutionTitle"
@@ -1321,10 +1361,360 @@ ListTitle.TextScaled = true
 ListTitle.TextWrapped = true
 ListTitle.Parent = Main
 
-local UIAspectRatioConstraint15 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint15.Name = "UIAspectRatioConstraint"
-UIAspectRatioConstraint15.AspectRatio = 1.5850000381469727
-UIAspectRatioConstraint15.Parent = Main
+local UIAspectRatioConstraint16 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint16.Name = "UIAspectRatioConstraint"
+UIAspectRatioConstraint16.AspectRatio = 1.5850000381469727
+UIAspectRatioConstraint16.Parent = Main
+
+local AutoSelectFrame = Instance.new("Frame")
+AutoSelectFrame.Name = "AutoSelectFrame"
+AutoSelectFrame.Position = UDim2.new(1.2, 0, 0.55, 0)
+AutoSelectFrame.Size = UDim2.new(0.4, 0, 0.9, 0)
+AutoSelectFrame.BackgroundColor3 = Color3.new(1, 1, 1)
+AutoSelectFrame.BorderSizePixel = 0
+AutoSelectFrame.BorderColor3 = Color3.new(0, 0, 0)
+AutoSelectFrame.Visible = false
+AutoSelectFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+AutoSelectFrame.Parent = Main
+
+local UIStroke34 = Instance.new("UIStroke")
+UIStroke34.Name = "UIStroke"
+UIStroke34.Thickness = 2
+UIStroke34.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke34.Parent = AutoSelectFrame
+
+local UIGradient18 = Instance.new("UIGradient")
+UIGradient18.Name = "UIGradient"
+UIGradient18.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0, 0.027451, 0.0980392)), ColorSequenceKeypoint.new(0.728374, Color3.new(0.0980392, 0.0980392, 0.0980392)), ColorSequenceKeypoint.new(1, Color3.new(0.14902, 0.14902, 0.14902))})
+UIGradient18.Rotation = 90
+UIGradient18.Parent = AutoSelectFrame
+
+local UICorner3 = Instance.new("UICorner")
+UICorner3.Name = "UICorner"
+UICorner3.CornerRadius = UDim.new(0.015, 0)
+UICorner3.Parent = AutoSelectFrame
+
+local TitleFrame2 = Instance.new("Frame")
+TitleFrame2.Name = "TitleFrame"
+TitleFrame2.Position = UDim2.new(0.5, 0, 0.025, 0)
+TitleFrame2.Size = UDim2.new(1.005, 0, 0.15, 0)
+TitleFrame2.BackgroundColor3 = Color3.new(1, 1, 1)
+TitleFrame2.BorderSizePixel = 0
+TitleFrame2.BorderColor3 = Color3.new(0, 0, 0)
+TitleFrame2.AnchorPoint = Vector2.new(0.5, 0.5)
+TitleFrame2.Parent = AutoSelectFrame
+
+local UIGradient19 = Instance.new("UIGradient")
+UIGradient19.Name = "UIGradient"
+UIGradient19.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(1, 0.784314, 0)), ColorSequenceKeypoint.new(0.5, Color3.new(0.94902, 1, 0)), ColorSequenceKeypoint.new(1, Color3.new(1, 0.784314, 0))})
+UIGradient19.Parent = TitleFrame2
+
+local UICorner4 = Instance.new("UICorner")
+UICorner4.Name = "UICorner"
+UICorner4.CornerRadius = UDim.new(0.15, 0)
+UICorner4.Parent = TitleFrame2
+
+local UIStroke35 = Instance.new("UIStroke")
+UIStroke35.Name = "UIStroke"
+UIStroke35.Thickness = 2
+UIStroke35.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke35.Parent = TitleFrame2
+
+local TextLabel2 = Instance.new("TextLabel")
+TextLabel2.Name = "TextLabel"
+TextLabel2.Position = UDim2.new(0.5, 0, 0.5, 0)
+TextLabel2.Size = UDim2.new(0.85, 0, 0.6, 0)
+TextLabel2.BackgroundColor3 = Color3.new(1, 1, 1)
+TextLabel2.BackgroundTransparency = 1
+TextLabel2.BorderSizePixel = 0
+TextLabel2.BorderColor3 = Color3.new(0, 0, 0)
+TextLabel2.AnchorPoint = Vector2.new(0.5, 0.5)
+TextLabel2.Transparency = 1
+TextLabel2.Text = "Suggested choice"
+TextLabel2.TextColor3 = Color3.new(1, 1, 1)
+TextLabel2.TextSize = 14
+TextLabel2.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+TextLabel2.TextScaled = true
+TextLabel2.TextWrapped = true
+TextLabel2.Parent = TitleFrame2
+
+local UIStroke36 = Instance.new("UIStroke")
+UIStroke36.Name = "UIStroke"
+UIStroke36.Thickness = 1.5
+UIStroke36.Parent = TextLabel2
+
+local Fruit2 = Instance.new("TextButton")
+Fruit2.Name = "Fruit"
+Fruit2.Position = UDim2.new(0.5, 0, 0.575, 0)
+Fruit2.Size = UDim2.new(0.9, 0, 0.2, 0)
+Fruit2.BackgroundColor3 = Color3.new(1, 1, 1)
+Fruit2.BorderSizePixel = 0
+Fruit2.BorderColor3 = Color3.new(0, 0, 0)
+Fruit2.AnchorPoint = Vector2.new(0.5, 0)
+Fruit2.Text = ""
+Fruit2.TextColor3 = Color3.new(0, 0, 0)
+Fruit2.TextSize = 14
+Fruit2.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Fruit2.Parent = AutoSelectFrame
+
+local UIStroke37 = Instance.new("UIStroke")
+UIStroke37.Name = "UIStroke"
+UIStroke37.Color = Color3.new(1, 0.882353, 0)
+UIStroke37.Thickness = 2
+UIStroke37.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke37.Parent = Fruit2
+
+local UIGradient20 = Instance.new("UIGradient")
+UIGradient20.Name = "UIGradient"
+UIGradient20.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.458824, 0.309804, 0.054902)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient20.Parent = Fruit2
+
+local Logo14 = Instance.new("ImageLabel")
+Logo14.Name = "Logo"
+Logo14.Position = UDim2.new(0.15, 0, 0.5, 0)
+Logo14.Size = UDim2.new(1, 0, 1, 0)
+Logo14.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo14.BackgroundTransparency = 1
+Logo14.BorderSizePixel = 0
+Logo14.BorderColor3 = Color3.new(0, 0, 0)
+Logo14.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo14.Transparency = 1
+Logo14.Image = "rbxassetid://98202085662608"
+Logo14.Parent = Fruit2
+
+local UIAspectRatioConstraint17 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint17.Name = "UIAspectRatioConstraint"
+
+UIAspectRatioConstraint17.Parent = Logo14
+
+local Name14 = Instance.new("TextLabel")
+Name14.Name = "Name"
+Name14.Position = UDim2.new(0.65, 0, 0.3, 0)
+Name14.Size = UDim2.new(0.7, 0, 0.4, 0)
+Name14.BackgroundColor3 = Color3.new(1, 1, 1)
+Name14.BackgroundTransparency = 1
+Name14.BorderSizePixel = 0
+Name14.BorderColor3 = Color3.new(0, 0, 0)
+Name14.AnchorPoint = Vector2.new(0.5, 0.5)
+Name14.Transparency = 1
+Name14.Text = "Combo Fruit"
+Name14.TextColor3 = Color3.new(1, 1, 1)
+Name14.TextSize = 14
+Name14.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name14.TextScaled = true
+Name14.TextWrapped = true
+Name14.Parent = Fruit2
+
+local UIStroke38 = Instance.new("UIStroke")
+UIStroke38.Name = "UIStroke"
+UIStroke38.Thickness = 1.5
+UIStroke38.Parent = Name14
+
+local Features14 = Instance.new("TextLabel")
+Features14.Name = "Features"
+Features14.Position = UDim2.new(0.65, 0, 0.75, 0)
+Features14.Size = UDim2.new(0.65, 0, 0.5, 0)
+Features14.BackgroundColor3 = Color3.new(1, 1, 1)
+Features14.BackgroundTransparency = 1
+Features14.BorderSizePixel = 0
+Features14.BorderColor3 = Color3.new(0, 0, 0)
+Features14.AnchorPoint = Vector2.new(0.5, 0.5)
+Features14.Transparency = 1
+Features14.Text = "Auto setup Fruit buffs."
+Features14.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features14.TextSize = 14
+Features14.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features14.TextScaled = true
+Features14.TextWrapped = true
+Features14.Parent = Fruit2
+
+local Melee2 = Instance.new("TextButton")
+Melee2.Name = "Melee"
+Melee2.Position = UDim2.new(0.5, 0, 0.35, 0)
+Melee2.Size = UDim2.new(0.9, 0, 0.2, 0)
+Melee2.BackgroundColor3 = Color3.new(1, 1, 1)
+Melee2.BorderSizePixel = 0
+Melee2.BorderColor3 = Color3.new(0, 0, 0)
+Melee2.AnchorPoint = Vector2.new(0.5, 0)
+Melee2.Text = ""
+Melee2.TextColor3 = Color3.new(0, 0, 0)
+Melee2.TextSize = 14
+Melee2.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Melee2.Parent = AutoSelectFrame
+
+local UIStroke39 = Instance.new("UIStroke")
+UIStroke39.Name = "UIStroke"
+UIStroke39.Color = Color3.new(1, 0.882353, 0)
+UIStroke39.Thickness = 2
+UIStroke39.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke39.Parent = Melee2
+
+local UIGradient21 = Instance.new("UIGradient")
+UIGradient21.Name = "UIGradient"
+UIGradient21.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.223529, 0.419608, 0.439216)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient21.Parent = Melee2
+
+local Logo15 = Instance.new("ImageLabel")
+Logo15.Name = "Logo"
+Logo15.Position = UDim2.new(0.15, 0, 0.5, 0)
+Logo15.Size = UDim2.new(0.9, 0, 0.9, 0)
+Logo15.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo15.BackgroundTransparency = 1
+Logo15.BorderSizePixel = 0
+Logo15.BorderColor3 = Color3.new(0, 0, 0)
+Logo15.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo15.Transparency = 1
+Logo15.Image = "rbxassetid://105862822867112"
+Logo15.Parent = Melee2
+
+local UIAspectRatioConstraint18 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint18.Name = "UIAspectRatioConstraint"
+
+UIAspectRatioConstraint18.Parent = Logo15
+
+local Name15 = Instance.new("TextLabel")
+Name15.Name = "Name"
+Name15.Position = UDim2.new(0.65, 0, 0.3, 0)
+Name15.Size = UDim2.new(0.7, 0, 0.4, 0)
+Name15.BackgroundColor3 = Color3.new(1, 1, 1)
+Name15.BackgroundTransparency = 1
+Name15.BorderSizePixel = 0
+Name15.BorderColor3 = Color3.new(0, 0, 0)
+Name15.AnchorPoint = Vector2.new(0.5, 0.5)
+Name15.Transparency = 1
+Name15.Text = "Combo Melee"
+Name15.TextColor3 = Color3.new(1, 1, 1)
+Name15.TextSize = 14
+Name15.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name15.TextScaled = true
+Name15.TextWrapped = true
+Name15.Parent = Melee2
+
+local UIStroke40 = Instance.new("UIStroke")
+UIStroke40.Name = "UIStroke"
+UIStroke40.Thickness = 1.5
+UIStroke40.Parent = Name15
+
+local Features15 = Instance.new("TextLabel")
+Features15.Name = "Features"
+Features15.Position = UDim2.new(0.65, 0, 0.75, 0)
+Features15.Size = UDim2.new(0.65, 0, 0.5, 0)
+Features15.BackgroundColor3 = Color3.new(1, 1, 1)
+Features15.BackgroundTransparency = 1
+Features15.BorderSizePixel = 0
+Features15.BorderColor3 = Color3.new(0, 0, 0)
+Features15.AnchorPoint = Vector2.new(0.5, 0.5)
+Features15.Transparency = 1
+Features15.Text = "Auto setup Melee buffs."
+Features15.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features15.TextSize = 14
+Features15.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features15.TextScaled = true
+Features15.TextWrapped = true
+Features15.Parent = Melee2
+
+local Sword2 = Instance.new("TextButton")
+Sword2.Name = "Sword"
+Sword2.Position = UDim2.new(0.5, 0, 0.125, 0)
+Sword2.Size = UDim2.new(0.9, 0, 0.2, 0)
+Sword2.BackgroundColor3 = Color3.new(1, 1, 1)
+Sword2.BorderSizePixel = 0
+Sword2.BorderColor3 = Color3.new(0, 0, 0)
+Sword2.AnchorPoint = Vector2.new(0.5, 0)
+Sword2.Text = ""
+Sword2.TextColor3 = Color3.new(0, 0, 0)
+Sword2.TextSize = 14
+Sword2.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Sword2.Parent = AutoSelectFrame
+
+local UIStroke41 = Instance.new("UIStroke")
+UIStroke41.Name = "UIStroke"
+UIStroke41.Color = Color3.new(1, 0.882353, 0)
+UIStroke41.Thickness = 2
+UIStroke41.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke41.Parent = Sword2
+
+local UIGradient22 = Instance.new("UIGradient")
+UIGradient22.Name = "UIGradient"
+UIGradient22.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.new(0.12549, 0.188235, 0.113725)), ColorSequenceKeypoint.new(0.5, Color3.new(0.156863, 0.156863, 0.156863)), ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863))})
+UIGradient22.Parent = Sword2
+
+local Logo16 = Instance.new("ImageLabel")
+Logo16.Name = "Logo"
+Logo16.Position = UDim2.new(0.15, 0, 0.5, 0)
+Logo16.Size = UDim2.new(1.1, 0, 1.1, 0)
+Logo16.BackgroundColor3 = Color3.new(1, 1, 1)
+Logo16.BackgroundTransparency = 1
+Logo16.BorderSizePixel = 0
+Logo16.BorderColor3 = Color3.new(0, 0, 0)
+Logo16.AnchorPoint = Vector2.new(0.5, 0.5)
+Logo16.Transparency = 1
+Logo16.Image = "rbxassetid://105688057956034"
+Logo16.Parent = Sword2
+
+local UIAspectRatioConstraint19 = Instance.new("UIAspectRatioConstraint")
+UIAspectRatioConstraint19.Name = "UIAspectRatioConstraint"
+
+UIAspectRatioConstraint19.Parent = Logo16
+
+local Name16 = Instance.new("TextLabel")
+Name16.Name = "Name"
+Name16.Position = UDim2.new(0.65, 0, 0.3, 0)
+Name16.Size = UDim2.new(0.7, 0, 0.4, 0)
+Name16.BackgroundColor3 = Color3.new(1, 1, 1)
+Name16.BackgroundTransparency = 1
+Name16.BorderSizePixel = 0
+Name16.BorderColor3 = Color3.new(0, 0, 0)
+Name16.AnchorPoint = Vector2.new(0.5, 0.5)
+Name16.Transparency = 1
+Name16.Text = "Combo Sword"
+Name16.TextColor3 = Color3.new(1, 1, 1)
+Name16.TextSize = 14
+Name16.FontFace = Font.new("rbxasset://fonts/families/HighwayGothic.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+Name16.TextScaled = true
+Name16.TextWrapped = true
+Name16.Parent = Sword2
+
+local UIStroke42 = Instance.new("UIStroke")
+UIStroke42.Name = "UIStroke"
+UIStroke42.Thickness = 1.5
+UIStroke42.Parent = Name16
+
+local Features16 = Instance.new("TextLabel")
+Features16.Name = "Features"
+Features16.Position = UDim2.new(0.6, 0, 0.75, 0)
+Features16.Size = UDim2.new(0.75, 0, 0.4, 0)
+Features16.BackgroundColor3 = Color3.new(1, 1, 1)
+Features16.BackgroundTransparency = 1
+Features16.BorderSizePixel = 0
+Features16.BorderColor3 = Color3.new(0, 0, 0)
+Features16.AnchorPoint = Vector2.new(0.5, 0.5)
+Features16.Transparency = 1
+Features16.Text = "Auto setup Sword buffs."
+Features16.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features16.TextSize = 14
+Features16.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features16.TextScaled = true
+Features16.TextWrapped = true
+Features16.Parent = Sword2
+
+local Features17 = Instance.new("TextLabel")
+Features17.Name = "Features"
+Features17.Position = UDim2.new(0.5, 0, 0.9, 0)
+Features17.Size = UDim2.new(1, 0, 0.2, 0)
+Features17.BackgroundColor3 = Color3.new(1, 1, 1)
+Features17.BackgroundTransparency = 1
+Features17.BorderSizePixel = 0
+Features17.BorderColor3 = Color3.new(0, 0, 0)
+Features17.AnchorPoint = Vector2.new(0.5, 0.5)
+Features17.Transparency = 1
+Features17.Text = "The system suggests options to match your style."
+Features17.TextColor3 = Color3.new(0.772549, 0.772549, 0.772549)
+Features17.TextSize = 14
+Features17.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+Features17.TextScaled = true
+Features17.TextWrapped = true
+Features17.Parent = AutoSelectFrame
 
 local player = game.Players.LocalPlayer
 local gui = player.PlayerGui:FindFirstChild("AutoBuffSelectionGui")
@@ -1337,158 +1727,6 @@ if gui then
 	end
 end
 
--- SYSTEM =======================================================================================================
+--Load System
 
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-
-local player = Players.LocalPlayer
-local gui = player.PlayerGui:WaitForChild("AutoBuffSelectionGui")
-local main = gui.Main
-local list = main.List
-local exec = main.Execution
-local closeBtn = main.TitleFrame.Close
-
--- tween config
-local TWEEN_TIME = 0.25
-local EASING = Enum.EasingStyle.Quad
-
--- execution layout
-local EXEC_ANCHOR = Vector2.new(0.5, 0)
-local EXEC_X = 0.5
-local EXEC_FIRST_Y = 0.015
-local EXEC_STEP_Y = 0.07
-
--- default state
-main.AnchorPoint = Vector2.new(0.5, 0.5)
-main.Position = UDim2.new(0.5, 0, 2, 0)
-main.Visible = false
-
-local busy = false
-local isOpen = false
-local executionOrder = {}
-local originalMeta = {}
-
--- ===== helpers =====
-local function record(btn)
-    if not originalMeta[btn] then
-        originalMeta[btn] = {
-            parent = btn.Parent,
-            pos = btn.Position,
-            anchor = btn.AnchorPoint
-        }
-    end
-end
-
-local function restore(btn)
-    local m = originalMeta[btn]
-    if not m then return end
-    btn.Parent = m.parent
-    btn.Position = m.pos
-    btn.AnchorPoint = m.anchor
-end
-
-local function updateExecPos()
-    for i, btn in ipairs(executionOrder) do
-        btn.AnchorPoint = EXEC_ANCHOR
-        btn.Position = UDim2.new(EXEC_X, 0, EXEC_FIRST_Y + (i-1)*EXEC_STEP_Y, 0)
-    end
-end
-
-local function addExec(btn)
-    record(btn)
-    table.insert(executionOrder, btn)
-    btn.Parent = exec
-    updateExecPos()
-end
-
-local function removeExec(btn)
-    for i, v in ipairs(executionOrder) do
-        if v == btn then
-            table.remove(executionOrder, i)
-            break
-        end
-    end
-    restore(btn)
-    updateExecPos()
-end
-
-local function attach(btn)
-    if not btn:IsA("TextButton") or btn:GetAttribute("ui_attached") then return end
-    btn:SetAttribute("ui_attached", true)
-    record(btn)
-
-    btn.MouseButton1Click:Connect(function()
-        if busy or not main.Visible then return end
-        if btn.Parent == exec then
-            removeExec(btn)
-        else
-            addExec(btn)
-        end
-    end)
-end
-
-for _, c in ipairs(list:GetChildren()) do attach(c) end
-for _, c in ipairs(exec:GetChildren()) do attach(c) end
-list.ChildAdded:Connect(attach)
-exec.ChildAdded:Connect(attach)
-
--- ===== open / close =====
-local function openMain()
-    if busy or isOpen then return end
-    busy = true
-    main.Visible = true
-    main.Position = UDim2.new(0.5, 0, 2, 0)
-    TweenService:Create(
-        main,
-        TweenInfo.new(TWEEN_TIME, EASING),
-        {Position = UDim2.new(0.5, 0, 0.5, 0)}
-    ):Play()
-    task.wait(TWEEN_TIME)
-    isOpen = true
-    busy = false
-end
-
-local function closeMain()
-    if busy or not isOpen then return end
-    busy = true
-    TweenService:Create(
-        main,
-        TweenInfo.new(TWEEN_TIME, EASING),
-        {Position = UDim2.new(0.5, 0, 2, 0)}
-    ):Play()
-    task.wait(TWEEN_TIME)
-    main.Visible = false
-    isOpen = false
-    busy = false
-end
-
-closeBtn.MouseButton1Click:Connect(closeMain)
-
--- expose toggle nếu cần gọi từ ngoài
-_G.ToggleBuffUI = function()
-    if isOpen then closeMain() else openMain() end
-end
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local ev = ReplicatedStorage:FindFirstChild("BuffUIEvent")
-    or Instance.new("BindableEvent", ReplicatedStorage)
-
-ev.Name = "BuffUIEvent"
-
-ev.Event:Connect(function(action)
-    if action == "open" then
-        openMain()
-    elseif action == "close" then
-        closeMain()
-    elseif action == "toggle" then
-        if isOpen then closeMain() else openMain() end
-    end
-end)
-
---[[
-game.ReplicatedStorage.BuffUIEvent:Fire("open")
-game.ReplicatedStorage.BuffUIEvent:Fire("close")
-game.ReplicatedStorage.BuffUIEvent:Fire("toggle")
-]]
+loadstring(game:HttpGet("https://raw.githubusercontent.com/HAPPY-script/BLOX_FRUIT/refs/heads/main/SystemUIBuffSelect.lua"))()
